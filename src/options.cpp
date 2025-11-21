@@ -36,6 +36,8 @@ Options parse_options(int argc, char** argv)
             opt.abs_paths = true;
 else if (a == "--chunk-help")
     opt.chunk_help = true;
+else if (a == "-c" || a == "--chunk")
+    opt.chunk_trailer = true;
         else if (a == "--apply")
         {
             if (i + 1 < argc)

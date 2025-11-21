@@ -4,6 +4,7 @@
 
 struct Options
 {
+    bool chunk_trailer = false;
     bool recursive = false;
     bool list_only = false;
     bool abs_paths = false;

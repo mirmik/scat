@@ -194,5 +194,9 @@ int scat_main(int argc, char** argv)
     }
 
     print_tree(files);
+if (opt.chunk_trailer) {
+    std::cout << "\n===== CHUNK FORMAT HELP =====\n\n";
+    print_chunk_help();
+}
     return 0;
 }
