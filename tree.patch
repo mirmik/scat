@@ -1,26 +1,153 @@
-=== file: src/options.h ===
---- insert-after-text
-struct Options
+=== file: src/glob.h ===
+--- create-file
+#pragma once
+#include <filesystem>
+#include <string>
+#include <vector>
+
+// expand_glob():
+//   Реализует расширенный glob, поддерживающий:
+//     * "*" — внутри каталога
+//     * "**" — рекурсивный обход
+//     * сложные пути вида "foo/*/bar/**/*.txt"
+//
+// Возвращает список путей (только regular files).
+std::vector<std::filesystem::path>
+expand_glob(const std::string& pattern);
+=END=
+
+=== file: src/glob.cpp ===
+--- create-file
+#include "glob.h"
+#include "util.h"
+#include <filesystem>
+#include <string>
+#include <vector>
+#include <sstream>
+#include <functional>
+
+namespace fs = std::filesystem;
+
+std::vector<fs::path> expand_glob(const std::string& pattern)
 {
----
-    bool chunk_trailer = false;
-=END=
+    std::vector<fs::path> out;
+    std::error_code ec;
 
-=== file: src/options.cpp ===
---- insert-after-text
-else if (a == "--chunk-help")
-    opt.chunk_help = true;
----
-else if (a == "-c" || a == "--chunk")
-    opt.chunk_trailer = true;
-=END=
+    // Разбиваем паттерн на части
+    std::vector<std::string> parts;
+    {
+        std::stringstream ss(pattern);
+        std::string seg;
+        while (std::getline(ss, seg, '/'))
+            parts.push_back(seg);
+    }
 
-=== file: src/scat.cpp ===
---- insert-after-text
-print_tree(files);
----
-if (opt.chunk_trailer) {
-    std::cout << "\n===== CHUNK FORMAT HELP =====\n\n";
-    print_chunk_help();
+    // Рекурсивный обход
+    std::function<void(const fs::path&, size_t)> walk =
+        [&](const fs::path& base, size_t idx)
+    {
+        if (idx == parts.size())
+        {
+            if (fs::is_regular_file(base, ec))
+                out.push_back(base);
+            return;
+        }
+
+        const std::string& seg = parts[idx];
+
+        if (seg == "**")
+        {
+            // 1) match zero levels
+            walk(base, idx + 1);
+
+            // 2) match one or more levels
+            if (fs::is_directory(base, ec))
+            {
+                for (auto& e : fs::directory_iterator(base, ec))
+                    walk(e.path(), idx);
+            }
+        }
+        else if (seg.find('*') != std::string::npos)
+        {
+            // "*" маска внутри одного каталога
+            if (!fs::is_directory(base, ec))
+                return;
+
+            for (auto& e : fs::directory_iterator(base, ec))
+            {
+                if (match_simple(e.path(), seg))
+                    walk(e.path(), idx + 1);
+            }
+        }
+        else
+        {
+            // Литерал
+            fs::path next = base / seg;
+            if (fs::exists(next, ec))
+                walk(next, idx + 1);
+        }
+    };
+
+    // Вычисляем статический префикс до первого wildcard
+    fs::path root;
+    size_t start = 0;
+
+    for (; start < parts.size(); ++start)
+    {
+        if (parts[start] == "**" || parts[start].find('*') != std::string::npos)
+            break;
+        root /= parts[start];
+    }
+
+    if (root.empty())
+        root = ".";
+
+    if (!fs::exists(root, ec))
+        return out;
+
+    walk(root, start);
+
+    // Удаляем дубликаты
+    std::sort(out.begin(), out.end());
+    out.erase(std::unique(out.begin(), out.end()), out.end());
+
+    return out;
 }
+=END=
+
+=== file: src/collector.cpp ===
+--- replace-text
+// ---------------------------------------------------------------
+// Вспомогалки для glob
+// ---------------------------------------------------------------
+---
+#include "glob.h"
+=END=
+
+=== file: src/collector.cpp ===
+--- replace-text
+    // ------------------------------------------------------------------
+    // NEW REAL GLOB: supports patterns like:
+    //   src/**/*.cpp
+    //   foo/*/bar/**/test_*.h
+    // ------------------------------------------------------------------
+    {
+        std::vector<std::string> parts;
+        {
+            std::stringstream ss(pat);
+            std::string seg;
+            while (std::getline(ss, seg, '/'))
+                parts.push_back(seg);
+        }
+
+        ...
+        return;
+    }
+---
+    // Новый нормальный glob из glob.cpp
+    {
+        auto v = expand_glob(pat);
+        out.insert(out.end(), v.begin(), v.end());
+        return;
+    }
 =END=

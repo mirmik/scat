@@ -185,6 +185,14 @@ static Section parse_section(std::istream& in, const std::string& header)
         {
             ss >> s.a;
         }
+        else if (s.command == "create-file")
+        {
+            // no args
+        }
+        else if (s.command == "delete-file")
+        {
+            // no args
+        }
         else if (is_text_command(s.command))
         {
             // для *-text аргументы после команды в строке не нужны
@@ -254,6 +262,12 @@ static void apply_for_file(const std::string& filepath,
     {
         for (const Section* s : sections)
         {
+            if (s->command == "create-file")
+                continue;
+
+            if (s->command == "delete-file")
+                throw std::runtime_error("delete-file: file does not exist: " + filepath);
+
             if (s->command != "insert-after")
                 throw std::runtime_error("file does not exist: " + filepath);
         }
@@ -273,6 +287,10 @@ static void apply_for_file(const std::string& filepath,
 
     for (const Section* s : sections)
     {
+        if (s->command == "create-file" || s->command == "delete-file")
+            continue;
+
+        if (is_text_command(s->command))
         if (is_text_command(s->command))
         {
             has_text_ops = true;
@@ -316,6 +334,27 @@ static void apply_for_file(const std::string& filepath,
     if (has_index_ops && has_text_ops)
         throw std::runtime_error("cannot mix index-based and text-based commands for file: " + filepath);
 
+    // file-level ops
+    for (const Section* s : sections)
+    {
+        if (s->command == "create-file")
+        {
+            write_file_lines(p, s->payload);
+            return;
+        }
+
+        if (s->command == "delete-file")
+        {
+            std::error_code ec;
+            fs::remove(p, ec);
+            if (ec)
+                throw std::runtime_error("delete-file failed: " + filepath);
+            return;
+        }
+    }
+
+    // если есть текстовые команды — применяем их к orig и всё
+    if (has_text_ops)
     // если есть текстовые команды — применяем их к orig и всё
     if (has_text_ops)
     {
