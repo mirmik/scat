@@ -74,15 +74,17 @@ static int find_subsequence(const std::vector<std::string>& haystack,
 
     for (std::size_t i = 0; i + m <= n; ++i)
     {
-        bool ok = true;
-        for (std::size_t j = 0; j < m; ++j)
-        {
-            if (haystack[i + j] != needle[j])
-            {
-                ok = false;
-                break;
-            }
-        }
+bool ok = true;
+for (std::size_t j = 0; j < m; ++j)
+{
+    std::string h = trim(haystack[i + j]);
+    std::string n = trim(needle[j]);
+    if (h != n)
+    {
+        ok = false;
+        break;
+    }
+}
         if (ok)
             return static_cast<int>(i);
     }

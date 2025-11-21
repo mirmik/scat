@@ -1,36 +1,24 @@
-=== file: src/scat.cpp ===
---- insert-after 80
-// Prints a simple directory tree for collected files.
-void print_tree(const std::vector<std::filesystem::path>& files)
+=== file: src/apply_chunk_v2.cpp ===
+--- replace-text
+bool ok = true;
+for (std::size_t j = 0; j < m; ++j)
 {
-    std::map<std::string, std::set<std::string>> tree;
-
-    for (const auto& p : files)
+    if (haystack[i + j] != needle[j])
     {
-        auto rel = make_display_path(p);
-        auto dir = std::filesystem::path(rel).parent_path().string();
-        auto file = std::filesystem::path(rel).filename().string();
-        tree[dir].insert(file);
+        ok = false;
+        break;
     }
-
-    std::cout << "===== PROJECT TREE =====\n";
-
-    for (const auto& [dir, items] : tree)
-    {
-        if (!dir.empty() && dir != ".")
-            std::cout << dir << "/\n";
-        else
-            std::cout << "./\n";
-
-        for (auto& f : items)
-            std::cout << "  " << f << "\n";
-    }
-
-    std::cout << "========================\n\n";
 }
-=END=
-
-=== file: src/scat.cpp ===
---- insert-after 125
-    print_tree(files);
+---
+bool ok = true;
+for (std::size_t j = 0; j < m; ++j)
+{
+    std::string h = trim(haystack[i + j]);
+    std::string n = trim(needle[j]);
+    if (h != n)
+    {
+        ok = false;
+        break;
+    }
+}
 =END=
