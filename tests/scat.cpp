@@ -177,7 +177,6 @@ TEST_CASE("scat walks example/ correctly")
     std::string exe_path = to_unix_path(exe);
     std::string example_path = to_unix_path(example);
 #ifdef _WIN32
-    std::ostringstream cmd;
     cmd << "\"" << exe_path << "\" \"" << example_path << "\" -r";
 #else
     cmd << exe << " \"" << example.string() << "\" -r";
