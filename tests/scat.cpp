@@ -105,6 +105,21 @@ static std::vector<Block> parse_blocks(const std::string& out)
     return result;
 }
 
+static fs::path find_example_dir(const fs::path& app_dir)
+{
+    std::vector<fs::path> candidates = {fs::current_path() / "example", fs::current_path().parent_path() / "example",
+                                        app_dir / "example", app_dir.parent_path() / "example",
+                                        app_dir.parent_path().parent_path() / "example"};
+
+    for (const auto& p : candidates)
+    {
+        if (fs::exists(p))
+            return p;
+    }
+
+    return {};
+}
+
 std::string get_application_path()
 {
 #ifdef _WIN32
@@ -146,10 +161,8 @@ TEST_CASE("scat walks example/ correctly")
 
     REQUIRE(fs::exists(exe));
 
-    fs::path example1 = fs::current_path().parent_path() / "example";
-    fs::path example2 = fs::current_path() / "example";
-
-    fs::path example = fs::exists(example1) ? example1 : example2;
+    fs::path example = find_example_dir(app_dir);
+    REQUIRE(!example.empty());
     REQUIRE(fs::exists(example));
 
     std::ostringstream cmd;
