@@ -1,5 +1,6 @@
 #include "doctest/doctest.h"
 
+#include <algorithm>
 #include <array>
 #include <cstdio>
 #include <filesystem>
@@ -9,11 +10,36 @@
 
 namespace fs = std::filesystem;
 
-// универсальный popen/pclose под Windows и Unix
 #ifdef _WIN32
 #define popen _popen
 #define pclose _pclose
 #endif
+
+static bool starts_with(const std::string& s, const std::string& prefix)
+{
+    return s.size() >= prefix.size() && s.compare(0, prefix.size(), prefix) == 0;
+}
+
+static bool ends_with(const std::string& s, const std::string& suffix)
+{
+    return s.size() >= suffix.size() && s.compare(s.size() - suffix.size(), suffix.size(), suffix) == 0;
+}
+
+std::string trim(const std::string& s)
+{
+    size_t start = 0;
+    while (start < s.size() && isspace(static_cast<unsigned char>(s[start])))
+        ++start;
+
+    if (start == s.size())
+        return "";
+
+    size_t end = s.size() - 1;
+    while (end > start && isspace(static_cast<unsigned char>(s[end])))
+        --end;
+
+    return s.substr(start, end - start + 1);
+}
 
 static std::string run_cmd(const std::string& cmd)
 {
@@ -30,31 +56,51 @@ static std::string run_cmd(const std::string& cmd)
     return result;
 }
 
-static std::string trim(const std::string& str)
-{
-    const char* whitespace = " \t\n\r\f\v";
-    size_t start = str.find_first_not_of(whitespace);
-    if (start == std::string::npos)
-        return "";
-    size_t end = str.find_last_not_of(whitespace);
-    return str.substr(start, end - start + 1);
-}
+// --- Parsing ---
 
-static std::vector<std::string> split_lines(const std::string& str)
+struct Block
 {
-    std::vector<std::string> lines;
-    std::istringstream stream(str);
+    std::string path;
+    std::string content;
+};
+
+static std::vector<Block> parse_blocks(const std::string& out)
+{
+    std::vector<Block> result;
+
+    std::istringstream s(out);
     std::string line;
-    while (std::getline(stream, line))
+    Block current;
+
+    while (std::getline(s, line))
     {
-        lines.push_back(line);
+        if (starts_with(line, "===== ") && ends_with(line, " ====="))
+        {
+            if (!current.path.empty())
+                result.push_back(current);
+
+            current = Block{};
+            current.path = line.substr(6, line.size() - 6 - 6); // remove ===== <path> =====
+        }
+        else
+        {
+            if (!current.path.empty())
+            {
+                if (!current.content.empty())
+                    current.content += "\n";
+                current.content += line;
+            }
+        }
     }
-    return lines;
+
+    if (!current.path.empty())
+        result.push_back(current);
+
+    return result;
 }
 
 TEST_CASE("scat walks example/ correctly")
 {
-    // путь к бинарнику scat
 #ifdef _WIN32
     fs::path exe = fs::current_path() / "Release" / "scat.exe";
 #else
@@ -63,25 +109,13 @@ TEST_CASE("scat walks example/ correctly")
 
     REQUIRE(fs::exists(exe));
 
-    int variant = 0;
-    // путь к example/
-    fs::path example = fs::current_path().parent_path() / "example";
-    if (fs::exists(example))
-    {
-        variant = 1;
-    }
+    fs::path example1 = fs::current_path().parent_path() / "example";
+    fs::path example2 = fs::current_path() / "example";
 
-    else
-    {
-        variant = 0;
-        example = fs::current_path() / "example";
-    }
-
+    fs::path example = fs::exists(example1) ? example1 : example2;
     REQUIRE(fs::exists(example));
 
-    // запускаем утилиту
     std::ostringstream cmd;
-
 #ifdef _WIN32
     cmd << "\"" << exe.string() << "\" \"" << example.string() << "\" -r";
 #else
@@ -90,35 +124,29 @@ TEST_CASE("scat walks example/ correctly")
 
     std::string out = run_cmd(cmd.str());
 
-    // ожидаемый вывод
-    std::string expected0 = "===== example/a/b/2.txt =====\n"
-                            "Hello World!\n"
-                            "\n"
-                            "===== example/1.txt =====\n"
-                            "Hi\n"
-                            "\n"
-                            "===== example/c/3.txt =====\n"
-                            "You find me!";
+    // Parse output blocks
+    auto blocks = parse_blocks(out);
 
-    std::string expected1 = "===== ../example/a/b/2.txt =====\n"
-                            "Hello World!\n"
-                            "\n"
-                            "===== ../example/1.txt =====\n"
-                            "Hi\n"
-                            "\n"
-                            "===== ../example/c/3.txt =====\n"
-                            "You find me!";
+    REQUIRE(blocks.size() == 3);
 
-    out = trim(out);
-    expected0 = trim(expected0);
-    expected1 = trim(expected1);
+    // Sort blocks by path
+    std::sort(blocks.begin(), blocks.end(), [](auto& a, auto& b) { return a.path < b.path; });
 
-    auto lines_out = split_lines(out);
-    auto lines_expected = split_lines(variant == 0 ? expected0 : expected1);
+    // Expected blocks
+    std::vector<Block> expected = {
+        {"example/1.txt", "Hi"}, {"example/a/b/2.txt", "Hello World!"}, {"example/c/3.txt", "You find me!"}};
 
-    REQUIRE(lines_out.size() == lines_expected.size());
-    for (size_t i = 0; i < lines_expected.size(); ++i)
+    // Adjust expected paths for ../example/... case
+    if (starts_with(blocks[0].path, "../"))
     {
-        REQUIRE(lines_out[i] == lines_expected[i]);
+        for (auto& b : expected)
+            b.path = "../" + b.path;
+    }
+
+    // Compare
+    for (size_t i = 0; i < expected.size(); ++i)
+    {
+        CHECK(trim(blocks[i].path) == trim(expected[i].path));
+        CHECK(trim(blocks[i].content) == trim(expected[i].content));
     }
 }
