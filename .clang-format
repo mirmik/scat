@@ -1,0 +1,16 @@
+BasedOnStyle: LLVM
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+
+# Основное: Allman
+BreakBeforeBraces: Allman
+
+# Дополнительно, чтобы везде было консистентно
+AllowShortIfStatementsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortLoopsOnASingleLine: false
+IndentCaseLabels: true
+ColumnLimit: 120
+PointerAlignment: Left
+SpaceBeforeParens: ControlStatements
