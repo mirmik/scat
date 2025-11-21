@@ -8,6 +8,12 @@
 #include <string>
 #include <vector>
 
+#if !defined(_WIN32)
+#include <unistd.h>
+#else
+#include <windows.h>
+#endif
+
 namespace fs = std::filesystem;
 
 #ifdef _WIN32
@@ -99,13 +105,31 @@ static std::vector<Block> parse_blocks(const std::string& out)
     return result;
 }
 
-TEST_CASE("scat walks example/ correctly")
+std::string get_application_path()
 {
 #ifdef _WIN32
-    fs::path exe = fs::current_path() / "Release" / "scat.exe";
+    char buffer[MAX_PATH];
+    GetModuleFileNameA(NULL, buffer, MAX_PATH);
+    return std::string(buffer);
 #else
-    fs::path exe = fs::current_path() / "scat";
+    char buffer[4096];
+    ssize_t len = readlink("/proc/self/exe", buffer, sizeof(buffer) - 1);
+    if (len != -1)
+    {
+        buffer[len] = '\0';
+        return std::string(buffer);
+    }
+    return "";
 #endif
+}
+
+TEST_CASE("scat walks example/ correctly")
+{
+    auto app_path = get_application_path();
+    REQUIRE(!app_path.empty());
+
+    auto app_dir = fs::path(app_path).parent_path();
+    fs::path exe = app_dir / "scat";
 
     REQUIRE(fs::exists(exe));
 
