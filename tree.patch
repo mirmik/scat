@@ -1,39 +1,42 @@
-=== file: src/options.h ===
---- replace 13:13
-    std::string apply_file;   // empty = no apply mode
-    bool apply_stdin = false;
-=END=
-
-=== file: src/options.cpp ===
---- insert-after 52
-        else if (a == "--apply-stdin")
-        {
-            opt.apply_stdin = true;
-        }
-=END=
-
-=== file: src/scat.cpp ===
+=== file: tests/apply.cpp ===
 --- insert-after-text
-if (!opt.apply_file.empty()) {
+CHECK(lines[1] == "four");
+}
 ---
-    if (opt.apply_stdin)
+TEST_CASE("apply_chunk_main: apply-stdin")
+{
+    namespace fs = std::filesystem;
+
+    fs::path tmp = fs::temp_directory_path() / "chunk_test_stdin";
+    fs::remove_all(tmp);
+    fs::create_directories(tmp);
+
+    fs::path f = tmp / "stdin.txt";
     {
-        namespace fs = std::filesystem;
-
-        std::stringstream ss;
-        ss << std::cin.rdbuf();
-
-        fs::path tmp = fs::temp_directory_path() / "scat_stdin_patch.txt";
-        {
-            std::ofstream out(tmp);
-            out << ss.str();
-        }
-
-        std::string tmp_str = tmp.string();
-        const char* args[] = {"apply", tmp_str.c_str()};
-        int r = apply_chunk_main(2, const_cast<char**>(args));
-
-        fs::remove(tmp);
-        return r;
+        std::ofstream out(f);
+        out << "A\nB\nC\n";
     }
+
+    std::string patch =
+        "=== file: " + f.string() + " ===\n"
+        "--- replace 1:1\n"
+        "XXX\n"
+        "=END=\n";
+
+    std::istringstream fake_stdin(patch);
+    auto* old_stdin = std::cin.rdbuf(fake_stdin.rdbuf());
+
+    const char* argv[] = {"scat", "--apply-stdin"};
+    int r = scat_main(2, (char**)argv);
+
+    std::cin.rdbuf(old_stdin);
+
+    CHECK(r == 0);
+
+    auto lines = read_lines(f);
+    REQUIRE(lines.size() == 3);
+    CHECK(lines[0] == "A");
+    CHECK(lines[1] == "XXX");
+    CHECK(lines[2] == "C");
+}
 =END=

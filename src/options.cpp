@@ -34,10 +34,14 @@ Options parse_options(int argc, char** argv)
             opt.line_numbers = true;
         else if (a == "--abs")
             opt.abs_paths = true;
-else if (a == "--chunk-help")
-    opt.chunk_help = true;
-else if (a == "-c" || a == "--chunk")
-    opt.chunk_trailer = true;
+        else if (a == "--chunk-help")
+            opt.chunk_help = true;
+        else if (a == "-c" || a == "--chunk")
+            opt.chunk_trailer = true;
+        else if (a == "--apply-stdin")
+        {
+            opt.apply_stdin = true;
+        }
         else if (a == "--apply")
         {
             if (i + 1 < argc)
@@ -48,10 +52,7 @@ else if (a == "-c" || a == "--chunk")
                 std::exit(1);
             }
         }
-        else if (a == "--apply-stdin")
-        {
-            opt.apply_stdin = true;
-        }
+        
         else if (a == "--config")
         {
             if (i + 1 < argc)

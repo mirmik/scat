@@ -176,29 +176,34 @@ int scat_main(int argc, char** argv)
         print_chunk_help();
         return 0;
     }
-    if (!opt.apply_file.empty()) {
-    if (opt.apply_stdin)
+    if (!opt.apply_file.empty() || opt.apply_stdin) 
     {
-        namespace fs = std::filesystem;
-
-        std::stringstream ss;
-        ss << std::cin.rdbuf();
-
-        fs::path tmp = fs::temp_directory_path() / "scat_stdin_patch.txt";
+        if (opt.apply_stdin)
         {
-            std::ofstream out(tmp);
-            out << ss.str();
+            namespace fs = std::filesystem;
+
+            std::stringstream ss;
+            ss << std::cin.rdbuf();
+
+            fs::path tmp = fs::temp_directory_path() / "scat_stdin_patch.txt";
+            {
+                std::ofstream out(tmp);
+                out << ss.str();
+            }
+
+            std::string tmp_str = tmp.string();
+            const char* args[] = {"apply", tmp_str.c_str()};
+            int r = apply_chunk_main(2, const_cast<char**>(args));
+
+            fs::remove(tmp);
+            return r;
         }
-
-        std::string tmp_str = tmp.string();
-        const char* args[] = {"apply", tmp_str.c_str()};
-        int r = apply_chunk_main(2, const_cast<char**>(args));
-
-        fs::remove(tmp);
-        return r;
-    }
-        const char* args[] = {"apply", opt.apply_file.c_str()};
-        return apply_chunk_main(2, const_cast<char**>(args));
+        else
+        {
+            std::string apply_file_str = opt.apply_file;
+            const char* args[] = {"apply", apply_file_str.c_str()};
+            return apply_chunk_main(2, const_cast<char**>(args));
+        }
     }
 
     std::vector<std::filesystem::path> files;
