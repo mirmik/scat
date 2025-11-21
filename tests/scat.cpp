@@ -134,6 +134,12 @@ TEST_CASE("scat walks example/ correctly")
     if (!fs::exists(exe))
         exe = fs::current_path() / "scat";
     if (!fs::exists(exe))
+        exe = fs::current_path() / "Release" / "scat";
+    if (!fs::exists(exe))
+        exe = fs::current_path() / "Debug" / "scat";
+    if (!fs::exists(exe))
+        exe = fs::current_path() / "scat.exe";
+    if (!fs::exists(exe))
         exe = fs::current_path() / "Release" / "scat.exe";
     if (!fs::exists(exe))
         exe = fs::current_path() / "Debug" / "scat.exe";
