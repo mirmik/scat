@@ -158,3 +158,44 @@ TEST_CASE("apply_chunk_main: insert-after on new file")
     CHECK(lines[0] == "HELLO");
     CHECK(lines[1] == "WORLD");
 }
+
+TEST_CASE("apply_chunk_main: multiple sections for same file, index-stable")
+{
+    fs::path tmp = fs::temp_directory_path() / "chunk_test_multi";
+    fs::remove_all(tmp);
+    fs::create_directories(tmp);
+
+    fs::path f = tmp / "f.txt";
+    {
+        std::ofstream out(f);
+        out << "A\nB\nC\nD\nE\n";
+    }
+
+    fs::path patch = tmp / "patch.txt";
+    {
+        std::ofstream out(patch);
+        out <<
+"=== file: " << f.string() << " ===\n"
+"--- insert-after 0\n"
+"Y\n"
+"=END=\n"
+"=== file: " << f.string() << " ===\n"
+"--- replace 1:1\n"
+"X\n"
+"=END=\n"
+"\n";
+    }
+
+    int r = run_apply(patch);
+    CHECK(r == 0);
+
+    auto lines = read_lines(f);
+    REQUIRE(lines.size() == 6);
+
+    CHECK(lines[0] == "A");
+    CHECK(lines[1] == "Y");
+    CHECK(lines[2] == "X");
+    CHECK(lines[3] == "C");
+    CHECK(lines[4] == "D");
+    CHECK(lines[5] == "E");
+}
