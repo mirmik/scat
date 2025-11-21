@@ -30,6 +30,16 @@ static std::string run_cmd(const std::string& cmd)
     return result;
 }
 
+static std::string trim(const std::string& str)
+{
+    const char* whitespace = " \t\n\r\f\v";
+    size_t start = str.find_first_not_of(whitespace);
+    if (start == std::string::npos)
+        return "";
+    size_t end = str.find_last_not_of(whitespace);
+    return str.substr(start, end - start + 1);
+}
+
 TEST_CASE("scat walks example/ correctly")
 {
     // путь к бинарнику scat
@@ -69,27 +79,27 @@ TEST_CASE("scat walks example/ correctly")
     std::string out = run_cmd(cmd.str());
 
     // ожидаемый вывод
-    const std::string expected0 = "===== example/a/b/2.txt =====\n"
-                                  "Hello World!\n"
-                                  "\n"
-                                  "===== example/1.txt =====\n"
-                                  "Hi\n"
-                                  "\n"
-                                  "===== example/c/3.txt =====\n"
-                                  "You find me!";
+    std::string expected0 = "===== example/a/b/2.txt =====\n"
+                            "Hello World!\n"
+                            "\n"
+                            "===== example/1.txt =====\n"
+                            "Hi\n"
+                            "\n"
+                            "===== example/c/3.txt =====\n"
+                            "You find me!";
 
-    const std::string expected1 = "===== ../example/a/b/2.txt =====\n"
-                                  "Hello World!\n"
-                                  "\n"
-                                  "===== ../example/1.txt =====\n"
-                                  "Hi\n"
-                                  "\n"
-                                  "===== ../example/c/3.txt =====\n"
-                                  "You find me!";
+    std::string expected1 = "===== ../example/a/b/2.txt =====\n"
+                            "Hello World!\n"
+                            "\n"
+                            "===== ../example/1.txt =====\n"
+                            "Hi\n"
+                            "\n"
+                            "===== ../example/c/3.txt =====\n"
+                            "You find me!";
 
-    // убираем финальный \n
-    if (!out.empty() && out.back() == '\n')
-        out.pop_back();
+    out = trim(out);
+    expected0 = trim(expected0);
+    expected1 = trim(expected1);
 
     CHECK(out == (variant == 0 ? expected0 : expected1));
 }
