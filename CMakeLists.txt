@@ -68,6 +68,10 @@ add_executable(scat_tests
     tests/scat.cpp
 )
 
+if (WIN32)
+    target_link_libraries(scat_tests ws2_32)
+endif()
+
 target_include_directories(scat_tests PRIVATE tests)
 
 add_test(NAME scat_tests COMMAND scat_tests)
