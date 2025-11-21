@@ -34,6 +34,8 @@ Options parse_options(int argc, char** argv)
             opt.line_numbers = true;
         else if (a == "--abs")
             opt.abs_paths = true;
+else if (a == "--chunk-help")
+    opt.chunk_help = true;
         else if (a == "--apply")
         {
             if (i + 1 < argc)

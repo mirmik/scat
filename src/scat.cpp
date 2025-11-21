@@ -6,6 +6,76 @@
 #include <iostream>
 
 bool g_use_absolute_paths = false;
+void print_chunk_help()
+{
+    std::cout <<
+"# Chunk v2 — Change Description Format\n"
+"\n"
+"Chunk v2 is a plain-text format for describing modifications to source files.\n"
+"A patch consists of multiple sections, each describing a single operation\n"
+"(replace, insert, delete) applied to one file.\n"
+"\n"
+"---\n"
+"\n"
+"## 1. Section structure\n"
+"\n"
+"=== file: <path> ===\n"
+"<command>\n"
+"<content...>\n"
+"=END=\n"
+"\n"
+"* <path> — relative file path\n"
+"* Empty line between sections is allowed\n"
+"* Exactly one command per section\n"
+"* <content> may contain any lines, including empty ones\n"
+"\n"
+"---\n"
+"\n"
+"## 2. Commands\n"
+"\n"
+"### Replace a range of lines\n"
+"\n"
+"--- replace <start>:<end>\n"
+"<new lines...>\n"
+"=END=\n"
+"\n"
+"### Insert lines after a given line\n"
+"\n"
+"--- insert-after <line>\n"
+"<inserted lines...>\n"
+"=END=\n"
+"\n"
+"### Delete a range of lines\n"
+"\n"
+"--- delete <start>:<end>\n"
+"=END=\n"
+"\n"
+"---\n"
+"\n"
+"## 3. Line numbering\n"
+"\n"
+"* Zero-based numbering\n"
+"* Ranges are inclusive on both ends\n"
+"\n"
+"---\n"
+"\n"
+"## 4. Examples\n"
+"\n"
+"=== file: src/a.cpp ===\n"
+"--- replace 3:4\n"
+"int value = 42;\n"
+"std::cout << value << \"\\n\";\n"
+"=END=\n"
+"\n"
+"=== file: src/b.cpp ===\n"
+"--- insert-after 12\n"
+"log_debug(\"checkpoint reached\");\n"
+"=END=\n"
+"\n"
+"=== file: src/c.cpp ===\n"
+"--- delete 20:25\n"
+"=END=\n";
+}
 
 int apply_chunk_main(int argc, char** argv);
 
@@ -13,6 +83,10 @@ int scat_main(int argc, char** argv)
 {
     Options opt = parse_options(argc, argv);
 
+    if (opt.chunk_help) {
+        print_chunk_help();
+        return 0;
+    }
     if (!opt.apply_file.empty()) {
         const char* args[] = {"apply", opt.apply_file.c_str()};
         return apply_chunk_main(2, const_cast<char**>(args));

@@ -1,310 +1,97 @@
-=== file: src/apply_chunk_v2.cpp ===
---- replace 0:223
-#include <algorithm>
-#include <cctype>
-#include <filesystem>
-#include <fstream>
-#include <iostream>
-#include <map>
-#include <sstream>
-#include <stdexcept>
-#include <string>
-#include <vector>
+=== file: src/options.h ===
+--- insert-after 12
+bool chunk_help = false;
+=END=
 
-namespace fs = std::filesystem;
+=== file: src/options.cpp ===
+--- insert-after 35
+else if (a == "--chunk-help")
+    opt.chunk_help = true;
+=END=
 
-struct Section
+=== file: src/scat.h ===
+--- insert-after 4
+void print_chunk_help();
+=END=
+
+=== file: src/scat.cpp ===
+--- insert-after 7
+static void print_chunk_help()
 {
-    std::string filepath;
-    std::string command;
-    int a = -1;
-    int b = -1;
-    std::vector<std::string> payload;
-    int seq = 0; // порядок появления в патче
-};
-
-static std::vector<std::string> read_file_lines(const fs::path& p)
-{
-    std::ifstream in(p);
-    if (!in)
-        throw std::runtime_error("cannot open file: " + p.string());
-
-    std::vector<std::string> out;
-    std::string line;
-    while (std::getline(in, line))
-        out.push_back(line);
-
-    return out;
+    std::cout <<
+"# Chunk v2 — Change Description Format\n"
+"\n"
+"Chunk v2 is a plain-text format for describing modifications to source files.\n"
+"A patch consists of multiple sections, each describing a single operation\n"
+"(replace, insert, delete) applied to one file.\n"
+"\n"
+"---\n"
+"\n"
+"## 1. Section structure\n"
+"\n"
+"=== file: <path> ===\n"
+"<command>\n"
+"<content...>\n"
+"=END=\n"
+"\n"
+"* <path> — relative file path\n"
+"* Empty line between sections is allowed\n"
+"* Exactly one command per section\n"
+"* <content> may contain any lines, including empty ones\n"
+"\n"
+"---\n"
+"\n"
+"## 2. Commands\n"
+"\n"
+"### Replace a range of lines\n"
+"\n"
+"--- replace <start>:<end>\n"
+"<new lines...>\n"
+"=END=\n"
+"\n"
+"### Insert lines after a given line\n"
+"\n"
+"--- insert-after <line>\n"
+"<inserted lines...>\n"
+"=END=\n"
+"\n"
+"### Delete a range of lines\n"
+"\n"
+"--- delete <start>:<end>\n"
+"=END=\n"
+"\n"
+"---\n"
+"\n"
+"## 3. Line numbering\n"
+"\n"
+"* Zero-based numbering\n"
+"* Ranges are inclusive on both ends\n"
+"\n"
+"---\n"
+"\n"
+"## 4. Examples\n"
+"\n"
+"=== file: src/a.cpp ===\n"
+"--- replace 3:4\n"
+"int value = 42;\n"
+"std::cout << value << \"\\n\";\n"
+"=END=\n"
+"\n"
+"=== file: src/b.cpp ===\n"
+"--- insert-after 12\n"
+"log_debug(\"checkpoint reached\");\n"
+"=END=\n"
+"\n"
+"=== file: src/c.cpp ===\n"
+"--- delete 20:25\n"
+"=END=\n";
 }
+=END=
 
-static void write_file_lines(const fs::path& p, const std::vector<std::string>& lines)
-{
-    std::ofstream out(p, std::ios::trunc);
-    if (!out)
-        throw std::runtime_error("cannot write file: " + p.string());
-
-    for (const auto& s : lines)
-        out << s << "\n";
-}
-
-static std::string trim(std::string s)
-{
-    while (!s.empty() && std::isspace(static_cast<unsigned char>(s.front())))
-        s.erase(s.begin());
-    while (!s.empty() && std::isspace(static_cast<unsigned char>(s.back())))
-        s.pop_back();
-    return s;
-}
-
-static Section parse_section(std::istream& in, const std::string& header)
-{
-    Section s;
-
-    // header: "=== file: path ==="
-    {
-        auto pos = header.find(':');
-        if (pos == std::string::npos)
-            throw std::runtime_error("bad section header (no colon): " + header);
-
-        auto pos2 = header.find("===", pos);
-        if (pos2 == std::string::npos)
-            pos2 = header.size();
-
-        auto raw = header.substr(pos + 1, pos2 - pos - 1);
-        s.filepath = trim(raw);
-        if (s.filepath.empty())
-            throw std::runtime_error("empty filepath in header: " + header);
+=== file: src/scat.cpp ===
+--- insert-after 14
+    if (opt.chunk_help) {
+        print_chunk_help();
+        return 0;
     }
-
-    std::string line;
-    if (!std::getline(in, line))
-        throw std::runtime_error("unexpected end after section header for file: " + s.filepath);
-
-    // command line: "--- replace A:B" или "--- insert-after X" или "--- delete A:B"
-    if (line.rfind("--- ", 0) != 0)
-        throw std::runtime_error("expected command after header, got: " + line);
-
-    {
-        std::istringstream ss(line.substr(4));
-        ss >> s.command;
-
-        if (s.command == "replace" || s.command == "delete")
-        {
-            std::string range;
-            ss >> range;
-            auto pos = range.find(':');
-            if (pos == std::string::npos)
-                throw std::runtime_error("bad range: " + range);
-            s.a = std::stoi(range.substr(0, pos));
-            s.b = std::stoi(range.substr(pos + 1));
-        }
-        else if (s.command == "insert-after")
-        {
-            ss >> s.a;
-        }
-        else
-        {
-            throw std::runtime_error("unknown command: " + s.command);
-        }
-    }
-
-    // payload until "=END="
-    bool found_end = false;
-    while (std::getline(in, line))
-    {
-        if (line == "=END=")
-        {
-            found_end = true;
-            break;
-        }
-        s.payload.push_back(line);
-    }
-
-    if (!found_end)
-        throw std::runtime_error("missing =END= for section file: " + s.filepath);
-
-    return s;
-}
-
-static void apply_for_file(const std::string& filepath,
-                           const std::vector<const Section*>& sections)
-{
-    fs::path p = filepath;
-    std::vector<std::string> orig;
-    bool existed = true;
-
-    try
-    {
-        orig = read_file_lines(p);
-    }
-    catch (const std::runtime_error&)
-    {
-        existed = false;
-        orig.clear();
-    }
-
-    // если файла нет — допускаем только insert-after с индексом -1 (создание нового файла)
-    if (!existed)
-    {
-        for (const Section* s : sections)
-        {
-            if (s->command != "insert-after")
-                throw std::runtime_error("file does not exist: " + filepath);
-        }
-    }
-
-    const int N = static_cast<int>(orig.size());
-
-    std::vector<const Section*> ranges;                  // replace/delete
-    std::vector<std::vector<const Section*>> inserts_after;
-    std::vector<const Section*> inserts_before;          // insert-after -1
-
-    inserts_after.resize(static_cast<std::size_t>(std::max(N, 0)));
-
-    for (const Section* s : sections)
-    {
-        if (s->command == "insert-after")
-        {
-            if (s->a < -1 || s->a >= N)
-            {
-                if (!existed && N == 0 && s->a == -1)
-                {
-                    // создание нового файла insert-after -1 — ок
-                }
-                else
-                {
-                    throw std::runtime_error("bad insert-after index for file: " + filepath);
-                }
-            }
-
-            if (s->a == -1)
-                inserts_before.push_back(s);
-            else
-                inserts_after[static_cast<std::size_t>(s->a)].push_back(s);
-        }
-        else if (s->command == "replace" || s->command == "delete")
-        {
-            ranges.push_back(s);
-        }
-        else
-        {
-            throw std::runtime_error("unknown command while applying: " + s->command);
-        }
-    }
-
-    // сортируем replace/delete по началу диапазона и порядку появления
-    std::sort(ranges.begin(), ranges.end(),
-              [](const Section* lhs, const Section* rhs) {
-                  if (lhs->a != rhs->a)
-                      return lhs->a < rhs->a;
-                  return lhs->seq < rhs->seq;
-              });
-
-    // проверка диапазонов и пересечений
-    int last_end = -1;
-    for (const Section* s : ranges)
-    {
-        if (s->a < 0 || s->b >= N || s->a > s->b)
-            throw std::runtime_error("bad replace/delete range for file: " + filepath);
-
-        if (s->a <= last_end)
-            throw std::runtime_error("overlapping ranges for file: " + filepath);
-
-        last_end = s->b;
-    }
-
-    std::vector<std::string> out;
-    out.reserve(static_cast<std::size_t>(N) + 16);
-
-    // вставки до первой строки (insert-after -1) — в порядке появления
-    for (const Section* s : inserts_before)
-        out.insert(out.end(), s->payload.begin(), s->payload.end());
-
-    std::size_t i = 0;
-    std::size_t ri = 0;
-
-    while (i < static_cast<std::size_t>(N))
-    {
-        // range-операция, начинающаяся на i?
-        if (ri < ranges.size() &&
-            ranges[ri]->a == static_cast<int>(i))
-        {
-            const Section* s = ranges[ri];
-
-            if (s->command == "replace")
-            {
-                out.insert(out.end(), s->payload.begin(), s->payload.end());
-            }
-            // delete просто пропускает диапазон
-
-            i = static_cast<std::size_t>(s->b) + 1;
-            ++ri;
-            continue;
-        }
-
-        // обычная строка
-        out.push_back(orig[i]);
-
-        // вставки после этой строки
-        for (const Section* ins : inserts_after[i])
-            out.insert(out.end(), ins->payload.begin(), ins->payload.end());
-
-        ++i;
-    }
-
-    write_file_lines(p, out);
-}
-
-static void apply_all(const std::vector<Section>& sections)
-{
-    std::map<std::string, std::vector<const Section*>> by_file;
-
-    for (const auto& s : sections)
-        by_file[s.filepath].push_back(&s);
-
-    for (auto& [path, vec] : by_file)
-        apply_for_file(path, vec);
-}
-
-int apply_chunk_main(int argc, char** argv)
-{
-    if (argc < 2)
-    {
-        std::cerr << "usage: apply_patch <patchfile>\n";
-        return 1;
-    }
-
-    std::ifstream in(argv[1]);
-    if (!in)
-    {
-        std::cerr << "cannot open patch file: " << argv[1] << "\n";
-        return 1;
-    }
-
-    std::string line;
-    std::vector<Section> sections;
-    int seq = 0;
-
-    try
-    {
-        while (std::getline(in, line))
-        {
-            if (line.rfind("=== file:", 0) == 0)
-            {
-                Section s = parse_section(in, line);
-                s.seq = seq++;
-                sections.push_back(std::move(s));
-            }
-        }
-
-        apply_all(sections);
-    }
-    catch (const std::exception& e)
-    {
-        std::cerr << "error while applying patch: " << e.what() << "\n";
-        return 1;
-    }
-
-    return 0;
-}
 =END=
