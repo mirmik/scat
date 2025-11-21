@@ -40,6 +40,18 @@ static std::string trim(const std::string& str)
     return str.substr(start, end - start + 1);
 }
 
+static std::vector<std::string> split_lines(const std::string& str)
+{
+    std::vector<std::string> lines;
+    std::istringstream stream(str);
+    std::string line;
+    while (std::getline(stream, line))
+    {
+        lines.push_back(line);
+    }
+    return lines;
+}
+
 TEST_CASE("scat walks example/ correctly")
 {
     // путь к бинарнику scat
@@ -101,5 +113,12 @@ TEST_CASE("scat walks example/ correctly")
     expected0 = trim(expected0);
     expected1 = trim(expected1);
 
-    CHECK(out == (variant == 0 ? expected0 : expected1));
+    auto lines_out = split_lines(out);
+    auto lines_expected = split_lines(variant == 0 ? expected0 : expected1);
+
+    REQUIRE(lines_out.size() == lines_expected.size());
+    for (size_t i = 0; i < lines_expected.size(); ++i)
+    {
+        REQUIRE(lines_out[i] == lines_expected[i]);
+    }
 }
