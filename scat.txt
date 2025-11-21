@@ -3,3 +3,4 @@ tests/*
 !tests/doctest/**
 CMakeLists.txt
 scat.txt
+README.md
