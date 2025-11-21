@@ -48,6 +48,10 @@ else if (a == "-c" || a == "--chunk")
                 std::exit(1);
             }
         }
+        else if (a == "--apply-stdin")
+        {
+            opt.apply_stdin = true;
+        }
         else if (a == "--config")
         {
             if (i + 1 < argc)
