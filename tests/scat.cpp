@@ -131,6 +131,13 @@ TEST_CASE("scat walks example/ correctly")
     auto app_dir = fs::path(app_path).parent_path();
     fs::path exe = app_dir / "scat";
 
+    if (!fs::exists(exe))
+        exe = fs::current_path() / "scat";
+    if (!fs::exists(exe))
+        exe = fs::current_path() / "Release" / "scat.exe";
+    if (!fs::exists(exe))
+        exe = fs::current_path() / "Debug" / "scat.exe";
+
     REQUIRE(fs::exists(exe));
 
     fs::path example1 = fs::current_path().parent_path() / "example";
