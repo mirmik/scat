@@ -1,5 +1,3 @@
-=== file: tests/glob.cpp ===
---- create-file
 #include "glob.h"
 #include "doctest/doctest.h"
 #include <filesystem>
@@ -23,6 +21,19 @@ static std::vector<std::string> to_rel(const std::vector<fs::path>& v, const fs:
     return out;
 }
 
+static void check_paths(const std::vector<std::string>& actual,
+                        std::initializer_list<const char*> expected)
+{
+    CHECK(actual.size() == expected.size());
+
+    size_t i = 0;
+    for (auto* e : expected)
+    {
+        CHECK(actual[i] == e);
+        ++i;
+    }
+}
+
 TEST_CASE("glob: basic *") {
     fs::path tmp = fs::temp_directory_path() / "glob_test_a";
     fs::remove_all(tmp);
@@ -34,7 +45,7 @@ TEST_CASE("glob: basic *") {
     auto out = expand_glob((tmp / "*.txt").generic_string());
     auto rel = to_rel(out, tmp);
 
-    CHECK(rel == std::vector<std::string>{"a.txt", "c.txt"});
+    check_paths(rel, {"a.txt", "c.txt"});
 }
 
 TEST_CASE("glob: recursive **") {
@@ -48,7 +59,7 @@ TEST_CASE("glob: recursive **") {
     auto out = expand_glob((tmp / "**").generic_string());
     auto rel = to_rel(out, tmp);
 
-    CHECK(rel == std::vector<std::string>{
+    check_paths(rel, {
         "1.txt",
         "x/2.txt",
         "x/y/3.txt"
@@ -67,8 +78,10 @@ TEST_CASE("glob: **/*.cpp") {
     auto out = expand_glob((tmp / "**/*.cpp").generic_string());
     auto rel = to_rel(out, tmp);
 
-    CHECK(rel == std::vector<std::string>{
-        "a.cpp", "x/c.cpp", "x/y/z.cpp"
+    check_paths(rel, {
+        "a.cpp",
+        "x/c.cpp",
+        "x/y/z.cpp"
     });
 }
 
@@ -85,7 +98,7 @@ TEST_CASE("glob: foo/*/bar/**/*.txt") {
     auto out = expand_glob(pat);
     auto rel = to_rel(out, tmp);
 
-    CHECK(rel == std::vector<std::string>{
+    check_paths(rel, {
         "foo/K/bar/a.txt",
         "foo/K/bar/x/b.txt",
         "foo/Z/bar/y/z.txt"
@@ -125,10 +138,8 @@ TEST_CASE("glob: duplicates removed") {
     combined.erase(std::unique(combined.begin(), combined.end()), combined.end());
 
     auto rel = to_rel(combined, tmp);
-
-    CHECK(rel == std::vector<std::string>{
+    check_paths(rel, {
         "a.txt",
         "d/a.txt"
     });
 }
-=END=
