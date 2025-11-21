@@ -3,6 +3,9 @@
 #include <algorithm>
 #include <iostream>
 #include <unordered_set>
+#include <filesystem>
+#include <sstream>
+#include <functional>
 
 namespace fs = std::filesystem;
 
@@ -27,21 +30,86 @@ static void expand_rule(const Rule& r, std::vector<fs::path>& out)
     const std::string& pat = r.pattern;
     std::error_code ec;
 
-    // ==== ** (recursive) ====
-    if (has_double_star(pat))
+    // ------------------------------------------------------------------
+    // NEW REAL GLOB: supports patterns like:
+    //   src/**/*.cpp
+    //   foo/*/bar/**/test_*.h
+    // ------------------------------------------------------------------
     {
-        // Берём часть до **
-        auto pos = pat.find("**");
-        fs::path base = pat.substr(0, pos);
+        std::vector<std::string> parts;
+        {
+            std::stringstream ss(pat);
+            std::string seg;
+            while (std::getline(ss, seg, '/'))
+                parts.push_back(seg);
+        }
 
-        if (!fs::exists(base, ec) || !fs::is_directory(base, ec))
+        // recursive matcher for filesystem::path
+        std::function<void(const fs::path&, size_t)> walk =
+            [&](const fs::path& base, size_t idx)
+        {
+            if (idx == parts.size())
+            {
+                if (fs::is_regular_file(base, ec))
+                    out.push_back(base);
+                return;
+            }
+
+            const std::string& seg = parts[idx];
+
+            if (seg == "**")
+            {
+                // 1) match zero levels
+                walk(base, idx + 1);
+
+                // 2) match one or more levels
+                if (fs::is_directory(base, ec))
+                {
+                    for (auto& e : fs::directory_iterator(base, ec))
+                    {
+                        walk(e.path(), idx);
+                    }
+                }
+            }
+            else if (seg.find('*') != std::string::npos)
+            {
+                // wildcard * inside segment
+                if (!fs::is_directory(base, ec))
+                    return;
+
+                for (auto& e : fs::directory_iterator(base, ec))
+                {
+                    if (match_simple(e.path(), seg))
+                        walk(e.path(), idx + 1);
+                }
+            }
+            else
+            {
+                // literal match
+                fs::path next = base / seg;
+                if (fs::exists(next, ec))
+                    walk(next, idx + 1);
+            }
+        };
+
+        fs::path root;
+        size_t start = 0;
+
+        // figure out static prefix before any wildcard
+        for (; start < parts.size(); ++start)
+        {
+            if (parts[start] == "**" || parts[start].find('*') != std::string::npos)
+                break;
+            root /= parts[start];
+        }
+
+        if (root.empty())
+            root = ".";
+
+        if (!fs::exists(root, ec))
             return;
 
-        for (auto& e : fs::recursive_directory_iterator(base, ec))
-        {
-            if (e.is_regular_file())
-                out.push_back(e.path());
-        }
+        walk(root, start);
         return;
     }
 

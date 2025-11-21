@@ -1,10 +1,9 @@
-=== file: tests/collector_glob.cpp ===
---- insert-after -1
 #include "collector.h"
 #include "doctest/doctest.h"
 #include <filesystem>
 #include <fstream>
 #include <vector>
+#include <algorithm>
 
 namespace fs = std::filesystem;
 
@@ -130,4 +129,3 @@ TEST_CASE("collector glob: duplicates removed") {
         "d/a.txt"
     });
 }
-=END=
