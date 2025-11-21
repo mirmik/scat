@@ -57,3 +57,17 @@ if (WIN32)
         file(WRITE \"\${wapps}/scat.cmd\" \"@echo off\n\\\"\${scat_path}\\\" %*\")
     ")
 endif()
+
+
+
+# TESTING
+enable_testing()
+
+add_executable(scat_tests
+    tests/main.cpp
+    tests/scat.cpp
+)
+
+target_include_directories(scat_tests PRIVATE tests)
+
+add_test(NAME scat_tests COMMAND scat_tests)
