@@ -12,6 +12,8 @@ cmake_install.cmake
 Makefile
 CTestTestfile.cmake
 compile_commands.json
+install_manifest.txt
+x64/
 
 # Visual Studio / VSCode / CLion
 *.sln
@@ -52,3 +54,5 @@ Thumbs.db
 
 # Sanitizer outputs
 *.lsan
+
+scat.dir
