@@ -31,6 +31,13 @@ static bool ends_with(const std::string& s, const std::string& suffix)
     return s.size() >= suffix.size() && s.compare(s.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
 
+static std::string to_unix_path(const fs::path& p)
+{
+    std::string s = p.string();
+    std::replace(s.begin(), s.end(), '\\', '/');
+    return s;
+}
+
 std::string trim(const std::string& s)
 {
     size_t start = 0;
@@ -166,8 +173,12 @@ TEST_CASE("scat walks example/ correctly")
     REQUIRE(fs::exists(example));
 
     std::ostringstream cmd;
+
+    std::string exe_path = to_unix_path(exe);
+    std::string example_path = to_unix_path(example);
 #ifdef _WIN32
-    cmd << "\"" << exe.string() << "\" \"" << example.string() << "\" -r";
+    std::ostringstream cmd;
+    cmd << "\"" << exe_path << "\" \"" << example_path << "\" -r";
 #else
     cmd << exe << " \"" << example.string() << "\" -r";
 #endif
