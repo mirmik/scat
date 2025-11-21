@@ -4,6 +4,8 @@
 #include "rules.h"
 #include "util.h"
 #include <iostream>
+#include <map>
+#include <set>
 
 bool g_use_absolute_paths = false;
 void print_chunk_help()
@@ -79,6 +81,34 @@ void print_chunk_help()
 
 int apply_chunk_main(int argc, char** argv);
 
+// Prints a simple directory tree for collected files.
+void print_tree(const std::vector<std::filesystem::path>& files)
+{
+    std::map<std::string, std::set<std::string>> tree;
+
+    for (const auto& p : files)
+    {
+        auto rel = make_display_path(p);
+        auto dir = std::filesystem::path(rel).parent_path().string();
+        auto file = std::filesystem::path(rel).filename().string();
+        tree[dir].insert(file);
+    }
+
+    std::cout << "===== PROJECT TREE =====\n";
+
+    for (const auto& [dir, items] : tree)
+    {
+        if (!dir.empty() && dir != ".")
+            std::cout << dir << "/\n";
+        else
+            std::cout << "./\n";
+
+        for (auto& f : items)
+            std::cout << "  " << f << "\n";
+    }
+
+    std::cout << "========================\n\n";
+}
 int scat_main(int argc, char** argv)
 {
     Options opt = parse_options(argc, argv);
@@ -124,5 +154,6 @@ int scat_main(int argc, char** argv)
         first = false;
     }
 
+    print_tree(files);
     return 0;
 }
