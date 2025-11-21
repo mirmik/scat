@@ -18,6 +18,7 @@ struct Section
     int a = -1;
     int b = -1;
     std::vector<std::string> payload;
+    std::vector<std::string> marker; // для *-text команд
     int seq = 0; // порядок появления в патче
 };
 
@@ -54,6 +55,88 @@ static std::string trim(std::string s)
     return s;
 }
 
+static bool is_text_command(const std::string& cmd)
+{
+    return cmd == "insert-after-text" ||
+           cmd == "insert-before-text" ||
+           cmd == "replace-text" ||
+           cmd == "delete-text";
+}
+
+static int find_subsequence(const std::vector<std::string>& haystack,
+                            const std::vector<std::string>& needle)
+{
+    if (needle.empty() || needle.size() > haystack.size())
+        return -1;
+
+    const std::size_t n = haystack.size();
+    const std::size_t m = needle.size();
+
+    for (std::size_t i = 0; i + m <= n; ++i)
+    {
+        bool ok = true;
+        for (std::size_t j = 0; j < m; ++j)
+        {
+            if (haystack[i + j] != needle[j])
+            {
+                ok = false;
+                break;
+            }
+        }
+        if (ok)
+            return static_cast<int>(i);
+    }
+
+    return -1;
+}
+
+static void apply_text_commands(const std::string& filepath,
+                                std::vector<std::string>& lines,
+                                const std::vector<const Section*>& sections)
+{
+    for (const Section* s : sections)
+    {
+        if (s->marker.empty())
+            throw std::runtime_error("empty marker in text command for file: " + filepath);
+
+        int idx = find_subsequence(lines, s->marker);
+        if (idx < 0)
+            throw std::runtime_error("text marker not found for file: " + filepath);
+
+        std::size_t pos = static_cast<std::size_t>(idx);
+
+        if (s->command == "insert-after-text")
+        {
+            pos += s->marker.size();
+            lines.insert(lines.begin() + static_cast<std::ptrdiff_t>(pos),
+                         s->payload.begin(), s->payload.end());
+        }
+        else if (s->command == "insert-before-text")
+        {
+            lines.insert(lines.begin() + static_cast<std::ptrdiff_t>(pos),
+                         s->payload.begin(), s->payload.end());
+        }
+        else if (s->command == "replace-text")
+        {
+            auto begin = lines.begin() + static_cast<std::ptrdiff_t>(pos);
+            auto end = begin + static_cast<std::ptrdiff_t>(s->marker.size());
+            lines.erase(begin, end);
+            lines.insert(lines.begin() + static_cast<std::ptrdiff_t>(pos),
+                         s->payload.begin(), s->payload.end());
+        }
+        else if (s->command == "delete-text")
+        {
+            auto begin = lines.begin() + static_cast<std::ptrdiff_t>(pos);
+            auto end = begin + static_cast<std::ptrdiff_t>(s->marker.size());
+            lines.erase(begin, end);
+        }
+        else
+        {
+            throw std::runtime_error("unknown text command while applying: " + s->command);
+        }
+    }
+}
+
 static Section parse_section(std::istream& in, const std::string& header)
 {
     Section s;
@@ -78,7 +161,7 @@ static Section parse_section(std::istream& in, const std::string& header)
     if (!std::getline(in, line))
         throw std::runtime_error("unexpected end after section header for file: " + s.filepath);
 
-    // command line: "--- replace A:B" или "--- insert-after X" или "--- delete A:B"
+    // command line: "--- replace A:B" или "--- insert-after X" или "--- delete A:B" и новые *-text
     if (line.rfind("--- ", 0) != 0)
         throw std::runtime_error("expected command after header, got: " + line);
 
@@ -100,6 +183,10 @@ static Section parse_section(std::istream& in, const std::string& header)
         {
             ss >> s.a;
         }
+        else if (is_text_command(s.command))
+        {
+            // для *-text аргументы после команды в строке не нужны
+        }
         else
         {
             throw std::runtime_error("unknown command: " + s.command);
@@ -120,6 +207,25 @@ static Section parse_section(std::istream& in, const std::string& header)
 
     if (!found_end)
         throw std::runtime_error("missing =END= for section file: " + s.filepath);
+
+    // разбор payload для *-text команд: marker --- payload
+    if (is_text_command(s.command))
+    {
+        auto it = std::find(s.payload.begin(), s.payload.end(), std::string("---"));
+        if (it == s.payload.end())
+            throw std::runtime_error("text-based command requires '---' separator in payload for file: " + s.filepath);
+
+        s.marker.assign(s.payload.begin(), it);
+
+        std::vector<std::string> tail;
+        if (std::next(it) != s.payload.end())
+            tail.assign(std::next(it), s.payload.end());
+
+        s.payload.swap(tail);
+
+        if (s.marker.empty())
+            throw std::runtime_error("empty text marker for file: " + s.filepath);
+    }
 
     return s;
 }
@@ -153,14 +259,27 @@ static void apply_for_file(const std::string& filepath,
 
     const int N = static_cast<int>(orig.size());
 
-    std::vector<const Section*> ranges;                  // replace/delete
+    std::vector<const Section*> ranges;                  // replace/delete по индексам
     std::vector<std::vector<const Section*>> inserts_after;
     std::vector<const Section*> inserts_before;          // insert-after -1
+    std::vector<const Section*> text_sections;           // *-text команды
 
     inserts_after.resize(static_cast<std::size_t>(std::max(N, 0)));
 
+    bool has_index_ops = false;
+    bool has_text_ops = false;
+
     for (const Section* s : sections)
     {
+        if (is_text_command(s->command))
+        {
+            has_text_ops = true;
+            text_sections.push_back(s);
+            continue;
+        }
+
+        has_index_ops = true;
+
         if (s->command == "insert-after")
         {
             if (s->a < -1 || s->a >= N)
@@ -189,6 +308,21 @@ static void apply_for_file(const std::string& filepath,
             throw std::runtime_error("unknown command while applying: " + s->command);
         }
     }
+
+    // пока что не разрешаем смешивать индексные и текстовые операции для одного файла —
+    // иначе начинается весёлый сдвиг индексов. Можно будет спроектировать порядок позже.
+    if (has_index_ops && has_text_ops)
+        throw std::runtime_error("cannot mix index-based and text-based commands for file: " + filepath);
+
+    // если есть текстовые команды — применяем их к orig и всё
+    if (has_text_ops)
+    {
+        apply_text_commands(filepath, orig, text_sections);
+        write_file_lines(p, orig);
+        return;
+    }
+
+    // дальше — старая логика индексных операций
 
     // сортируем replace/delete по началу диапазона и порядку появления
     std::sort(ranges.begin(), ranges.end(),
