@@ -25,7 +25,8 @@ scat src -r
 scat src -r -l
 scat src -r --abs
 scat *                 # all files in the current directory
-scat src -r | clip.exe
+scat src -r | clip.exe # Windows including wsl2
+scat src -r | wl-copy # Ubuntu GNOME 22.04+
 ```
 
 ## Configuration file mode
