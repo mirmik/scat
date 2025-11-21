@@ -29,7 +29,7 @@ std::string make_display_path(const fs::path& p)
     return p.string();
 }
 
-void dump_file(const fs::path& p, bool first)
+void dump_file(const fs::path& p, bool first, const Options& opt)
 {
     std::ifstream in(p, std::ios::binary);
     if (!in)
@@ -42,7 +42,18 @@ void dump_file(const fs::path& p, bool first)
         std::cout << "\n";
 
     std::cout << "===== " << make_display_path(p) << " =====\n";
-    std::cout << in.rdbuf();
+    //std::cout << in.rdbuf() << "=EOF=\n";
+
+    std::string line;
+    size_t line_no = 0;
+    while (std::getline(in, line))
+    {
+        if (opt.line_numbers)
+            std::cout << line_no << ": " << line << "\n";
+        else
+            std::cout << line << "\n";
+        ++line_no;
+    }
 }
 
 bool match_simple(const fs::path& p, const std::string& pat)

@@ -7,9 +7,16 @@
 
 bool g_use_absolute_paths = false;
 
+int apply_chunk_main(int argc, char** argv);
+
 int scat_main(int argc, char** argv)
 {
     Options opt = parse_options(argc, argv);
+
+    if (!opt.apply_file.empty()) {
+        const char* args[] = {"apply", opt.apply_file.c_str()};
+        return apply_chunk_main(2, const_cast<char**>(args));
+    }
 
     std::vector<std::filesystem::path> files;
 
@@ -39,7 +46,7 @@ int scat_main(int argc, char** argv)
     bool first = true;
     for (auto& f : files)
     {
-        dump_file(f, first);
+        dump_file(f, first, opt);
         first = false;
     }
 

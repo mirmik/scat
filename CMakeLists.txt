@@ -68,11 +68,12 @@ endif()
 # -----------------------------------------------------------------------------
 enable_testing()
 
+file(GLOB SCAT_TESTS CONFIGURE_DEPENDS tests/*)
+
 add_executable(scat_tests
-    tests/main.cpp      # doctest entrypoint
-    tests/scat.cpp      # твой тест
-    ${SCAT_SOURCES}     # scat.cpp
-    ${SCAT_HEADERS}     # scat.h
+    ${SCAT_TESTS}
+    ${SCAT_SOURCES}   
+    ${SCAT_HEADERS}   
 )
 
 target_include_directories(scat_tests PRIVATE src tests)

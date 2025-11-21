@@ -9,8 +9,10 @@ static void print_help()
                  "Options:\n"
                  "  -r           Recursive directory processing\n"
                  "  -l           List files only\n"
+                    "  -n           Show line numbers\n"
                  "  --abs        Show absolute paths\n"
                  "  --config F   Read patterns from file F\n"
+                 "  --apply F    Apply patch from file F\n"
                  "  -h, --help   Show this help\n"
                  "\n"
                  "If no paths are given, scat reads patterns from scat.txt.\n";
@@ -28,8 +30,20 @@ Options parse_options(int argc, char** argv)
             opt.recursive = true;
         else if (a == "-l")
             opt.list_only = true;
+        else if (a == "-n")
+            opt.line_numbers = true;
         else if (a == "--abs")
             opt.abs_paths = true;
+        else if (a == "--apply")
+        {
+            if (i + 1 < argc)
+                opt.apply_file = argv[++i];
+            else
+            {
+                std::cerr << "--apply requires file\n";
+                std::exit(1);
+            }
+        }
         else if (a == "--config")
         {
             if (i + 1 < argc)
