@@ -41,10 +41,19 @@ TEST_CASE("scat walks example/ correctly")
 
     REQUIRE(fs::exists(exe));
 
+    int variant = 0;
     // путь к example/
     fs::path example = fs::current_path().parent_path() / "example";
-    if (fs::exists(example) == false)
+    if (fs::exists(example))
+    {
+        variant = 1;
+    }
+
+    else
+    {
+        variant = 0;
         example = fs::current_path() / "example";
+    }
 
     REQUIRE(fs::exists(example));
 
@@ -60,18 +69,27 @@ TEST_CASE("scat walks example/ correctly")
     std::string out = run_cmd(cmd.str());
 
     // ожидаемый вывод
-    const std::string expected = "===== example/a/b/2.txt =====\n"
-                                 "Hello World!\n"
-                                 "\n"
-                                 "===== example/1.txt =====\n"
-                                 "Hi\n"
-                                 "\n"
-                                 "===== example/c/3.txt =====\n"
-                                 "You find me!";
+    const std::string expected0 = "===== example/a/b/2.txt =====\n"
+                                  "Hello World!\n"
+                                  "\n"
+                                  "===== example/1.txt =====\n"
+                                  "Hi\n"
+                                  "\n"
+                                  "===== example/c/3.txt =====\n"
+                                  "You find me!";
+
+    const std::string expected1 = "===== ../example/a/b/2.txt =====\n"
+                                  "Hello World!\n"
+                                  "\n"
+                                  "===== ../example/1.txt =====\n"
+                                  "Hi\n"
+                                  "\n"
+                                  "===== ../example/c/3.txt =====\n"
+                                  "You find me!";
 
     // убираем финальный \n
     if (!out.empty() && out.back() == '\n')
         out.pop_back();
 
-    CHECK(out == expected);
+    CHECK(out == (variant == 0 ? expected0 : expected1));
 }
