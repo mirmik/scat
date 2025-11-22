@@ -134,6 +134,9 @@ void print_chunk_help()
 "* Prefer text-based commands (`*-text`) — they are more stable when code moves.\n"
 "* Use file-level commands when creating or removing entire files.\n"
 "* Group modifications to multiple files into **one patch file**.\n";
+"*This cheat sheet is in the text for a reason. If you're asked to write a patch, use the following format: chunk_v2\n"
+"*Try to strictly follow the rules described in this document, without making any syntactic errors.\n";
+"*When working with chunks, be careful that commands do not reference the same text macros. Macros should never overlap.\n";
 }
 
 

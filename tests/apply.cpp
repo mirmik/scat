@@ -37,170 +37,7 @@ int run_apply(const fs::path& patch)
     return apply_chunk_main((int)argv_real.size(), argv_real.data());
 }
 
-TEST_CASE("apply_chunk_main: replace")
-{
-    fs::path tmp = fs::temp_directory_path() / "chunk_test_replace";
-    fs::remove_all(tmp);
-    fs::create_directories(tmp);
 
-    fs::path f = tmp / "a.txt";
-    {
-        std::ofstream out(f);
-        out << "line0\nline1\nline2\nline3\nline4\n";
-    }
-
-    fs::path patch = tmp / "patch.txt";
-    {
-        std::ofstream out(patch);
-        out << "=== file: " << f.string() << " ===\n"
-            << "--- replace 1:3\n"
-            << "NEW_A\n"
-            << "NEW_B\n"
-            << "=END=\n";
-    }
-
-    int r = run_apply(patch);
-    CHECK(r == 0);
-
-    auto lines = read_lines(f);
-    REQUIRE(lines.size() == 4);
-    CHECK(lines[0] == "line0");
-    CHECK(lines[1] == "NEW_A");
-    CHECK(lines[2] == "NEW_B");
-    CHECK(lines[3] == "line4");
-}
-
-TEST_CASE("apply_chunk_main: delete")
-{
-    fs::path tmp = fs::temp_directory_path() / "chunk_test_delete";
-    fs::remove_all(tmp);
-    fs::create_directories(tmp);
-
-    fs::path f = tmp / "b.txt";
-    {
-        std::ofstream out(f);
-        out << "A\nB\nC\nD\nE\n";
-    }
-
-    fs::path patch = tmp / "patch.txt";
-    {
-        std::ofstream out(patch);
-        out << "=== file: " << f.string() << " ===\n"
-            << "--- delete 1:3\n"
-            << "=END=\n";
-    }
-
-    int r = run_apply(patch);
-    CHECK(r == 0);
-
-    auto lines = read_lines(f);
-    REQUIRE(lines.size() == 2);
-    CHECK(lines[0] == "A");
-    CHECK(lines[1] == "E");
-}
-
-TEST_CASE("apply_chunk_main: insert-after")
-{
-    fs::path tmp = fs::temp_directory_path() / "chunk_test_insert";
-    fs::remove_all(tmp);
-    fs::create_directories(tmp);
-
-    fs::path f = tmp / "c.txt";
-    {
-        std::ofstream out(f);
-        out << "X\nY\nZ\n";
-    }
-
-    fs::path patch = tmp / "patch.txt";
-    {
-        std::ofstream out(patch);
-        out << "=== file: " << f.string() << " ===\n"
-            << "--- insert-after 1\n"
-            << "MIDDLE_1\n"
-            << "MIDDLE_2\n"
-            << "=END=\n";
-    }
-
-    int r = run_apply(patch);
-    CHECK(r == 0);
-
-    auto lines = read_lines(f);
-    REQUIRE(lines.size() == 5);
-
-    CHECK(lines[0] == "X");
-    CHECK(lines[1] == "Y");
-    CHECK(lines[2] == "MIDDLE_1");
-    CHECK(lines[3] == "MIDDLE_2");
-    CHECK(lines[4] == "Z");
-}
-
-TEST_CASE("apply_chunk_main: insert-after on new file")
-{
-    fs::path tmp = fs::temp_directory_path() / "chunk_test_newfile";
-    fs::remove_all(tmp);
-    fs::create_directories(tmp);
-
-    fs::path f = tmp / "new.txt";
-
-    fs::path patch = tmp / "patch.txt";
-    {
-        std::ofstream out(patch);
-        out << "=== file: " << f.string() << " ===\n"
-            << "--- insert-after -1\n"
-            << "HELLO\n"
-            << "WORLD\n"
-            << "=END=\n";
-    }
-
-    int r = run_apply(patch);
-    CHECK(r == 0);
-
-    auto lines = read_lines(f);
-    REQUIRE(lines.size() == 2);
-    CHECK(lines[0] == "HELLO");
-    CHECK(lines[1] == "WORLD");
-}
-
-TEST_CASE("apply_chunk_main: multiple sections for same file, index-stable")
-{
-    fs::path tmp = fs::temp_directory_path() / "chunk_test_multi";
-    fs::remove_all(tmp);
-    fs::create_directories(tmp);
-
-    fs::path f = tmp / "f.txt";
-    {
-        std::ofstream out(f);
-        out << "A\nB\nC\nD\nE\n";
-    }
-
-    fs::path patch = tmp / "patch.txt";
-    {
-        std::ofstream out(patch);
-        out <<
-"=== file: " << f.string() << " ===\n"
-"--- insert-after 0\n"
-"Y\n"
-"=END=\n"
-"=== file: " << f.string() << " ===\n"
-"--- replace 1:1\n"
-"X\n"
-"=END=\n"
-"\n";
-    }
-
-    int r = run_apply(patch);
-    CHECK(r == 0);
-
-    auto lines = read_lines(f);
-    REQUIRE(lines.size() == 6);
-
-    CHECK(lines[0] == "A");
-    CHECK(lines[1] == "Y");
-    CHECK(lines[2] == "X");
-    CHECK(lines[3] == "C");
-    CHECK(lines[4] == "D");
-    CHECK(lines[5] == "E");
-}
 
 TEST_CASE("apply_chunk_main: insert-after-text")
 {
@@ -357,6 +194,7 @@ TEST_CASE("apply_chunk_main: delete-text")
     CHECK(lines[0] == "one");
     CHECK(lines[1] == "four");
 }
+
 TEST_CASE("apply_chunk_main: apply-stdin")
 {
     namespace fs = std::filesystem;
@@ -373,7 +211,9 @@ TEST_CASE("apply_chunk_main: apply-stdin")
 
     std::string patch =
         "=== file: " + f.string() + " ===\n"
-        "--- replace 1:1\n"
+        "--- replace-text\n"
+        "B\n"
+        "---\n"
         "XXX\n"
         "=END=\n";
 
