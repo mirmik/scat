@@ -7,6 +7,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace fs = std::filesystem;
@@ -19,6 +20,8 @@ struct Section
     int b = -1;
     std::vector<std::string> payload;
     std::vector<std::string> marker;
+    std::vector<std::string> before; // контекст до маркера (BEFORE:)
+    std::vector<std::string> after;  // контекст после маркера (AFTER:)
     int seq = 0;
 };
 
@@ -106,6 +109,106 @@ static int find_subsequence(const std::vector<std::string>& haystack,
     return -1;
 }
 
+// Выбор лучшего совпадения по BEFORE:/AFTER:.
+// Если before/after пусты — берём первый кандидат.
+// Если score всех 0 — fall back к первому кандидату.
+// Если несколько кандидатов с одинаковым максимальным ненулевым score — ошибка.
+static int find_best_marker_match(const std::vector<std::string>& lines,
+                                  const Section* s,
+                                  const std::vector<int>& candidates)
+{
+    if (candidates.empty())
+        return -1;
+
+    if (s->before.empty() && s->after.empty())
+        return candidates.front();
+
+    struct CandScore
+    {
+        int pos;
+        int score;
+    };
+
+    std::vector<CandScore> scored;
+    scored.reserve(candidates.size());
+
+    for (int pos : candidates)
+    {
+        int score = 0;
+
+        // BEFORE: ищем любую строку из before в окне перед маркером
+        if (!s->before.empty())
+        {
+            bool matched_before = false;
+            for (const auto& b : s->before)
+            {
+                if (trim(b).empty())
+                    continue;
+
+                for (int i = pos - 1; i >= 0 && i >= pos - 20; --i)
+                {
+                    if (trim(lines[static_cast<std::size_t>(i)]) == trim(b))
+                    {
+                        matched_before = true;
+                        break;
+                    }
+                }
+                if (matched_before)
+                    break;
+            }
+            if (matched_before)
+                ++score;
+        }
+
+        // AFTER: ищем любую строку из after в окне после маркера
+        if (!s->after.empty())
+        {
+            bool matched_after = false;
+            int start = pos + static_cast<int>(s->marker.size());
+            int end = std::min<int>(static_cast<int>(lines.size()), start + 20);
+
+            for (const auto& a : s->after)
+            {
+                if (trim(a).empty())
+                    continue;
+
+                for (int i = start; i < end; ++i)
+                {
+                    if (trim(lines[static_cast<std::size_t>(i)]) == trim(a))
+                    {
+                        matched_after = true;
+                        break;
+                    }
+                }
+                if (matched_after)
+                    break;
+            }
+            if (matched_after)
+                ++score;
+        }
+
+        scored.push_back({pos, score});
+    }
+
+    std::sort(scored.begin(), scored.end(),
+              [](const CandScore& x, const CandScore& y) {
+                  return x.score > y.score;
+              });
+
+    if (scored.empty())
+        return -1;
+
+    // Если лучший не дал никакого контекста — работаем как раньше (первое вхождение)
+    if (scored[0].score == 0)
+        return candidates.front();
+
+    // Если есть ещё один с тем же ненулевым score — неоднозначность
+    if (scored.size() > 1 && scored[0].score == scored[1].score)
+        throw std::runtime_error("ambiguous fuzzy marker match");
+
+    return scored[0].pos;
+}
+
 static void apply_text_commands(const std::string& filepath,
                                 std::vector<std::string>& lines,
                                 const std::vector<const Section*>& sections)
@@ -115,37 +218,55 @@ static void apply_text_commands(const std::string& filepath,
         if (s->marker.empty())
             throw std::runtime_error("empty marker in text command for file: " + filepath);
 
-        int idx = find_subsequence(lines, s->marker);
-        if (idx < 0)
+        // Собираем все вхождения маркера
+        std::vector<int> candidates;
+        {
+            int base = 0;
+            while (base < static_cast<int>(lines.size()))
+            {
+                std::vector<std::string> sub(lines.begin() + base, lines.end());
+                int idx = find_subsequence(sub, s->marker);
+                if (idx < 0)
+                    break;
+                candidates.push_back(base + idx);
+                base += idx + 1;
+            }
+        }
+
+        if (candidates.empty())
             throw std::runtime_error(
                 "text marker not found for file: " + filepath +
                 "\ncommand: " + s->command + "\n");
+
+        int idx = find_best_marker_match(lines, s, candidates);
+        if (idx < 0)
+            throw std::runtime_error("cannot locate marker uniquely");
 
         std::size_t pos = static_cast<std::size_t>(idx);
 
         if (s->command == "insert-after-text")
         {
             pos += s->marker.size();
-            lines.insert(lines.begin() + (std::ptrdiff_t)pos,
+            lines.insert(lines.begin() + static_cast<std::ptrdiff_t>(pos),
                          s->payload.begin(), s->payload.end());
         }
         else if (s->command == "insert-before-text")
         {
-            lines.insert(lines.begin() + (std::ptrdiff_t)pos,
+            lines.insert(lines.begin() + static_cast<std::ptrdiff_t>(pos),
                          s->payload.begin(), s->payload.end());
         }
         else if (s->command == "replace-text")
         {
-            auto begin = lines.begin() + (std::ptrdiff_t)pos;
-            auto end = begin + (std::ptrdiff_t)s->marker.size();
+            auto begin = lines.begin() + static_cast<std::ptrdiff_t>(pos);
+            auto end = begin + static_cast<std::ptrdiff_t>(s->marker.size());
             lines.erase(begin, end);
-            lines.insert(lines.begin() + (std::ptrdiff_t)pos,
+            lines.insert(lines.begin() + static_cast<std::ptrdiff_t>(pos),
                          s->payload.begin(), s->payload.end());
         }
         else if (s->command == "delete-text")
         {
-            auto begin = lines.begin() + (std::ptrdiff_t)pos;
-            auto end = begin + (std::ptrdiff_t)s->marker.size();
+            auto begin = lines.begin() + static_cast<std::ptrdiff_t>(pos);
+            auto end = begin + static_cast<std::ptrdiff_t>(s->marker.size());
             lines.erase(begin, end);
         }
         else
@@ -211,20 +332,122 @@ static Section parse_section(std::istream& in, const std::string& header)
 
     if (is_text_command(s.command))
     {
-        auto it = std::find(s.payload.begin(), s.payload.end(), std::string("---"));
-        if (it == s.payload.end())
-            throw std::runtime_error("text command requires '---' separator");
+        // Определяем, в YAML-режиме мы или в старом формате.
+        // Если сразу после команды нет BEFORE:/MARKER:/AFTER:, используется старая логика.
+        bool yaml_mode = false;
+        std::size_t first_non_empty = 0;
+        while (first_non_empty < s.payload.size() &&
+               trim(s.payload[first_non_empty]).empty())
+            ++first_non_empty;
 
-        s.marker.assign(s.payload.begin(), it);
+        if (first_non_empty < s.payload.size())
+        {
+            const std::string t = trim(s.payload[first_non_empty]);
+            if (t == "BEFORE:" || t == "MARKER:" || t == "AFTER:")
+                yaml_mode = true;
+        }
 
-        std::vector<std::string> tail;
-        if (std::next(it) != s.payload.end())
-            tail.assign(std::next(it), s.payload.end());
+        if (!yaml_mode)
+        {
+            // Старый режим: всё до '---' — marker, после — payload
+            auto it = std::find(s.payload.begin(), s.payload.end(), std::string("---"));
+            if (it == s.payload.end())
+                throw std::runtime_error("text command requires '---' separator");
 
-        s.payload.swap(tail);
+            s.marker.assign(s.payload.begin(), it);
 
-        if (s.marker.empty())
-            throw std::runtime_error("empty text marker");
+            std::vector<std::string> tail;
+            if (std::next(it) != s.payload.end())
+                tail.assign(std::next(it), s.payload.end());
+
+            s.payload.swap(tail);
+
+            if (s.marker.empty())
+                throw std::runtime_error("empty text marker");
+        }
+        else
+        {
+            // YAML-подобный режим:
+            // BEFORE:
+            //   ...
+            // MARKER:
+            //   ...
+            // AFTER:
+            //   ...
+            // ---
+            // <payload>
+            s.before.clear();
+            s.marker.clear();
+            s.after.clear();
+
+            enum class Block
+            {
+                NONE,
+                BEFORE,
+                MARKER,
+                AFTER
+            };
+
+            Block blk = Block::NONE;
+            std::vector<std::string> new_payload;
+
+            bool seen_separator = false;
+
+            for (std::size_t i = first_non_empty; i < s.payload.size(); ++i)
+            {
+                const std::string& ln = s.payload[i];
+
+                if (!seen_separator && ln == "---")
+                {
+                    seen_separator = true;
+                    continue;
+                }
+
+                if (!seen_separator)
+                {
+                    const std::string t = trim(ln);
+                    if (t == "BEFORE:")
+                    {
+                        blk = Block::BEFORE;
+                        continue;
+                    }
+                    if (t == "MARKER:")
+                    {
+                        blk = Block::MARKER;
+                        continue;
+                    }
+                    if (t == "AFTER:")
+                    {
+                        blk = Block::AFTER;
+                        continue;
+                    }
+
+                    switch (blk)
+                    {
+                        case Block::BEFORE:
+                            s.before.push_back(ln);
+                            break;
+                        case Block::MARKER:
+                            s.marker.push_back(ln);
+                            break;
+                        case Block::AFTER:
+                            s.after.push_back(ln);
+                            break;
+                        case Block::NONE:
+                            throw std::runtime_error("unexpected content before YAML block tag");
+                    }
+                }
+                else
+                {
+                    new_payload.push_back(ln);
+                }
+            }
+
+            s.payload.swap(new_payload);
+
+            if (s.marker.empty())
+                throw std::runtime_error("YAML text command requires MARKER: section");
+        }
     }
 
     return s;
@@ -290,9 +513,7 @@ static void apply_all(const std::vector<Section>& sections)
 {
     namespace fs = std::filesystem;
 
-    // ---------------------------------------------------------
     // 1. Собираем список всех файлов, которые будут затронуты
-    // ---------------------------------------------------------
     std::vector<std::string> files;
     files.reserve(sections.size());
     for (auto& s : sections)
@@ -308,9 +529,7 @@ static void apply_all(const std::vector<Section>& sections)
 
     std::map<std::string, Backup> backup;
 
-    // ---------------------------------------------------------
     // 2. Делаем резервную копию всех файлов
-    // ---------------------------------------------------------
     for (auto& f : files)
     {
         Backup b;
@@ -336,9 +555,7 @@ static void apply_all(const std::vector<Section>& sections)
         backup[f] = std::move(b);
     }
 
-    // ---------------------------------------------------------
     // 3. Применяем секции с защитой (try/catch)
-    // ---------------------------------------------------------
     try
     {
         for (auto& s : sections)
@@ -349,9 +566,7 @@ static void apply_all(const std::vector<Section>& sections)
     }
     catch (...)
     {
-        // -----------------------------------------------------
         // 4. Откат (rollback)
-        // -----------------------------------------------------
         for (auto& [path, b] : backup)
         {
             fs::path p = path;
@@ -359,21 +574,19 @@ static void apply_all(const std::vector<Section>& sections)
 
             if (b.existed)
             {
-                // файл должен быть восстановлён
                 try {
                     write_file_lines(p, b.lines);
                 } catch (...) {
-                    // если даже откат не удался — сдаёмся, но мы пытались
+                    // если даже откат не удался — сдаёмся
                 }
             }
             else
             {
-                // файла не было → нужно удалить
                 fs::remove(p, ec);
             }
         }
 
-        throw; // пробрасываем исключение обратно
+        throw;
     }
 }
 
