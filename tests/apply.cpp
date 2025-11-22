@@ -233,3 +233,45 @@ TEST_CASE("apply_chunk_main: apply-stdin")
     CHECK(lines[1] == "XXX");
     CHECK(lines[2] == "C");
 }
+TEST_CASE("apply_chunk_main: delete-file then create-file")
+{
+    namespace fs = std::filesystem;
+
+    fs::path tmp = fs::temp_directory_path() / "chunk_test_del_create";
+    fs::remove_all(tmp);
+    fs::create_directories(tmp);
+
+    fs::path f = tmp / "x.txt";
+
+    // Исходный файл
+    {
+        std::ofstream out(f);
+        out << "OLD";
+    }
+
+    // Патч: удалить → создать заново
+    fs::path patch = tmp / "patch.txt";
+    {
+        std::ofstream out(patch);
+        out <<
+            "=== file: " << f.string() << " ===\n"
+            "--- delete-file\n"
+            "=END=\n"
+            "\n"
+            "=== file: " << f.string() << " ===\n"
+            "--- create-file\n"
+            "NEW1\n"
+            "NEW2\n"
+            "=END=\n";
+    }
+
+    int r = run_apply(patch);
+    CHECK(r == 0);
+
+    REQUIRE(fs::exists(f));
+
+    auto lines = read_lines(f);
+    REQUIRE(lines.size() == 2);
+    CHECK(lines[0] == "NEW1");
+    CHECK(lines[1] == "NEW2");
+}

@@ -288,13 +288,93 @@ static void apply_for_file(const std::string& filepath,
 
 static void apply_all(const std::vector<Section>& sections)
 {
-    std::map<std::string, std::vector<const Section*>> by_file;
+    namespace fs = std::filesystem;
 
-    for (const auto& s : sections)
-        by_file[s.filepath].push_back(&s);
+    // ---------------------------------------------------------
+    // 1. Собираем список всех файлов, которые будут затронуты
+    // ---------------------------------------------------------
+    std::vector<std::string> files;
+    files.reserve(sections.size());
+    for (auto& s : sections)
+        files.push_back(s.filepath);
 
-    for (auto& [path, vec] : by_file)
-        apply_for_file(path, vec);
+    std::sort(files.begin(), files.end());
+    files.erase(std::unique(files.begin(), files.end()), files.end());
+
+    struct Backup {
+        bool existed = false;
+        std::vector<std::string> lines;
+    };
+
+    std::map<std::string, Backup> backup;
+
+    // ---------------------------------------------------------
+    // 2. Делаем резервную копию всех файлов
+    // ---------------------------------------------------------
+    for (auto& f : files)
+    {
+        Backup b;
+        fs::path p = f;
+
+        std::error_code ec;
+
+        if (fs::exists(p, ec))
+        {
+            b.existed = true;
+
+            try {
+                b.lines = read_file_lines(p);
+            } catch (...) {
+                throw std::runtime_error("cannot read original file: " + f);
+            }
+        }
+        else
+        {
+            b.existed = false;
+        }
+
+        backup[f] = std::move(b);
+    }
+
+    // ---------------------------------------------------------
+    // 3. Применяем секции с защитой (try/catch)
+    // ---------------------------------------------------------
+    try
+    {
+        for (auto& s : sections)
+        {
+            std::vector<const Section*> single { &s };
+            apply_for_file(s.filepath, single);
+        }
+    }
+    catch (...)
+    {
+        // -----------------------------------------------------
+        // 4. Откат (rollback)
+        // -----------------------------------------------------
+        for (auto& [path, b] : backup)
+        {
+            fs::path p = path;
+            std::error_code ec;
+
+            if (b.existed)
+            {
+                // файл должен быть восстановлён
+                try {
+                    write_file_lines(p, b.lines);
+                } catch (...) {
+                    // если даже откат не удался — сдаёмся, но мы пытались
+                }
+            }
+            else
+            {
+                // файла не было → нужно удалить
+                fs::remove(p, ec);
+            }
+        }
+
+        throw; // пробрасываем исключение обратно
+    }
 }
 
 int apply_chunk_main(int argc, char** argv)
