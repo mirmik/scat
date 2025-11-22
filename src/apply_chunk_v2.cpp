@@ -109,10 +109,8 @@ static int find_subsequence(const std::vector<std::string>& haystack,
     return -1;
 }
 
-// Выбор лучшего совпадения по BEFORE:/AFTER:.
-// Если before/after пусты — берём первый кандидат.
-// Если score всех 0 — fall back к первому кандидату.
-// Если несколько кандидатов с одинаковым максимальным ненулевым score — ошибка.
+// Строгий выбор позиции маркера с учётом BEFORE/AFTER.
+// Никакого fuzzy, только точное позиционное совпадение.
 static int find_best_marker_match(const std::vector<std::string>& lines,
                                   const Section* s,
                                   const std::vector<int>& candidates)
@@ -120,93 +118,80 @@ static int find_best_marker_match(const std::vector<std::string>& lines,
     if (candidates.empty())
         return -1;
 
+    // Нет дополнительного контекста — ведём себя как раньше.
     if (s->before.empty() && s->after.empty())
         return candidates.front();
 
-    struct CandScore
-    {
-        int pos;
-        int score;
+    auto trim_eq = [&](const std::string& a, const std::string& b) {
+        return trim(a) == trim(b);
     };
 
-    std::vector<CandScore> scored;
-    scored.reserve(candidates.size());
+    std::vector<int> strict;
 
     for (int pos : candidates)
     {
-        int score = 0;
+        bool ok = true;
 
-        // BEFORE: ищем любую строку из before в окне перед маркером
+        // BEFORE: строки сразу над маркером
         if (!s->before.empty())
         {
-            bool matched_before = false;
-            for (const auto& b : s->before)
+            int need = static_cast<int>(s->before.size());
+            if (pos < need)
             {
-                if (trim(b).empty())
-                    continue;
-
-                for (int i = pos - 1; i >= 0 && i >= pos - 20; --i)
+                ok = false;
+            }
+            else
+            {
+                // Последняя строка BEFORE должна быть непосредственно над первой строкой маркера.
+                for (int i = 0; i < need; ++i)
                 {
-                    if (trim(lines[static_cast<std::size_t>(i)]) == trim(b))
+                    const std::string& want = s->before[static_cast<std::size_t>(need - 1 - i)];
+                    const std::string& got  = lines[static_cast<std::size_t>(pos - 1 - i)];
+                    if (!trim_eq(got, want))
                     {
-                        matched_before = true;
+                        ok = false;
                         break;
                     }
                 }
-                if (matched_before)
-                    break;
             }
-            if (matched_before)
-                ++score;
         }
 
-        // AFTER: ищем любую строку из after в окне после маркера
-        if (!s->after.empty())
+        // AFTER: строки сразу под маркером
+        if (ok && !s->after.empty())
         {
-            bool matched_after = false;
             int start = pos + static_cast<int>(s->marker.size());
-            int end = std::min<int>(static_cast<int>(lines.size()), start + 20);
+            int need  = static_cast<int>(s->after.size());
 
-            for (const auto& a : s->after)
+            if (start < 0 || start + need > static_cast<int>(lines.size()))
             {
-                if (trim(a).empty())
-                    continue;
-
-                for (int i = start; i < end; ++i)
+                ok = false;
+            }
+            else
+            {
+                for (int i = 0; i < need; ++i)
                 {
-                    if (trim(lines[static_cast<std::size_t>(i)]) == trim(a))
+                    const std::string& want = s->after[static_cast<std::size_t>(i)];
+                    const std::string& got  = lines[static_cast<std::size_t>(start + i)];
+                    if (!trim_eq(got, want))
                     {
-                        matched_after = true;
+                        ok = false;
                         break;
                     }
                 }
-                if (matched_after)
-                    break;
             }
-            if (matched_after)
-                ++score;
         }
 
-        scored.push_back({pos, score});
+        if (ok)
+            strict.push_back(pos);
     }
 
-    std::sort(scored.begin(), scored.end(),
-              [](const CandScore& x, const CandScore& y) {
-                  return x.score > y.score;
-              });
+    if (strict.empty())
+        throw std::runtime_error("strict marker context not found");
 
-    if (scored.empty())
-        return -1;
+    if (strict.size() > 1)
+        throw std::runtime_error("strict marker match is ambiguous");
 
-    // Если лучший не дал никакого контекста — работаем как раньше (первое вхождение)
-    if (scored[0].score == 0)
-        return candidates.front();
-
-    // Если есть ещё один с тем же ненулевым score — неоднозначность
-    if (scored.size() > 1 && scored[0].score == scored[1].score)
-        throw std::runtime_error("ambiguous fuzzy marker match");
-
-    return scored[0].pos;
+    return strict.front();
 }
 
 static void apply_text_commands(const std::string& filepath,
