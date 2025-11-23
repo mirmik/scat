@@ -87,21 +87,38 @@ std::vector<fs::path> collect_from_rules(const std::vector<Rule>& rules, const O
     for (const auto& r : rules)
         if (!r.exclude)
             expand_rule(r, tmp);
-
-    // 2. Применяем exclude-рулы
+        
+    // 2. Применяем exclude-рулы через нормальный glob
     for (const auto& r : rules)
     {
         if (!r.exclude)
             continue;
 
-        tmp.erase(std::remove_if(tmp.begin(), tmp.end(),
-                                 [&](const fs::path& p) {
-                                     // исключаем по относительному пути
-                                     std::string rel = make_display_path(p);
-                                     return rel.rfind(r.pattern, 0) == 0; // starts_with
-                                 }),
-                  tmp.end());
+        auto bad = expand_glob(r.pattern);
+
+        std::unordered_set<std::string> bad_abs;
+        bad_abs.reserve(bad.size());
+
+        for (auto& b : bad)
+        {
+            std::error_code ec;
+            auto absb = fs::absolute(b, ec);
+            bad_abs.insert(absb.string());
+        }
+
+        tmp.erase(
+            std::remove_if(
+                tmp.begin(), tmp.end(),
+                [&](const fs::path& p)
+                {
+                    std::error_code ec;
+                    auto absp = fs::absolute(p, ec);
+                    return bad_abs.find(absp.string()) != bad_abs.end();
+                }),
+            tmp.end());
     }
+
+
 
     // 3. Убираем дубликаты
     std::sort(tmp.begin(), tmp.end());

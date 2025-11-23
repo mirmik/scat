@@ -9,17 +9,29 @@
 
 namespace fs = std::filesystem;
 
+static bool is_wildcard(const std::string& s) {
+    return s == "*" || s == "**" || s.find('*') != std::string::npos;
+}
+
+// matcit только filename, НЕ директорию
+static bool match_name(const fs::path& p, const std::string& seg)
+{
+    return match_simple(p, seg);
+}
+
 std::vector<fs::path> expand_glob(const std::string& pattern)
 {
     std::vector<fs::path> out;
     std::error_code ec;
 
-    // Новый разбор пути с поддержкой абсолютных путей
     fs::path pat(pattern);
-    fs::path root = pat.root_path();      // "/" или "C:\", или "" для относительного
-    fs::path rel  = pat.relative_path();  // остальная часть
+    fs::path root = pat.root_path();      // "/" или "C:" или ""
+    fs::path rel  = pat.relative_path();
 
-    // Разбиваем rel на части
+    if (root.empty())
+        root = ".";
+
+    // Разбиваем на части
     std::vector<std::string> parts;
     {
         std::stringstream ss(rel.generic_string());
@@ -28,7 +40,20 @@ std::vector<fs::path> expand_glob(const std::string& pattern)
             parts.push_back(seg);
     }
 
-    // Рекурсивный обход
+    // Определяем статический префикс (до первой звёздочки)
+    size_t start = 0;
+    for (; start < parts.size(); ++start)
+    {
+        const auto& seg = parts[start];
+        if (is_wildcard(seg))
+            break;
+        root /= seg;
+    }
+
+    if (!fs::exists(root, ec))
+        return out;
+
+    // Основной обход
     std::function<void(const fs::path&, size_t)> walk =
         [&](const fs::path& base, size_t idx)
     {
@@ -41,58 +66,61 @@ std::vector<fs::path> expand_glob(const std::string& pattern)
 
         const std::string& seg = parts[idx];
 
+        // ---------------------------------------------------------------------
+        // "**" → полный рекурсивный обход
+        // ---------------------------------------------------------------------
         if (seg == "**")
         {
-            // zero levels
+            // вариант 0 уровней
             walk(base, idx + 1);
 
-            // one or more
+            // вариант 1+ уровней
             if (fs::is_directory(base, ec))
             {
                 for (auto& e : fs::directory_iterator(base, ec))
-                    walk(e.path(), idx);
+                    walk(e.path(), idx); // двигаемся дальше, idx НЕ увеличиваем
             }
+            return;
         }
-        else if (seg.find('*') != std::string::npos)
+
+        // ---------------------------------------------------------------------
+        // "*" или "ma*sk" → только ОДИН уровень, без рекурсии
+        // ---------------------------------------------------------------------
+        if (seg.find('*') != std::string::npos)
         {
             if (!fs::is_directory(base, ec))
                 return;
 
             for (auto& e : fs::directory_iterator(base, ec))
             {
-                if (match_simple(e.path(), seg))
+                if (!match_name(e.path(), seg))
+                    continue;
+
+                // если это последний сегмент — принимаем только файлы
+                if (idx + 1 == parts.size())
+                {
+                    if (e.is_regular_file())
+                        out.push_back(e.path());
+                }
+                else
+                {
                     walk(e.path(), idx + 1);
+                }
             }
+            return;
         }
-        else
-        {
-            fs::path next = base / seg;
-            if (fs::exists(next, ec))
-                walk(next, idx + 1);
-        }
+
+        // ---------------------------------------------------------------------
+        // обычное имя → просто переходим
+        // ---------------------------------------------------------------------
+        fs::path next = base / seg;
+        if (fs::exists(next, ec))
+            walk(next, idx + 1);
     };
-
-     // Статический префикс до первого wildcard
-    size_t start = 0;
-
-    if (root.empty())
-        root = ".";  // относительный путь
-
-    for (; start < parts.size(); ++start)
-    {
-        const auto& seg = parts[start];
-        if (seg == "**" || seg.find('*') != std::string::npos)
-            break;
-
-        root /= seg; // корректно: "/" + "tmp" → "/tmp"
-    }
-
-    if (!fs::exists(root, ec))
-        return out;
 
     walk(root, start);
 
-    // Дубликаты
+    // удалить дубликаты
     std::sort(out.begin(), out.end());
     out.erase(std::unique(out.begin(), out.end()), out.end());
 
