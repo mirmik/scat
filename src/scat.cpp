@@ -166,19 +166,16 @@ void print_chunk_help()
 
 int apply_chunk_main(int argc, char** argv);
 
-// Prints a simple directory tree for collected files.
 void print_tree(const std::vector<std::filesystem::path>& files)
 {
-    // Собираем все относительные пути
+    // Собираем относительные пути
     std::vector<std::string> rels;
     rels.reserve(files.size());
     for (auto& p : files)
         rels.push_back(make_display_path(p));
 
-    // Сортируем для стабильного вывода
     std::sort(rels.begin(), rels.end());
 
-    // Строим древовидную структуру
     struct Node {
         std::map<std::string, Node*> children;
         bool is_file = false;
@@ -186,26 +183,38 @@ void print_tree(const std::vector<std::filesystem::path>& files)
 
     Node root;
 
+    // ----------------------------
+    //  Построение дерева
+    // ----------------------------
     for (auto& r : rels)
     {
         fs::path p = r;
         Node* cur = &root;
 
+        // вытаскиваем компоненты p в список
+        std::vector<std::string> parts;
         for (auto& part : p)
+            parts.push_back(part.string());
+
+        int total = (int)parts.size();
+
+        for (int i = 0; i < total; ++i)
         {
-            std::string s = part.string();
-            bool last = (&part == &(*p.end()) - 1);
+            const std::string& name = parts[i];
+            bool last = (i == total - 1);
 
-            if (!cur->children.count(s))
-                cur->children[s] = new Node();
+            if (!cur->children.count(name))
+                cur->children[name] = new Node();
 
-            cur = cur->children[s];
+            cur = cur->children[name];
             if (last)
                 cur->is_file = true;
         }
     }
 
-    // Рекурсивный вывод
+    // ----------------------------
+    //  Рекурсивная печать
+    // ----------------------------
     std::function<void(Node*, const std::string&, bool, const std::string&)> go;
 
     go = [&](Node* node, const std::string& name, bool last, const std::string& prefix)
@@ -222,7 +231,7 @@ void print_tree(const std::vector<std::filesystem::path>& files)
             std::cout << "\n";
         }
 
-        // Дети
+        // сортируем детей по имени
         std::vector<std::string> keys;
         keys.reserve(node->children.size());
         for (auto& [k, _] : node->children)
@@ -231,13 +240,14 @@ void print_tree(const std::vector<std::filesystem::path>& files)
 
         for (size_t i = 0; i < keys.size(); ++i)
         {
-            bool l = (i + 1 == keys.size());
-            auto* ch = node->children[keys[i]];
-            go(ch, keys[i], l, prefix + (name.empty() ? "" : (last ? "    " : "│   ")));
+            bool is_last = (i + 1 == keys.size());
+            Node* child = node->children[keys[i]];
+
+            go(child, keys[i], is_last,
+               prefix + (name.empty() ? "" : (last ? "    " : "│   ")));
         }
     };
 
-    // Вывод
     std::cout << "===== PROJECT TREE =====\n";
     go(&root, "", true, "");
     std::cout << "========================\n\n";
