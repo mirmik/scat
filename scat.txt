@@ -4,3 +4,9 @@ tests/*
 CMakeLists.txt
 scat.txt
 README.md
+
+[TREE]
+**
+!CMakeFiles/**
+!.github/**
+!.git/**

@@ -7,7 +7,12 @@
 #include <map>
 #include <sstream>
 #include <fstream>
+#include "parser.h"
 #include <set>
+#include <functional>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 bool g_use_absolute_paths = false;
 
@@ -164,40 +169,99 @@ int apply_chunk_main(int argc, char** argv);
 // Prints a simple directory tree for collected files.
 void print_tree(const std::vector<std::filesystem::path>& files)
 {
-    std::map<std::string, std::set<std::string>> tree;
+    // Собираем все относительные пути
+    std::vector<std::string> rels;
+    rels.reserve(files.size());
+    for (auto& p : files)
+        rels.push_back(make_display_path(p));
 
-    for (const auto& p : files)
+    // Сортируем для стабильного вывода
+    std::sort(rels.begin(), rels.end());
+
+    // Строим древовидную структуру
+    struct Node {
+        std::map<std::string, Node*> children;
+        bool is_file = false;
+    };
+
+    Node root;
+
+    for (auto& r : rels)
     {
-        auto rel = make_display_path(p);
-        auto dir = std::filesystem::path(rel).parent_path().string();
-        auto file = std::filesystem::path(rel).filename().string();
-        tree[dir].insert(file);
+        fs::path p = r;
+        Node* cur = &root;
+
+        for (auto& part : p)
+        {
+            std::string s = part.string();
+            bool last = (&part == &(*p.end()) - 1);
+
+            if (!cur->children.count(s))
+                cur->children[s] = new Node();
+
+            cur = cur->children[s];
+            if (last)
+                cur->is_file = true;
+        }
     }
 
+    // Рекурсивный вывод
+    std::function<void(Node*, const std::string&, bool, const std::string&)> go;
+
+    go = [&](Node* node, const std::string& name, bool last, const std::string& prefix)
+    {
+        if (!name.empty())
+        {
+            std::cout << prefix
+                      << (last ? "└── " : "├── ")
+                      << name;
+
+            if (!node->is_file)
+                std::cout << "/";
+
+            std::cout << "\n";
+        }
+
+        // Дети
+        std::vector<std::string> keys;
+        keys.reserve(node->children.size());
+        for (auto& [k, _] : node->children)
+            keys.push_back(k);
+        std::sort(keys.begin(), keys.end());
+
+        for (size_t i = 0; i < keys.size(); ++i)
+        {
+            bool l = (i + 1 == keys.size());
+            auto* ch = node->children[keys[i]];
+            go(ch, keys[i], l, prefix + (name.empty() ? "" : (last ? "    " : "│   ")));
+        }
+    };
+
+    // Вывод
     std::cout << "===== PROJECT TREE =====\n";
-
-    for (const auto& [dir, items] : tree)
-    {
-        if (!dir.empty() && dir != ".")
-            std::cout << dir << "/\n";
-        else
-            std::cout << "./\n";
-
-        for (auto& f : items)
-            std::cout << "  " << f << "\n";
-    }
-
+    go(&root, "", true, "");
     std::cout << "========================\n\n";
 }
+
+
+
 int scat_main(int argc, char** argv)
 {
     Options opt = parse_options(argc, argv);
 
-    if (opt.chunk_help) {
+    // ------------------------------------------------------------
+    // Chunk help
+    // ------------------------------------------------------------
+    if (opt.chunk_help)
+    {
         print_chunk_help();
         return 0;
     }
-    if (!opt.apply_file.empty() || opt.apply_stdin) 
+
+    // ------------------------------------------------------------
+    // Apply patch mode
+    // ------------------------------------------------------------
+    if (!opt.apply_file.empty() || opt.apply_stdin)
     {
         if (opt.apply_stdin)
         {
@@ -221,23 +285,62 @@ int scat_main(int argc, char** argv)
         }
         else
         {
-            std::string apply_file_str = opt.apply_file;
-            const char* args[] = {"apply", apply_file_str.c_str()};
+            std::string file = opt.apply_file;
+            const char* args[] = {"apply", file.c_str()};
             return apply_chunk_main(2, const_cast<char**>(args));
         }
     }
 
-    std::vector<std::filesystem::path> files;
-
+    // ------------------------------------------------------------
+    // CONFIG MODE — uses scat.txt or --config F
+    // ------------------------------------------------------------
     if (!opt.config_file.empty())
     {
-        auto rules = load_rules(opt.config_file);
-        files = collect_from_rules(rules, opt);
+        Config cfg = parse_config(opt.config_file);
+
+        // 1) TEXT rules
+        auto text_files = collect_from_rules(cfg.text_rules, opt);
+
+        if (text_files.empty())
+        {
+            std::cerr << "No files collected.\n";
+            return 0;
+        }
+
+        // 2) Print files
+        bool first = true;
+        for (auto& f : text_files)
+        {
+            dump_file(f, first, opt);
+            first = false;
+        }
+
+        // 3) TREE rules (optional)
+        if (!cfg.tree_rules.empty())
+        {
+            auto tree_files = collect_from_rules(cfg.tree_rules, opt);
+            if (!tree_files.empty())
+            {
+                std::cout << "\n";
+                print_tree(tree_files); // выводим дерево строго в самом конце
+            }
+        }
+
+        // 4) Chunk trailer, if needed
+        if (opt.chunk_trailer)
+        {
+            std::cout << "\n===== CHUNK FORMAT HELP =====\n\n";
+            print_chunk_help();
+        }
+
+        return 0;
     }
-    else
-    {
-        files = collect_from_paths(opt.paths, opt);
-    }
+
+    // ------------------------------------------------------------
+    // NORMAL MODE — user provided paths, not using a config file
+    // ------------------------------------------------------------
+    std::vector<std::filesystem::path> files =
+        collect_from_paths(opt.paths, opt);
 
     if (files.empty())
     {
@@ -245,6 +348,7 @@ int scat_main(int argc, char** argv)
         return 0;
     }
 
+    // LIST ONLY
     if (opt.list_only)
     {
         for (auto& f : files)
@@ -252,17 +356,25 @@ int scat_main(int argc, char** argv)
         return 0;
     }
 
-    bool first = true;
-    for (auto& f : files)
+    // Dump all collected files
     {
-        dump_file(f, first, opt);
-        first = false;
+        bool first = true;
+        for (auto& f : files)
+        {
+            dump_file(f, first, opt);
+            first = false;
+        }
     }
 
-    print_tree(files);
-if (opt.chunk_trailer) {
-    std::cout << "\n===== CHUNK FORMAT HELP =====\n\n";
-    print_chunk_help();
-}
+    // Notice:
+    //  * В обычном режиме дерево НЕ выводим.
+    //  * Теперь дерево выводится ТОЛЬКО через [TREE] секцию config mode.
+
+    if (opt.chunk_trailer)
+    {
+        std::cout << "\n===== CHUNK FORMAT HELP =====\n\n";
+        print_chunk_help();
+    }
+
     return 0;
 }
