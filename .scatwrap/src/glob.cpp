@@ -6,134 +6,134 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#include &quot;glob.h&quot;<br>
-#include &quot;util.h&quot;<br>
-#include &lt;algorithm&gt;<br>
-#include &lt;filesystem&gt;<br>
-#include &lt;functional&gt;<br>
-#include &lt;sstream&gt;<br>
-#include &lt;string&gt;<br>
-#include &lt;vector&gt;<br>
+#include&nbsp;&quot;glob.h&quot;<br>
+#include&nbsp;&quot;util.h&quot;<br>
+#include&nbsp;&lt;algorithm&gt;<br>
+#include&nbsp;&lt;filesystem&gt;<br>
+#include&nbsp;&lt;functional&gt;<br>
+#include&nbsp;&lt;sstream&gt;<br>
+#include&nbsp;&lt;string&gt;<br>
+#include&nbsp;&lt;vector&gt;<br>
 <br>
-namespace fs = std::filesystem;<br>
+namespace&nbsp;fs&nbsp;=&nbsp;std::filesystem;<br>
 <br>
-static bool is_wildcard(const std::string &amp;s)<br>
+static&nbsp;bool&nbsp;is_wildcard(const&nbsp;std::string&nbsp;&amp;s)<br>
 {<br>
-    return s == &quot;*&quot; || s == &quot;**&quot; || s.find('*') != std::string::npos;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;s&nbsp;==&nbsp;&quot;*&quot;&nbsp;||&nbsp;s&nbsp;==&nbsp;&quot;**&quot;&nbsp;||&nbsp;s.find('*')&nbsp;!=&nbsp;std::string::npos;<br>
 }<br>
 <br>
-// matcit только filename, НЕ директорию<br>
-static bool match_name(const fs::path &amp;p, const std::string &amp;seg)<br>
+//&nbsp;matcit&nbsp;только&nbsp;filename,&nbsp;НЕ&nbsp;директорию<br>
+static&nbsp;bool&nbsp;match_name(const&nbsp;fs::path&nbsp;&amp;p,&nbsp;const&nbsp;std::string&nbsp;&amp;seg)<br>
 {<br>
-    return match_simple(p, seg);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;match_simple(p,&nbsp;seg);<br>
 }<br>
 <br>
-std::vector&lt;fs::path&gt; expand_glob(const std::string &amp;pattern)<br>
+std::vector&lt;fs::path&gt;&nbsp;expand_glob(const&nbsp;std::string&nbsp;&amp;pattern)<br>
 {<br>
-    std::vector&lt;fs::path&gt; out;<br>
-    std::error_code ec;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;fs::path&gt;&nbsp;out;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::error_code&nbsp;ec;<br>
 <br>
-    fs::path pat(pattern);<br>
-    fs::path root = pat.root_path(); // &quot;/&quot; или &quot;C:&quot; или &quot;&quot;<br>
-    fs::path rel = pat.relative_path();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;pat(pattern);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;root&nbsp;=&nbsp;pat.root_path();&nbsp;//&nbsp;&quot;/&quot;&nbsp;или&nbsp;&quot;C:&quot;&nbsp;или&nbsp;&quot;&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;rel&nbsp;=&nbsp;pat.relative_path();<br>
 <br>
-    if (root.empty())<br>
-        root = &quot;.&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(root.empty())<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;root&nbsp;=&nbsp;&quot;.&quot;;<br>
 <br>
-    // Разбиваем на части<br>
-    std::vector&lt;std::string&gt; parts;<br>
-    {<br>
-        std::stringstream ss(rel.generic_string());<br>
-        std::string seg;<br>
-        while (std::getline(ss, seg, '/'))<br>
-            parts.push_back(seg);<br>
-    }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Разбиваем&nbsp;на&nbsp;части<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;parts;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::stringstream&nbsp;ss(rel.generic_string());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;seg;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(std::getline(ss,&nbsp;seg,&nbsp;'/'))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;parts.push_back(seg);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-    // Определяем статический префикс (до первой звёздочки)<br>
-    size_t start = 0;<br>
-    for (; start &lt; parts.size(); ++start)<br>
-    {<br>
-        const auto &amp;seg = parts[start];<br>
-        if (is_wildcard(seg))<br>
-            break;<br>
-        root /= seg;<br>
-    }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Определяем&nbsp;статический&nbsp;префикс&nbsp;(до&nbsp;первой&nbsp;звёздочки)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;size_t&nbsp;start&nbsp;=&nbsp;0;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(;&nbsp;start&nbsp;&lt;&nbsp;parts.size();&nbsp;++start)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;auto&nbsp;&amp;seg&nbsp;=&nbsp;parts[start];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(is_wildcard(seg))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;root&nbsp;/=&nbsp;seg;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-    if (!fs::exists(root, ec))<br>
-        return out;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!fs::exists(root,&nbsp;ec))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;out;<br>
 <br>
-    // Основной обход<br>
-    std::function&lt;void(const fs::path &amp;, size_t)&gt; walk =<br>
-        [&amp;](const fs::path &amp;base, size_t idx)<br>
-    {<br>
-        if (idx == parts.size())<br>
-        {<br>
-            if (fs::is_regular_file(base, ec))<br>
-                out.push_back(base);<br>
-            return;<br>
-        }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Основной&nbsp;обход<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::function&lt;void(const&nbsp;fs::path&nbsp;&amp;,&nbsp;size_t)&gt;&nbsp;walk&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[&amp;](const&nbsp;fs::path&nbsp;&amp;base,&nbsp;size_t&nbsp;idx)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(idx&nbsp;==&nbsp;parts.size())<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(fs::is_regular_file(base,&nbsp;ec))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.push_back(base);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-        const std::string &amp;seg = parts[idx];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;&amp;seg&nbsp;=&nbsp;parts[idx];<br>
 <br>
-        // ---------------------------------------------------------------------<br>
-        // &quot;**&quot; → полный рекурсивный обход<br>
-        // ---------------------------------------------------------------------<br>
-        if (seg == &quot;**&quot;)<br>
-        {<br>
-            // вариант 0 уровней<br>
-            walk(base, idx + 1);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;---------------------------------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&quot;**&quot;&nbsp;→&nbsp;полный&nbsp;рекурсивный&nbsp;обход<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;---------------------------------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(seg&nbsp;==&nbsp;&quot;**&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;вариант&nbsp;0&nbsp;уровней<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;walk(base,&nbsp;idx&nbsp;+&nbsp;1);<br>
 <br>
-            // вариант 1+ уровней<br>
-            if (fs::is_directory(base, ec))<br>
-            {<br>
-                for (auto &amp;e : fs::directory_iterator(base, ec))<br>
-                    walk(e.path(), idx); // двигаемся дальше, idx НЕ увеличиваем<br>
-            }<br>
-            return;<br>
-        }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;вариант&nbsp;1+&nbsp;уровней<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(fs::is_directory(base,&nbsp;ec))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(auto&nbsp;&amp;e&nbsp;:&nbsp;fs::directory_iterator(base,&nbsp;ec))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;walk(e.path(),&nbsp;idx);&nbsp;//&nbsp;двигаемся&nbsp;дальше,&nbsp;idx&nbsp;НЕ&nbsp;увеличиваем<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-        // ---------------------------------------------------------------------<br>
-        // &quot;*&quot; или &quot;ma*sk&quot; → только ОДИН уровень, без рекурсии<br>
-        // ---------------------------------------------------------------------<br>
-        if (seg.find('*') != std::string::npos)<br>
-        {<br>
-            if (!fs::is_directory(base, ec))<br>
-                return;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;---------------------------------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&quot;*&quot;&nbsp;или&nbsp;&quot;ma*sk&quot;&nbsp;→&nbsp;только&nbsp;ОДИН&nbsp;уровень,&nbsp;без&nbsp;рекурсии<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;---------------------------------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(seg.find('*')&nbsp;!=&nbsp;std::string::npos)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!fs::is_directory(base,&nbsp;ec))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;<br>
 <br>
-            for (auto &amp;e : fs::directory_iterator(base, ec))<br>
-            {<br>
-                if (!match_name(e.path(), seg))<br>
-                    continue;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(auto&nbsp;&amp;e&nbsp;:&nbsp;fs::directory_iterator(base,&nbsp;ec))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!match_name(e.path(),&nbsp;seg))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
 <br>
-                // если это последний сегмент — принимаем только файлы<br>
-                if (idx + 1 == parts.size())<br>
-                {<br>
-                    if (e.is_regular_file())<br>
-                        out.push_back(e.path());<br>
-                }<br>
-                else<br>
-                {<br>
-                    walk(e.path(), idx + 1);<br>
-                }<br>
-            }<br>
-            return;<br>
-        }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;если&nbsp;это&nbsp;последний&nbsp;сегмент&nbsp;—&nbsp;принимаем&nbsp;только&nbsp;файлы<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(idx&nbsp;+&nbsp;1&nbsp;==&nbsp;parts.size())<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(e.is_regular_file())<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.push_back(e.path());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;walk(e.path(),&nbsp;idx&nbsp;+&nbsp;1);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-        // ---------------------------------------------------------------------<br>
-        // обычное имя → просто переходим<br>
-        // ---------------------------------------------------------------------<br>
-        fs::path next = base / seg;<br>
-        if (fs::exists(next, ec))<br>
-            walk(next, idx + 1);<br>
-    };<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;---------------------------------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;обычное&nbsp;имя&nbsp;→&nbsp;просто&nbsp;переходим<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;---------------------------------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;next&nbsp;=&nbsp;base&nbsp;/&nbsp;seg;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(fs::exists(next,&nbsp;ec))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;walk(next,&nbsp;idx&nbsp;+&nbsp;1);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;};<br>
 <br>
-    walk(root, start);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;walk(root,&nbsp;start);<br>
 <br>
-    // удалить дубликаты<br>
-    std::sort(out.begin(), out.end());<br>
-    out.erase(std::unique(out.begin(), out.end()), out.end());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;удалить&nbsp;дубликаты<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::sort(out.begin(),&nbsp;out.end());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;out.erase(std::unique(out.begin(),&nbsp;out.end()),&nbsp;out.end());<br>
 <br>
-    return out;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;out;<br>
 }<br>
 <!-- END SCAT CODE -->
 </body>

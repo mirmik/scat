@@ -6,65 +6,65 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#define DOCTEST_CONFIG_IMPLEMENT<br>
-#include &quot;doctest/doctest.h&quot;<br>
-#include &lt;string&gt;<br>
-#include &lt;vector&gt;<br>
-#if defined(__WIN32__) || defined(_MSC_VER)<br>
-#include &lt;winsock2.h&gt;<br>
-WSADATA wsaData;<br>
+#define&nbsp;DOCTEST_CONFIG_IMPLEMENT<br>
+#include&nbsp;&quot;doctest/doctest.h&quot;<br>
+#include&nbsp;&lt;string&gt;<br>
+#include&nbsp;&lt;vector&gt;<br>
+#if&nbsp;defined(__WIN32__)&nbsp;||&nbsp;defined(_MSC_VER)<br>
+#include&nbsp;&lt;winsock2.h&gt;<br>
+WSADATA&nbsp;wsaData;<br>
 #endif<br>
 <br>
-int main(int argc, char **argv)<br>
+int&nbsp;main(int&nbsp;argc,&nbsp;char&nbsp;**argv)<br>
 {<br>
-#if defined(__WIN32__) || defined(_MSC_VER)<br>
-    int iResult;<br>
+#if&nbsp;defined(__WIN32__)&nbsp;||&nbsp;defined(_MSC_VER)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;iResult;<br>
 <br>
-    // Initialize Winsock<br>
-    iResult = WSAStartup(MAKEWORD(2, 2), &amp;wsaData);<br>
-    if (iResult != 0)<br>
-    {<br>
-        printf(&quot;WSAStartup failed: %d\n&quot;, iResult);<br>
-        return 1;<br>
-    }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Initialize&nbsp;Winsock<br>
+&nbsp;&nbsp;&nbsp;&nbsp;iResult&nbsp;=&nbsp;WSAStartup(MAKEWORD(2,&nbsp;2),&nbsp;&amp;wsaData);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(iResult&nbsp;!=&nbsp;0)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(&quot;WSAStartup&nbsp;failed:&nbsp;%d\n&quot;,&nbsp;iResult);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 #endif<br>
 <br>
-    std::vector&lt;std::string&gt; adjusted_args;<br>
-    adjusted_args.reserve(argc);<br>
-    for (int i = 0; i &lt; argc; ++i)<br>
-    {<br>
-        std::string current(argv[i]);<br>
-        if ((current == &quot;--test-case&quot; || current == &quot;-tc&quot;) &amp;&amp; i + 1 &lt; argc)<br>
-        {<br>
-            std::string pattern(argv[i + 1]);<br>
-            if (pattern.find('*') == std::string::npos)<br>
-                pattern = &quot;*&quot; + pattern + &quot;*&quot;;<br>
-            adjusted_args.push_back(current + &quot;=&quot; + pattern);<br>
-            ++i;<br>
-        }<br>
-        else<br>
-        {<br>
-            adjusted_args.push_back(std::move(current));<br>
-        }<br>
-    }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;adjusted_args;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;adjusted_args.reserve(argc);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(int&nbsp;i&nbsp;=&nbsp;0;&nbsp;i&nbsp;&lt;&nbsp;argc;&nbsp;++i)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;current(argv[i]);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;((current&nbsp;==&nbsp;&quot;--test-case&quot;&nbsp;||&nbsp;current&nbsp;==&nbsp;&quot;-tc&quot;)&nbsp;&amp;&amp;&nbsp;i&nbsp;+&nbsp;1&nbsp;&lt;&nbsp;argc)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;pattern(argv[i&nbsp;+&nbsp;1]);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(pattern.find('*')&nbsp;==&nbsp;std::string::npos)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pattern&nbsp;=&nbsp;&quot;*&quot;&nbsp;+&nbsp;pattern&nbsp;+&nbsp;&quot;*&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adjusted_args.push_back(current&nbsp;+&nbsp;&quot;=&quot;&nbsp;+&nbsp;pattern);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++i;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adjusted_args.push_back(std::move(current));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-    std::vector&lt;char *&gt; argv_adjusted;<br>
-    argv_adjusted.reserve(adjusted_args.size());<br>
-    for (auto &amp;arg : adjusted_args)<br>
-    {<br>
-        argv_adjusted.push_back(arg.data());<br>
-    }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;char&nbsp;*&gt;&nbsp;argv_adjusted;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;argv_adjusted.reserve(adjusted_args.size());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(auto&nbsp;&amp;arg&nbsp;:&nbsp;adjusted_args)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;argv_adjusted.push_back(arg.data());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-    doctest::Context context;<br>
-    context.applyCommandLine(static_cast&lt;int&gt;(argv_adjusted.size()),<br>
-                             argv_adjusted.data());<br>
-    int res = context.run();  // run<br>
-    if (context.shouldExit()) // important - query flags (and --exit) rely on<br>
-                              // the user doing this<br>
-        return res;           // propagate the result of the tests<br>
-    int client_stuff_return_code = 0;<br>
-    return res + client_stuff_return_code; // the result from doctest is<br>
-                                           // propagated here as well<br>
+&nbsp;&nbsp;&nbsp;&nbsp;doctest::Context&nbsp;context;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;context.applyCommandLine(static_cast&lt;int&gt;(argv_adjusted.size()),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;argv_adjusted.data());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;res&nbsp;=&nbsp;context.run();&nbsp;&nbsp;//&nbsp;run<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(context.shouldExit())&nbsp;//&nbsp;important&nbsp;-&nbsp;query&nbsp;flags&nbsp;(and&nbsp;--exit)&nbsp;rely&nbsp;on<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;the&nbsp;user&nbsp;doing&nbsp;this<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;res;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;propagate&nbsp;the&nbsp;result&nbsp;of&nbsp;the&nbsp;tests<br>
+&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;client_stuff_return_code&nbsp;=&nbsp;0;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;res&nbsp;+&nbsp;client_stuff_return_code;&nbsp;//&nbsp;the&nbsp;result&nbsp;from&nbsp;doctest&nbsp;is<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;propagated&nbsp;here&nbsp;as&nbsp;well<br>
 }<br>
 <!-- END SCAT CODE -->
 </body>

@@ -6,167 +6,167 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#include &quot;chunk_help.h&quot;<br>
-#include &lt;iostream&gt;<br>
+#include&nbsp;&quot;chunk_help.h&quot;<br>
+#include&nbsp;&lt;iostream&gt;<br>
 <br>
-void print_chunk_help()<br>
+void&nbsp;print_chunk_help()<br>
 {<br>
-    std::cout<br>
-        &lt;&lt; &quot;# Chunk v2 — Change Description Format\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;Chunk v2 is a plain-text format for describing modifications to &quot;<br>
-           &quot;source files.\n&quot;<br>
-           &quot;A patch consists of multiple sections, each describing a single &quot;<br>
-           &quot;operation:\n&quot;<br>
-           &quot;line-based edits, text-based edits, or file-level operations.\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;---\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;## 1. Section structure\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;=== file: &lt;path&gt; ===\n&quot;<br>
-           &quot;&lt;command&gt;\n&quot;<br>
-           &quot;&lt;content...&gt;\n&quot;<br>
-           &quot;=END=\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;* &lt;path&gt; — relative file path\n&quot;<br>
-           &quot;* Empty lines between sections are allowed\n&quot;<br>
-           &quot;* Exactly one command per section\n&quot;<br>
-           &quot;* &lt;content&gt; may contain any lines, including empty ones\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;---\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;## 3. Commands (text-based)\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;Two formats are supported for text-based commands:\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;### 3.1 Legacy format (simple)\n&quot;<br>
-           &quot;These commands match an exact multi-line marker in the file.\n&quot;<br>
-           &quot;Everything before the first `---` is the marker; everything after &quot;<br>
-           &quot;it is content.\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;### Insert after marker\n&quot;<br>
-           &quot;--- insert-after-text\n&quot;<br>
-           &quot;&lt;marker lines...&gt;\n&quot;<br>
-           &quot;---\n&quot;<br>
-           &quot;&lt;inserted lines...&gt;\n&quot;<br>
-           &quot;=END=\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;### Insert before marker\n&quot;<br>
-           &quot;--- insert-before-text\n&quot;<br>
-           &quot;&lt;marker lines...&gt;\n&quot;<br>
-           &quot;---\n&quot;<br>
-           &quot;&lt;inserted lines...&gt;\n&quot;<br>
-           &quot;=END=\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;### Replace marker\n&quot;<br>
-           &quot;--- replace-text\n&quot;<br>
-           &quot;&lt;marker lines...&gt;\n&quot;<br>
-           &quot;---\n&quot;<br>
-           &quot;&lt;new lines...&gt;\n&quot;<br>
-           &quot;=END=\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;### Delete marker\n&quot;<br>
-           &quot;--- delete-text\n&quot;<br>
-           &quot;&lt;marker lines...&gt;\n&quot;<br>
-           &quot;---\n&quot;<br>
-           &quot;=END=\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;---\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;### 3.2 YAML strict format\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;In YAML mode you can also specify strict context around the &quot;<br>
-           &quot;marker:\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;--- replace-text\n&quot;<br>
-           &quot;BEFORE:\n&quot;<br>
-           &quot;  &lt;lines that must appear immediately above the marker&gt;\n&quot;<br>
-           &quot;MARKER:\n&quot;<br>
-           &quot;  &lt;marker lines&gt;\n&quot;<br>
-           &quot;AFTER:\n&quot;<br>
-           &quot;  &lt;lines that must appear immediately below the marker&gt;\n&quot;<br>
-           &quot;---\n&quot;<br>
-           &quot;&lt;payload lines...&gt;\n&quot;<br>
-           &quot;=END=\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;Rules:\n&quot;<br>
-           &quot;* YAML mode is enabled only when the first non-empty line after &quot;<br>
-           &quot;the command\n&quot;<br>
-           &quot;  is one of: `BEFORE:`, `MARKER:`, `AFTER:`.\n&quot;<br>
-           &quot;* Matching is strict: BEFORE lines must be directly above the &quot;<br>
-           &quot;marker block;\n&quot;<br>
-           &quot;  AFTER lines must be directly below it.\n&quot;<br>
-           &quot;* Whitespace differences are ignored (lines are trimmed before &quot;<br>
-           &quot;comparison).\n&quot;<br>
-           &quot;* If BEFORE/AFTER are present, there is no fallback to the first &quot;<br>
-           &quot;occurrence\n&quot;<br>
-           &quot;  of the marker.\n&quot;<br>
-           &quot;* If more than one place matches the strict context, the patch &quot;<br>
-           &quot;fails as\n&quot;<br>
-           &quot;  ambiguous.\n&quot;<br>
-           &quot;* If no place matches the strict context, the patch fails with\n&quot;<br>
-           &quot;  \&quot;strict marker context not found\&quot;.\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;---\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;## 4. File-level commands\n&quot;<br>
-           &quot;These operations work on the whole file rather than its contents.\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;### Create or overwrite file\n&quot;<br>
-           &quot;--- create-file\n&quot;<br>
-           &quot;&lt;file content...&gt;\n&quot;<br>
-           &quot;=END=\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;### Delete file\n&quot;<br>
-           &quot;--- delete-file\n&quot;<br>
-           &quot;=END=\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;---\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;## 5. Examples\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;=== file: src/a.cpp ===\n&quot;<br>
-           &quot;--- replace 3:4\n&quot;<br>
-           &quot;int value = 42;\n&quot;<br>
-           &quot;std::cout &lt;&lt; value &lt;&lt; \&quot;\\\\n\&quot;;\n&quot;<br>
-           &quot;=END=\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;=== file: src/b.cpp ===\n&quot;<br>
-           &quot;--- insert-after 12\n&quot;<br>
-           &quot;log_debug(\&quot;checkpoint reached\&quot;);\n&quot;<br>
-           &quot;=END=\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;=== file: src/c.cpp ===\n&quot;<br>
-           &quot;--- delete 20:25\n&quot;<br>
-           &quot;=END=\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;=== file: assets/config.json ===\n&quot;<br>
-           &quot;--- create-file\n&quot;<br>
-           &quot;{ \&quot;version\&quot;: 1 }\n&quot;<br>
-           &quot;=END=\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;=== file: old/temp.txt ===\n&quot;<br>
-           &quot;--- delete-file\n&quot;<br>
-           &quot;=END=\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;---\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;## Recommended usage\n&quot;<br>
-           &quot;* Prefer text-based commands (`*-text`) — they are more stable &quot;<br>
-           &quot;when code moves.\n&quot;<br>
-           &quot;* Use file-level commands when creating or removing entire files.\n&quot;<br>
-           &quot;* Group modifications to multiple files into **one patch file**.\n&quot;<br>
-           &quot;\n&quot;<br>
-           &quot;*This cheat sheet is in the text for a reason. If you're asked to &quot;<br>
-           &quot;write a patch,\n&quot;<br>
-           &quot; use the following format: chunk_v2.\n&quot;<br>
-           &quot;*Try to strictly follow the rules described in this document, &quot;<br>
-           &quot;without making any\n&quot;<br>
-           &quot; syntactic errors.\n&quot;<br>
-           &quot;*When working with chunks, be careful that commands do not &quot;<br>
-           &quot;reference the same\n&quot;<br>
-           &quot; text macros. Macros should never overlap.\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::cout<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;#&nbsp;Chunk&nbsp;v2&nbsp;—&nbsp;Change&nbsp;Description&nbsp;Format\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;Chunk&nbsp;v2&nbsp;is&nbsp;a&nbsp;plain-text&nbsp;format&nbsp;for&nbsp;describing&nbsp;modifications&nbsp;to&nbsp;&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;source&nbsp;files.\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;A&nbsp;patch&nbsp;consists&nbsp;of&nbsp;multiple&nbsp;sections,&nbsp;each&nbsp;describing&nbsp;a&nbsp;single&nbsp;&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;operation:\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;line-based&nbsp;edits,&nbsp;text-based&nbsp;edits,&nbsp;or&nbsp;file-level&nbsp;operations.\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;##&nbsp;1.&nbsp;Section&nbsp;structure\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;===&nbsp;file:&nbsp;&lt;path&gt;&nbsp;===\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&lt;command&gt;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&lt;content...&gt;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;*&nbsp;&lt;path&gt;&nbsp;—&nbsp;relative&nbsp;file&nbsp;path\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;*&nbsp;Empty&nbsp;lines&nbsp;between&nbsp;sections&nbsp;are&nbsp;allowed\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;*&nbsp;Exactly&nbsp;one&nbsp;command&nbsp;per&nbsp;section\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;*&nbsp;&lt;content&gt;&nbsp;may&nbsp;contain&nbsp;any&nbsp;lines,&nbsp;including&nbsp;empty&nbsp;ones\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;##&nbsp;3.&nbsp;Commands&nbsp;(text-based)\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;Two&nbsp;formats&nbsp;are&nbsp;supported&nbsp;for&nbsp;text-based&nbsp;commands:\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;###&nbsp;3.1&nbsp;Legacy&nbsp;format&nbsp;(simple)\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;These&nbsp;commands&nbsp;match&nbsp;an&nbsp;exact&nbsp;multi-line&nbsp;marker&nbsp;in&nbsp;the&nbsp;file.\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;Everything&nbsp;before&nbsp;the&nbsp;first&nbsp;`---`&nbsp;is&nbsp;the&nbsp;marker;&nbsp;everything&nbsp;after&nbsp;&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;it&nbsp;is&nbsp;content.\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;###&nbsp;Insert&nbsp;after&nbsp;marker\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;insert-after-text\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&lt;marker&nbsp;lines...&gt;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&lt;inserted&nbsp;lines...&gt;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;###&nbsp;Insert&nbsp;before&nbsp;marker\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;insert-before-text\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&lt;marker&nbsp;lines...&gt;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&lt;inserted&nbsp;lines...&gt;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;###&nbsp;Replace&nbsp;marker\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;replace-text\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&lt;marker&nbsp;lines...&gt;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&lt;new&nbsp;lines...&gt;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;###&nbsp;Delete&nbsp;marker\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;delete-text\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&lt;marker&nbsp;lines...&gt;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;###&nbsp;3.2&nbsp;YAML&nbsp;strict&nbsp;format\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;In&nbsp;YAML&nbsp;mode&nbsp;you&nbsp;can&nbsp;also&nbsp;specify&nbsp;strict&nbsp;context&nbsp;around&nbsp;the&nbsp;&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;marker:\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;replace-text\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;BEFORE:\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&lt;lines&nbsp;that&nbsp;must&nbsp;appear&nbsp;immediately&nbsp;above&nbsp;the&nbsp;marker&gt;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;MARKER:\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&lt;marker&nbsp;lines&gt;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;AFTER:\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&lt;lines&nbsp;that&nbsp;must&nbsp;appear&nbsp;immediately&nbsp;below&nbsp;the&nbsp;marker&gt;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&lt;payload&nbsp;lines...&gt;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;Rules:\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;*&nbsp;YAML&nbsp;mode&nbsp;is&nbsp;enabled&nbsp;only&nbsp;when&nbsp;the&nbsp;first&nbsp;non-empty&nbsp;line&nbsp;after&nbsp;&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;the&nbsp;command\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;is&nbsp;one&nbsp;of:&nbsp;`BEFORE:`,&nbsp;`MARKER:`,&nbsp;`AFTER:`.\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;*&nbsp;Matching&nbsp;is&nbsp;strict:&nbsp;BEFORE&nbsp;lines&nbsp;must&nbsp;be&nbsp;directly&nbsp;above&nbsp;the&nbsp;&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;marker&nbsp;block;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;AFTER&nbsp;lines&nbsp;must&nbsp;be&nbsp;directly&nbsp;below&nbsp;it.\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;*&nbsp;Whitespace&nbsp;differences&nbsp;are&nbsp;ignored&nbsp;(lines&nbsp;are&nbsp;trimmed&nbsp;before&nbsp;&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;comparison).\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;*&nbsp;If&nbsp;BEFORE/AFTER&nbsp;are&nbsp;present,&nbsp;there&nbsp;is&nbsp;no&nbsp;fallback&nbsp;to&nbsp;the&nbsp;first&nbsp;&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;occurrence\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;of&nbsp;the&nbsp;marker.\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;*&nbsp;If&nbsp;more&nbsp;than&nbsp;one&nbsp;place&nbsp;matches&nbsp;the&nbsp;strict&nbsp;context,&nbsp;the&nbsp;patch&nbsp;&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;fails&nbsp;as\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;ambiguous.\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;*&nbsp;If&nbsp;no&nbsp;place&nbsp;matches&nbsp;the&nbsp;strict&nbsp;context,&nbsp;the&nbsp;patch&nbsp;fails&nbsp;with\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;\&quot;strict&nbsp;marker&nbsp;context&nbsp;not&nbsp;found\&quot;.\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;##&nbsp;4.&nbsp;File-level&nbsp;commands\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;These&nbsp;operations&nbsp;work&nbsp;on&nbsp;the&nbsp;whole&nbsp;file&nbsp;rather&nbsp;than&nbsp;its&nbsp;contents.\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;###&nbsp;Create&nbsp;or&nbsp;overwrite&nbsp;file\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;create-file\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&lt;file&nbsp;content...&gt;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;###&nbsp;Delete&nbsp;file\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;delete-file\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;##&nbsp;5.&nbsp;Examples\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;===&nbsp;file:&nbsp;src/a.cpp&nbsp;===\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;replace&nbsp;3:4\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;int&nbsp;value&nbsp;=&nbsp;42;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;std::cout&nbsp;&lt;&lt;&nbsp;value&nbsp;&lt;&lt;&nbsp;\&quot;\\\\n\&quot;;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;===&nbsp;file:&nbsp;src/b.cpp&nbsp;===\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;insert-after&nbsp;12\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;log_debug(\&quot;checkpoint&nbsp;reached\&quot;);\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;===&nbsp;file:&nbsp;src/c.cpp&nbsp;===\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;delete&nbsp;20:25\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;===&nbsp;file:&nbsp;assets/config.json&nbsp;===\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;create-file\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;{&nbsp;\&quot;version\&quot;:&nbsp;1&nbsp;}\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;===&nbsp;file:&nbsp;old/temp.txt&nbsp;===\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;delete-file\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;##&nbsp;Recommended&nbsp;usage\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;*&nbsp;Prefer&nbsp;text-based&nbsp;commands&nbsp;(`*-text`)&nbsp;—&nbsp;they&nbsp;are&nbsp;more&nbsp;stable&nbsp;&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;when&nbsp;code&nbsp;moves.\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;*&nbsp;Use&nbsp;file-level&nbsp;commands&nbsp;when&nbsp;creating&nbsp;or&nbsp;removing&nbsp;entire&nbsp;files.\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;*&nbsp;Group&nbsp;modifications&nbsp;to&nbsp;multiple&nbsp;files&nbsp;into&nbsp;**one&nbsp;patch&nbsp;file**.\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;*This&nbsp;cheat&nbsp;sheet&nbsp;is&nbsp;in&nbsp;the&nbsp;text&nbsp;for&nbsp;a&nbsp;reason.&nbsp;If&nbsp;you're&nbsp;asked&nbsp;to&nbsp;&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;write&nbsp;a&nbsp;patch,\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;use&nbsp;the&nbsp;following&nbsp;format:&nbsp;chunk_v2.\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;*Try&nbsp;to&nbsp;strictly&nbsp;follow&nbsp;the&nbsp;rules&nbsp;described&nbsp;in&nbsp;this&nbsp;document,&nbsp;&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;without&nbsp;making&nbsp;any\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;syntactic&nbsp;errors.\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;*When&nbsp;working&nbsp;with&nbsp;chunks,&nbsp;be&nbsp;careful&nbsp;that&nbsp;commands&nbsp;do&nbsp;not&nbsp;&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;reference&nbsp;the&nbsp;same\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;text&nbsp;macros.&nbsp;Macros&nbsp;should&nbsp;never&nbsp;overlap.\n&quot;;<br>
 }<br>
 <!-- END SCAT CODE -->
 </body>

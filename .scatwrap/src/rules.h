@@ -6,29 +6,29 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#pragma once<br>
-#include &lt;string&gt;<br>
+#pragma&nbsp;once<br>
+#include&nbsp;&lt;string&gt;<br>
 <br>
-struct Rule<br>
+struct&nbsp;Rule<br>
 {<br>
-    std::string pattern;<br>
-    bool exclude = false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;pattern;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;exclude&nbsp;=&nbsp;false;<br>
 <br>
-    static Rule from_string(const std::string &amp;line)<br>
-    {<br>
-        Rule r;<br>
-        if (!line.empty() &amp;&amp; line[0] == '!')<br>
-        {<br>
-            r.exclude = true;<br>
-            r.pattern = line.substr(1);<br>
-        }<br>
-        else<br>
-        {<br>
-            r.exclude = false;<br>
-            r.pattern = line;<br>
-        }<br>
-        return r;<br>
-    }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;static&nbsp;Rule&nbsp;from_string(const&nbsp;std::string&nbsp;&amp;line)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Rule&nbsp;r;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!line.empty()&nbsp;&amp;&amp;&nbsp;line[0]&nbsp;==&nbsp;'!')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;r.exclude&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;r.pattern&nbsp;=&nbsp;line.substr(1);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;r.exclude&nbsp;=&nbsp;false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;r.pattern&nbsp;=&nbsp;line;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;r;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 };<br>
 <!-- END SCAT CODE -->
 </body>

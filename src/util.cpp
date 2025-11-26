@@ -126,14 +126,13 @@ std::string wrap_cpp_as_html(std::string_view cpp_code,
     html += "<head>\n";
     html += "  <meta charset=\"UTF-8\">\n";
     html += "  <title>";
-    html += html_escape(title);      // на всякий случай экранируем title
+    html += html_escape(title);      // title экранируем, пробелы оставляем обычными
     html += "</title>\n";
     html += "</head>\n";
     html += "<body>\n";
 
     html += "<!-- BEGIN SCAT CODE -->\n";
 
-    // Разбиваем по строкам и каждая строка = escaped + <br>
     std::size_t pos = 0;
     const std::size_t n = cpp_code.size();
 
@@ -144,10 +143,22 @@ std::string wrap_cpp_as_html(std::string_view cpp_code,
             nl = n;
 
         std::string_view line = cpp_code.substr(pos, nl - pos);
-        html += html_escape(line);
+
+        // 1) экранируем спецсимволы (&, <, >, ")
+        std::string escaped = html_escape(line);
+
+        // 2) превращаем каждый пробел в &nbsp;, чтобы отступы не схлопывались
+        for (char ch : escaped)
+        {
+            if (ch == ' ')
+                html += "&nbsp;";
+            else
+                html.push_back(ch);
+        }
+
         html += "<br>\n";
 
-        pos = nl + 1; // если nl == n, pos станет > n и цикл закончится
+        pos = nl + 1;
     }
 
     html += "<!-- END SCAT CODE -->\n";
@@ -157,4 +168,5 @@ std::string wrap_cpp_as_html(std::string_view cpp_code,
 
     return html;
 }
+
 
