@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>scat.txt</title>
+</head>
+<body>
+<pre><code>
+src/*
+tests/*
+!tests/doctest/**
+CMakeLists.txt
+scat.txt
+README.md
+
+[TREE]
+**
+!CMakeFiles/**
+!.github/**
+!.git/**
+
+</code></pre>
+</body>
+</html>
