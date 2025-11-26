@@ -324,6 +324,7 @@ int scat_main(int argc, char** argv)
             struct Item
             {
                 fs::path path;
+                std::string display;
                 std::uintmax_t size;
             };
 
@@ -331,11 +332,18 @@ int scat_main(int argc, char** argv)
             items.reserve(text_files.size());
 
             std::uintmax_t total = 0;
+            std::size_t max_name = 0;
+
             for (auto& f : text_files)
             {
-                auto sz = get_file_size(f);
+                auto disp = make_display_path(f);
+                auto sz   = get_file_size(f);
+
                 total += sz;
-                items.push_back(Item{f, sz});
+                if (disp.size() > max_name)
+                    max_name = disp.size();
+
+                items.push_back(Item{f, disp, sz});
             }
 
             if (opt.sorted)
@@ -345,15 +353,20 @@ int scat_main(int argc, char** argv)
                           {
                               if (a.size != b.size)
                                   return a.size > b.size; // по убыванию
-                              return make_display_path(a.path) <
-                                     make_display_path(b.path);
+                              return a.display < b.display;
                           });
             }
 
             for (const auto& it : items)
             {
-                std::cout << make_display_path(it.path)
-                          << " (" << it.size << " bytes)\n";
+                std::cout << it.display;
+                if (max_name > it.display.size())
+                {
+                    std::size_t pad = max_name - it.display.size();
+                    for (std::size_t i = 0; i < pad; ++i)
+                        std::cout << ' ';
+                }
+                std::cout << " (" << it.size << " bytes)\n";
             }
 
             std::cout << "Total size: " << total << " bytes\n";
@@ -411,6 +424,7 @@ int scat_main(int argc, char** argv)
         struct Item
         {
             fs::path path;
+            std::string display;
             std::uintmax_t size;
         };
 
@@ -418,11 +432,18 @@ int scat_main(int argc, char** argv)
         items.reserve(files.size());
 
         std::uintmax_t total = 0;
+        std::size_t max_name = 0;
+
         for (auto& f : files)
         {
-            auto sz = get_file_size(f);
+            auto disp = make_display_path(f);
+            auto sz   = get_file_size(f);
+
             total += sz;
-            items.push_back(Item{f, sz});
+            if (disp.size() > max_name)
+                max_name = disp.size();
+
+            items.push_back(Item{f, disp, sz});
         }
 
         if (opt.sorted)
@@ -432,15 +453,20 @@ int scat_main(int argc, char** argv)
                       {
                           if (a.size != b.size)
                               return a.size > b.size; // по убыванию
-                          return make_display_path(a.path) <
-                                 make_display_path(b.path);
+                          return a.display < b.display;
                       });
         }
 
         for (const auto& it : items)
         {
-            std::cout << make_display_path(it.path)
-                      << " (" << it.size << " bytes)\n";
+            std::cout << it.display;
+            if (max_name > it.display.size())
+            {
+                std::size_t pad = max_name - it.display.size();
+                for (std::size_t i = 0; i < pad; ++i)
+                    std::cout << ' ';
+            }
+            std::cout << " (" << it.size << " bytes)\n";
         }
 
         std::cout << "Total size: " << total << " bytes\n";
