@@ -123,30 +123,49 @@ std::string html_escape(std::string_view src)
     return out;
 }
 
-std::string wrap_cpp_as_html(std::string_view cpp_code, std::string_view title)
+std::string wrap_cpp_as_html(std::string_view cpp_code,
+                             std::string_view title)
 {
-    std::string escaped = html_escape(cpp_code);
-
     std::string html;
-    html.reserve(escaped.size() + 256);
+    html.reserve(cpp_code.size() * 11 / 10 + 256);
 
     html += &quot;&lt;!DOCTYPE html&gt;\n&quot;;
     html += &quot;&lt;html lang=\&quot;en\&quot;&gt;\n&quot;;
     html += &quot;&lt;head&gt;\n&quot;;
     html += &quot;  &lt;meta charset=\&quot;UTF-8\&quot;&gt;\n&quot;;
     html += &quot;  &lt;title&gt;&quot;;
-    html += std::string(title);
+    html += html_escape(title);      // на всякий случай экранируем title
     html += &quot;&lt;/title&gt;\n&quot;;
     html += &quot;&lt;/head&gt;\n&quot;;
     html += &quot;&lt;body&gt;\n&quot;;
-    html += &quot;&lt;pre&gt;&lt;code&gt;\n&quot;;
-    html += escaped;
-    html += &quot;\n&lt;/code&gt;&lt;/pre&gt;\n&quot;;
+
+    html += &quot;&lt;!-- BEGIN SCAT CODE --&gt;\n&quot;;
+
+    // Разбиваем по строкам и каждая строка = escaped + &lt;br&gt;
+    std::size_t pos = 0;
+    const std::size_t n = cpp_code.size();
+
+    while (pos &lt; n)
+    {
+        std::size_t nl = cpp_code.find('\n', pos);
+        if (nl == std::string_view::npos)
+            nl = n;
+
+        std::string_view line = cpp_code.substr(pos, nl - pos);
+        html += html_escape(line);
+        html += &quot;&lt;br&gt;\n&quot;;
+
+        pos = nl + 1; // если nl == n, pos станет &gt; n и цикл закончится
+    }
+
+    html += &quot;&lt;!-- END SCAT CODE --&gt;\n&quot;;
+
     html += &quot;&lt;/body&gt;\n&quot;;
     html += &quot;&lt;/html&gt;\n&quot;;
 
     return html;
 }
+
 
 </code></pre>
 </body>

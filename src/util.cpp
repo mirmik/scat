@@ -115,27 +115,46 @@ std::string html_escape(std::string_view src)
     return out;
 }
 
-std::string wrap_cpp_as_html(std::string_view cpp_code, std::string_view title)
+std::string wrap_cpp_as_html(std::string_view cpp_code,
+                             std::string_view title)
 {
-    std::string escaped = html_escape(cpp_code);
-
     std::string html;
-    html.reserve(escaped.size() + 256);
+    html.reserve(cpp_code.size() * 11 / 10 + 256);
 
     html += "<!DOCTYPE html>\n";
     html += "<html lang=\"en\">\n";
     html += "<head>\n";
     html += "  <meta charset=\"UTF-8\">\n";
     html += "  <title>";
-    html += std::string(title);
+    html += html_escape(title);      // на всякий случай экранируем title
     html += "</title>\n";
     html += "</head>\n";
     html += "<body>\n";
-    html += "<pre><code>\n";
-    html += escaped;
-    html += "\n</code></pre>\n";
+
+    html += "<!-- BEGIN SCAT CODE -->\n";
+
+    // Разбиваем по строкам и каждая строка = escaped + <br>
+    std::size_t pos = 0;
+    const std::size_t n = cpp_code.size();
+
+    while (pos < n)
+    {
+        std::size_t nl = cpp_code.find('\n', pos);
+        if (nl == std::string_view::npos)
+            nl = n;
+
+        std::string_view line = cpp_code.substr(pos, nl - pos);
+        html += html_escape(line);
+        html += "<br>\n";
+
+        pos = nl + 1; // если nl == n, pos станет > n и цикл закончится
+    }
+
+    html += "<!-- END SCAT CODE -->\n";
+
     html += "</body>\n";
     html += "</html>\n";
 
     return html;
 }
+
