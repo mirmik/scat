@@ -6,13 +6,13 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#pragma once<br>
-#include &quot;chunk_help.h&quot;<br>
-#include &lt;filesystem&gt;<br>
-#include &lt;vector&gt;<br>
+#pragma&nbsp;once<br>
+#include&nbsp;&quot;chunk_help.h&quot;<br>
+#include&nbsp;&lt;filesystem&gt;<br>
+#include&nbsp;&lt;vector&gt;<br>
 <br>
-int scat_main(int argc, char **argv);<br>
-void print_tree(const std::vector&lt;std::filesystem::path&gt; &amp;files);<br>
+int&nbsp;scat_main(int&nbsp;argc,&nbsp;char&nbsp;**argv);<br>
+void&nbsp;print_tree(const&nbsp;std::vector&lt;std::filesystem::path&gt;&nbsp;&amp;files);<br>
 <!-- END SCAT CODE -->
 </body>
 </html>

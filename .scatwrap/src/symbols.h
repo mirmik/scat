@@ -6,114 +6,114 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#pragma once<br>
+#pragma&nbsp;once<br>
 <br>
-#include &lt;cstddef&gt;<br>
-#include &lt;string&gt;<br>
-#include &lt;vector&gt;<br>
+#include&nbsp;&lt;cstddef&gt;<br>
+#include&nbsp;&lt;string&gt;<br>
+#include&nbsp;&lt;vector&gt;<br>
 <br>
-// Диапазон строк в файле (0-based, включительно).<br>
-struct Region<br>
+//&nbsp;Диапазон&nbsp;строк&nbsp;в&nbsp;файле&nbsp;(0-based,&nbsp;включительно).<br>
+struct&nbsp;Region<br>
 {<br>
-&#9;int start_line = -1; // inclusive<br>
-&#9;int end_line = -1;   // inclusive<br>
+&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;start_line&nbsp;=&nbsp;-1;&nbsp;//&nbsp;inclusive<br>
+&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;end_line&nbsp;=&nbsp;-1;&nbsp;&nbsp;&nbsp;//&nbsp;inclusive<br>
 };<br>
 <br>
-// Простейший поисковик C++-символов.<br>
-// Умеет:<br>
-//   * находить определение класса (class / struct)<br>
-//   * искать методы внутри класса (по имени)<br>
-class CppSymbolFinder<br>
+//&nbsp;Простейший&nbsp;поисковик&nbsp;C++-символов.<br>
+//&nbsp;Умеет:<br>
+//&nbsp;&nbsp;&nbsp;*&nbsp;находить&nbsp;определение&nbsp;класса&nbsp;(class&nbsp;/&nbsp;struct)<br>
+//&nbsp;&nbsp;&nbsp;*&nbsp;искать&nbsp;методы&nbsp;внутри&nbsp;класса&nbsp;(по&nbsp;имени)<br>
+class&nbsp;CppSymbolFinder<br>
 {<br>
 public:<br>
-&#9;// text — полный текст файла.<br>
-&#9;explicit CppSymbolFinder(const std::string &amp;text);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;text&nbsp;—&nbsp;полный&nbsp;текст&nbsp;файла.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;explicit&nbsp;CppSymbolFinder(const&nbsp;std::string&nbsp;&amp;text);<br>
 <br>
-&#9;const std::vector&lt;std::string&gt; &amp;lines() const<br>
-&#9;{<br>
-&#9;&#9;return m_lines;<br>
-&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::vector&lt;std::string&gt;&nbsp;&amp;lines()&nbsp;const<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;m_lines;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;// Находит определение класса (НЕ forward-declaration).<br>
-&#9;// Возвращает true, если класс найден.<br>
-&#9;bool find_class(const std::string &amp;class_name, Region &amp;out) const;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Находит&nbsp;определение&nbsp;класса&nbsp;(НЕ&nbsp;forward-declaration).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Возвращает&nbsp;true,&nbsp;если&nbsp;класс&nbsp;найден.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;find_class(const&nbsp;std::string&nbsp;&amp;class_name,&nbsp;Region&nbsp;&amp;out)&nbsp;const;<br>
 <br>
-&#9;// Находит метод внутри класса (по имени).<br>
-&#9;// Ищет только внутри тела class/struct class_name.<br>
-&#9;// Возвращает диапазон строк от начала объявления/определения<br>
-&#9;// до ';' или закрывающей '}'.<br>
-&#9;bool find_method(const std::string &amp;class_name,<br>
-&#9;&#9;&#9;&#9;&#9;const std::string &amp;method_name,<br>
-&#9;&#9;&#9;&#9;&#9;Region &amp;out) const;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Находит&nbsp;метод&nbsp;внутри&nbsp;класса&nbsp;(по&nbsp;имени).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Ищет&nbsp;только&nbsp;внутри&nbsp;тела&nbsp;class/struct&nbsp;class_name.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Возвращает&nbsp;диапазон&nbsp;строк&nbsp;от&nbsp;начала&nbsp;объявления/определения<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;до&nbsp;';'&nbsp;или&nbsp;закрывающей&nbsp;'}'.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;find_method(const&nbsp;std::string&nbsp;&amp;class_name,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;&amp;method_name,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;&amp;out)&nbsp;const;<br>
 <br>
 private:<br>
-&#9;struct Token<br>
-&#9;{<br>
-&#9;&#9;enum Kind<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;Identifier,<br>
-&#9;&#9;&#9;Keyword,<br>
-&#9;&#9;&#9;Symbol<br>
-&#9;&#9;} kind;<br>
-&#9;&#9;std::string text;<br>
-&#9;&#9;int line = 0; // 0-based<br>
-&#9;};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;struct&nbsp;Token<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;enum&nbsp;Kind<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Identifier,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Keyword,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Symbol<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;kind;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;text;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;line&nbsp;=&nbsp;0;&nbsp;//&nbsp;0-based<br>
+&nbsp;&nbsp;&nbsp;&nbsp;};<br>
 <br>
-&#9;struct ClassRange<br>
-&#9;{<br>
-&#9;&#9;Region region;<br>
-&#9;&#9;std::size_t body_start_token = 0; // индекс '{'<br>
-&#9;&#9;std::size_t body_end_token = 0;   // индекс '}' (или '};')<br>
-&#9;};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;struct&nbsp;ClassRange<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;region;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;body_start_token&nbsp;=&nbsp;0;&nbsp;//&nbsp;индекс&nbsp;'{'<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;body_end_token&nbsp;=&nbsp;0;&nbsp;&nbsp;&nbsp;//&nbsp;индекс&nbsp;'}'&nbsp;(или&nbsp;'};')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;};<br>
 <br>
-&#9;std::vector&lt;std::string&gt; m_lines;<br>
-&#9;std::vector&lt;Token&gt; m_tokens;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;m_lines;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;Token&gt;&nbsp;m_tokens;<br>
 <br>
-&#9;void tokenize(const std::string &amp;text);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;void&nbsp;tokenize(const&nbsp;std::string&nbsp;&amp;text);<br>
 <br>
-&#9;static bool is_ident_start(char c);<br>
-&#9;static bool is_ident_char(char c);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;static&nbsp;bool&nbsp;is_ident_start(char&nbsp;c);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;static&nbsp;bool&nbsp;is_ident_char(char&nbsp;c);<br>
 <br>
-&#9;bool find_class_internal(const std::string &amp;class_name,<br>
-&#9;&#9;&#9;&#9;&#9;&#9;&#9;ClassRange &amp;out) const;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;find_class_internal(const&nbsp;std::string&nbsp;&amp;class_name,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ClassRange&nbsp;&amp;out)&nbsp;const;<br>
 };<br>
 <br>
-// Простейший поисковик Python-символов.<br>
-// Умеет:<br>
-//   * находить определение класса (class Foo:)<br>
-//   * искать методы внутри класса (def bar(self, ...))<br>
-class PythonSymbolFinder<br>
+//&nbsp;Простейший&nbsp;поисковик&nbsp;Python-символов.<br>
+//&nbsp;Умеет:<br>
+//&nbsp;&nbsp;&nbsp;*&nbsp;находить&nbsp;определение&nbsp;класса&nbsp;(class&nbsp;Foo:)<br>
+//&nbsp;&nbsp;&nbsp;*&nbsp;искать&nbsp;методы&nbsp;внутри&nbsp;класса&nbsp;(def&nbsp;bar(self,&nbsp;...))<br>
+class&nbsp;PythonSymbolFinder<br>
 {<br>
 public:<br>
-&#9;explicit PythonSymbolFinder(const std::string &amp;text);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;explicit&nbsp;PythonSymbolFinder(const&nbsp;std::string&nbsp;&amp;text);<br>
 <br>
-&#9;const std::vector&lt;std::string&gt; &amp;lines() const<br>
-&#9;{<br>
-&#9;&#9;return m_lines;<br>
-&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::vector&lt;std::string&gt;&nbsp;&amp;lines()&nbsp;const<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;m_lines;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;// Находит определение класса (первое вхождение с таким именем).<br>
-&#9;// Region покрывает строку 'class ...' и всё тело класса до dedent.<br>
-&#9;bool find_class(const std::string &amp;class_name, Region &amp;out) const;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Находит&nbsp;определение&nbsp;класса&nbsp;(первое&nbsp;вхождение&nbsp;с&nbsp;таким&nbsp;именем).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Region&nbsp;покрывает&nbsp;строку&nbsp;'class&nbsp;...'&nbsp;и&nbsp;всё&nbsp;тело&nbsp;класса&nbsp;до&nbsp;dedent.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;find_class(const&nbsp;std::string&nbsp;&amp;class_name,&nbsp;Region&nbsp;&amp;out)&nbsp;const;<br>
 <br>
-&#9;// Находит метод внутри класса.<br>
-&#9;// Ищет def / async def с именем method_name,<br>
-&#9;// являющийся &quot;первым уровнем&quot; внутри тела class_name.<br>
-&#9;// Region покрывает строку def (включая декораторы над ней) и всё тело до<br>
-&#9;// dedent.<br>
-&#9;bool find_method(const std::string &amp;class_name,<br>
-&#9;&#9;&#9;&#9;&#9;const std::string &amp;method_name,<br>
-&#9;&#9;&#9;&#9;&#9;Region &amp;out) const;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Находит&nbsp;метод&nbsp;внутри&nbsp;класса.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Ищет&nbsp;def&nbsp;/&nbsp;async&nbsp;def&nbsp;с&nbsp;именем&nbsp;method_name,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;являющийся&nbsp;&quot;первым&nbsp;уровнем&quot;&nbsp;внутри&nbsp;тела&nbsp;class_name.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Region&nbsp;покрывает&nbsp;строку&nbsp;def&nbsp;(включая&nbsp;декораторы&nbsp;над&nbsp;ней)&nbsp;и&nbsp;всё&nbsp;тело&nbsp;до<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;dedent.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;find_method(const&nbsp;std::string&nbsp;&amp;class_name,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;&amp;method_name,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;&amp;out)&nbsp;const;<br>
 <br>
 private:<br>
-&#9;std::vector&lt;std::string&gt; m_lines;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;m_lines;<br>
 <br>
-&#9;static int calc_indent(const std::string &amp;line);<br>
-&#9;static std::size_t first_code_pos(const std::string &amp;line);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;static&nbsp;int&nbsp;calc_indent(const&nbsp;std::string&nbsp;&amp;line);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;static&nbsp;std::size_t&nbsp;first_code_pos(const&nbsp;std::string&nbsp;&amp;line);<br>
 <br>
-&#9;bool find_class_internal(const std::string &amp;class_name,<br>
-&#9;&#9;&#9;&#9;&#9;&#9;&#9;Region &amp;out,<br>
-&#9;&#9;&#9;&#9;&#9;&#9;&#9;int &amp;class_indent) const;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;find_class_internal(const&nbsp;std::string&nbsp;&amp;class_name,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;&amp;out,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;&amp;class_indent)&nbsp;const;<br>
 };<br>
 <!-- END SCAT CODE -->
 </body>

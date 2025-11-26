@@ -6,78 +6,78 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#include &quot;clipboard.h&quot;<br>
-#include &lt;cstdio&gt;<br>
-#include &lt;iostream&gt;<br>
+#include&nbsp;&quot;clipboard.h&quot;<br>
+#include&nbsp;&lt;cstdio&gt;<br>
+#include&nbsp;&lt;iostream&gt;<br>
 <br>
-// Копирование текста в системный буфер обмена.<br>
-// Платформы:<br>
-//   Linux/Unix: wl-copy, xclip, xsel (что найдётся и успешно отработает)<br>
-//   macOS: pbcopy<br>
-//   Windows: clip<br>
-void copy_to_clipboard(const std::string &amp;text)<br>
+//&nbsp;Копирование&nbsp;текста&nbsp;в&nbsp;системный&nbsp;буфер&nbsp;обмена.<br>
+//&nbsp;Платформы:<br>
+//&nbsp;&nbsp;&nbsp;Linux/Unix:&nbsp;wl-copy,&nbsp;xclip,&nbsp;xsel&nbsp;(что&nbsp;найдётся&nbsp;и&nbsp;успешно&nbsp;отработает)<br>
+//&nbsp;&nbsp;&nbsp;macOS:&nbsp;pbcopy<br>
+//&nbsp;&nbsp;&nbsp;Windows:&nbsp;clip<br>
+void&nbsp;copy_to_clipboard(const&nbsp;std::string&nbsp;&amp;text)<br>
 {<br>
-&#9;if (text.empty())<br>
-&#9;&#9;return;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(text.empty())<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;<br>
 <br>
-#if defined(_WIN32)<br>
-&#9;FILE *pipe = _popen(&quot;clip&quot;, &quot;w&quot;);<br>
-&#9;if (!pipe)<br>
-&#9;&#9;return;<br>
-&#9;std::fwrite(text.data(), 1, text.size(), pipe);<br>
-&#9;_pclose(pipe);<br>
-#elif defined(__APPLE__)<br>
-&#9;FILE *pipe = popen(&quot;pbcopy&quot;, &quot;w&quot;);<br>
-&#9;if (!pipe)<br>
-&#9;&#9;return;<br>
-&#9;std::fwrite(text.data(), 1, text.size(), pipe);<br>
-&#9;pclose(pipe);<br>
+#if&nbsp;defined(_WIN32)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;FILE&nbsp;*pipe&nbsp;=&nbsp;_popen(&quot;clip&quot;,&nbsp;&quot;w&quot;);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!pipe)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::fwrite(text.data(),&nbsp;1,&nbsp;text.size(),&nbsp;pipe);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;_pclose(pipe);<br>
+#elif&nbsp;defined(__APPLE__)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;FILE&nbsp;*pipe&nbsp;=&nbsp;popen(&quot;pbcopy&quot;,&nbsp;&quot;w&quot;);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!pipe)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::fwrite(text.data(),&nbsp;1,&nbsp;text.size(),&nbsp;pipe);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;pclose(pipe);<br>
 #else<br>
-&#9;// POSIX: пытаемся по очереди несколько утилит.<br>
-&#9;// stderr каждой уводим в /dev/null, чтобы они не засоряли терминал.<br>
-&#9;const char *commands[] = {<br>
-&#9;&#9;&quot;wl-copy 2&gt;/dev/null&quot;,<br>
-&#9;&#9;&quot;xclip -selection clipboard 2&gt;/dev/null&quot;,<br>
-&#9;&#9;&quot;xsel --clipboard --input 2&gt;/dev/null&quot;,<br>
-&#9;};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;POSIX:&nbsp;пытаемся&nbsp;по&nbsp;очереди&nbsp;несколько&nbsp;утилит.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;stderr&nbsp;каждой&nbsp;уводим&nbsp;в&nbsp;/dev/null,&nbsp;чтобы&nbsp;они&nbsp;не&nbsp;засоряли&nbsp;терминал.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;char&nbsp;*commands[]&nbsp;=&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;wl-copy&nbsp;2&gt;/dev/null&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;xclip&nbsp;-selection&nbsp;clipboard&nbsp;2&gt;/dev/null&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;xsel&nbsp;--clipboard&nbsp;--input&nbsp;2&gt;/dev/null&quot;,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;};<br>
 <br>
-&#9;for (const char *cmd : commands)<br>
-&#9;{<br>
-&#9;&#9;FILE *pipe = popen(cmd, &quot;w&quot;);<br>
-&#9;&#9;if (!pipe)<br>
-&#9;&#9;&#9;continue;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(const&nbsp;char&nbsp;*cmd&nbsp;:&nbsp;commands)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FILE&nbsp;*pipe&nbsp;=&nbsp;popen(cmd,&nbsp;&quot;w&quot;);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!pipe)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
 <br>
-&#9;&#9;std::fwrite(text.data(), 1, text.size(), pipe);<br>
-&#9;&#9;int rc = pclose(pipe);<br>
-&#9;&#9;if (rc == 0)<br>
-&#9;&#9;&#9;break; // какая-то из утилит успешно отработала<br>
-&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::fwrite(text.data(),&nbsp;1,&nbsp;text.size(),&nbsp;pipe);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;rc&nbsp;=&nbsp;pclose(pipe);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(rc&nbsp;==&nbsp;0)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;&nbsp;//&nbsp;какая-то&nbsp;из&nbsp;утилит&nbsp;успешно&nbsp;отработала<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 #endif<br>
 }<br>
 <br>
-CopyGuard::CopyGuard(bool enabled) : enabled_(enabled), old_buf_(nullptr)<br>
+CopyGuard::CopyGuard(bool&nbsp;enabled)&nbsp;:&nbsp;enabled_(enabled),&nbsp;old_buf_(nullptr)<br>
 {<br>
-&#9;if (enabled_)<br>
-&#9;{<br>
-&#9;&#9;old_buf_ = std::cout.rdbuf(buffer_.rdbuf());<br>
-&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(enabled_)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;old_buf_&nbsp;=&nbsp;std::cout.rdbuf(buffer_.rdbuf());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 }<br>
 <br>
 CopyGuard::~CopyGuard()<br>
 {<br>
-&#9;if (!enabled_)<br>
-&#9;&#9;return;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!enabled_)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;<br>
 <br>
-&#9;// вернуть настоящий буфер std::cout<br>
-&#9;std::cout.rdbuf(old_buf_);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;вернуть&nbsp;настоящий&nbsp;буфер&nbsp;std::cout<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::cout.rdbuf(old_buf_);<br>
 <br>
-&#9;const std::string out = buffer_.str();<br>
-&#9;if (!out.empty())<br>
-&#9;{<br>
-&#9;&#9;// НИЧЕГО не печатаем в консоль!<br>
-&#9;&#9;// Просто отправляем весь текст в буфер обмена.<br>
-&#9;&#9;copy_to_clipboard(out);<br>
-&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;out&nbsp;=&nbsp;buffer_.str();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!out.empty())<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;НИЧЕГО&nbsp;не&nbsp;печатаем&nbsp;в&nbsp;консоль!<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Просто&nbsp;отправляем&nbsp;весь&nbsp;текст&nbsp;в&nbsp;буфер&nbsp;обмена.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;copy_to_clipboard(out);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 }<br>
 <!-- END SCAT CODE -->
 </body>

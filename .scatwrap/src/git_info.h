@@ -6,34 +6,34 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#pragma once<br>
+#pragma&nbsp;once<br>
 <br>
-#include &lt;string&gt;<br>
+#include&nbsp;&lt;string&gt;<br>
 <br>
-struct GitInfo<br>
+struct&nbsp;GitInfo<br>
 {<br>
-&#9;std::string commit;<br>
-&#9;std::string remote;<br>
-&#9;bool has_commit = false;<br>
-&#9;bool has_remote = false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;commit;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;remote;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;has_commit&nbsp;=&nbsp;false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;has_remote&nbsp;=&nbsp;false;<br>
 };<br>
 <br>
-struct GitHubInfo<br>
+struct&nbsp;GitHubInfo<br>
 {<br>
-&#9;std::string user;<br>
-&#9;std::string repo;<br>
-&#9;std::string commit;<br>
-&#9;bool ok = false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;user;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;repo;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;commit;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;ok&nbsp;=&nbsp;false;<br>
 };<br>
 <br>
-// Tries to detect git commit hash and remote origin URL<br>
-GitInfo detect_git_info();<br>
-bool parse_github_remote(const std::string &amp;remote,<br>
-&#9;&#9;&#9;&#9;&#9;&#9;std::string &amp;user,<br>
-&#9;&#9;&#9;&#9;&#9;&#9;std::string &amp;repo);<br>
+//&nbsp;Tries&nbsp;to&nbsp;detect&nbsp;git&nbsp;commit&nbsp;hash&nbsp;and&nbsp;remote&nbsp;origin&nbsp;URL<br>
+GitInfo&nbsp;detect_git_info();<br>
+bool&nbsp;parse_github_remote(const&nbsp;std::string&nbsp;&amp;remote,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;&amp;user,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;&amp;repo);<br>
 <br>
-GitHubInfo detect_github_info();<br>
-std::string detect_git_dir(); // NEW<br>
+GitHubInfo&nbsp;detect_github_info();<br>
+std::string&nbsp;detect_git_dir();&nbsp;//&nbsp;NEW<br>
 <!-- END SCAT CODE -->
 </body>
 </html>

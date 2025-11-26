@@ -6,44 +6,44 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#include &quot;scat.h&quot;<br>
-#include &quot;doctest/doctest.h&quot;<br>
-#include &lt;filesystem&gt;<br>
-#include &lt;fstream&gt;<br>
-#include &lt;iostream&gt;<br>
-#include &lt;sstream&gt;<br>
-#include &lt;string&gt;<br>
-#include &lt;vector&gt;<br>
+#include&nbsp;&quot;scat.h&quot;<br>
+#include&nbsp;&quot;doctest/doctest.h&quot;<br>
+#include&nbsp;&lt;filesystem&gt;<br>
+#include&nbsp;&lt;fstream&gt;<br>
+#include&nbsp;&lt;iostream&gt;<br>
+#include&nbsp;&lt;sstream&gt;<br>
+#include&nbsp;&lt;string&gt;<br>
+#include&nbsp;&lt;vector&gt;<br>
 <br>
-namespace fs = std::filesystem;<br>
+namespace&nbsp;fs&nbsp;=&nbsp;std::filesystem;<br>
 <br>
-TEST_CASE(&quot;scat walks example/ correctly&quot;)<br>
+TEST_CASE(&quot;scat&nbsp;walks&nbsp;example/&nbsp;correctly&quot;)<br>
 {<br>
-&#9;fs::path tmp = fs::temp_directory_path() / &quot;scat_test&quot;;<br>
-&#9;fs::remove_all(tmp);<br>
-&#9;fs::create_directories(tmp / &quot;a/b&quot;);<br>
-&#9;fs::create_directories(tmp / &quot;c&quot;);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;scat_test&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(tmp&nbsp;/&nbsp;&quot;a/b&quot;);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(tmp&nbsp;/&nbsp;&quot;c&quot;);<br>
 <br>
-&#9;{<br>
-&#9;&#9;std::ofstream(tmp / &quot;1.txt&quot;) &lt;&lt; &quot;Hi&quot;;<br>
-&#9;&#9;std::ofstream(tmp / &quot;a/b/2.txt&quot;) &lt;&lt; &quot;Hello World!&quot;;<br>
-&#9;&#9;std::ofstream(tmp / &quot;c/3.txt&quot;) &lt;&lt; &quot;You find me!&quot;;<br>
-&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream(tmp&nbsp;/&nbsp;&quot;1.txt&quot;)&nbsp;&lt;&lt;&nbsp;&quot;Hi&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream(tmp&nbsp;/&nbsp;&quot;a/b/2.txt&quot;)&nbsp;&lt;&lt;&nbsp;&quot;Hello&nbsp;World!&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream(tmp&nbsp;/&nbsp;&quot;c/3.txt&quot;)&nbsp;&lt;&lt;&nbsp;&quot;You&nbsp;find&nbsp;me!&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;// перенаправляем stdout<br>
-&#9;std::stringstream buffer;<br>
-&#9;auto old = std::cout.rdbuf(buffer.rdbuf());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;перенаправляем&nbsp;stdout<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::stringstream&nbsp;buffer;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;old&nbsp;=&nbsp;std::cout.rdbuf(buffer.rdbuf());<br>
 <br>
-&#9;const char *argv[] = {&quot;scat&quot;, tmp.string().c_str(), &quot;-r&quot;};<br>
-&#9;scat_main(3, (char **)argv);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;char&nbsp;*argv[]&nbsp;=&nbsp;{&quot;scat&quot;,&nbsp;tmp.string().c_str(),&nbsp;&quot;-r&quot;};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;scat_main(3,&nbsp;(char&nbsp;**)argv);<br>
 <br>
-&#9;std::cout.rdbuf(old);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::cout.rdbuf(old);<br>
 <br>
-&#9;std::string out = buffer.str();<br>
-&#9;CHECK(out.find(&quot;=====&quot;) != std::string::npos);<br>
-&#9;CHECK(out.find(&quot;Hello World!&quot;) != std::string::npos);<br>
-&#9;CHECK(out.find(&quot;Hi&quot;) != std::string::npos);<br>
-&#9;CHECK(out.find(&quot;You find me!&quot;) != std::string::npos);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;out&nbsp;=&nbsp;buffer.str();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(out.find(&quot;=====&quot;)&nbsp;!=&nbsp;std::string::npos);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(out.find(&quot;Hello&nbsp;World!&quot;)&nbsp;!=&nbsp;std::string::npos);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(out.find(&quot;Hi&quot;)&nbsp;!=&nbsp;std::string::npos);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(out.find(&quot;You&nbsp;find&nbsp;me!&quot;)&nbsp;!=&nbsp;std::string::npos);<br>
 }<br>
 <!-- END SCAT CODE -->
 </body>

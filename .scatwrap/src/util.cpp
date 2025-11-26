@@ -6,176 +6,177 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#include &quot;util.h&quot;<br>
-#include &lt;filesystem&gt;<br>
-#include &lt;fstream&gt;<br>
-#include &lt;iostream&gt; // у тебя уже есть для std::cerr<br>
-#include &lt;sstream&gt;<br>
+#include&nbsp;&quot;util.h&quot;<br>
+#include&nbsp;&lt;filesystem&gt;<br>
+#include&nbsp;&lt;fstream&gt;<br>
+#include&nbsp;&lt;iostream&gt;&nbsp;//&nbsp;у&nbsp;тебя&nbsp;уже&nbsp;есть&nbsp;для&nbsp;std::cerr<br>
+#include&nbsp;&lt;sstream&gt;<br>
 <br>
-namespace fs = std::filesystem;<br>
+namespace&nbsp;fs&nbsp;=&nbsp;std::filesystem;<br>
 <br>
-extern bool g_use_absolute_paths;<br>
+extern&nbsp;bool&nbsp;g_use_absolute_paths;<br>
 <br>
-bool starts_with(const std::string &amp;s, const std::string &amp;prefix)<br>
+bool&nbsp;starts_with(const&nbsp;std::string&nbsp;&amp;s,&nbsp;const&nbsp;std::string&nbsp;&amp;prefix)<br>
 {<br>
-&#9;return s.size() &gt;= prefix.size() &amp;&amp;<br>
-&#9;&#9;s.compare(0, prefix.size(), prefix) == 0;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;s.size()&nbsp;&gt;=&nbsp;prefix.size()&nbsp;&amp;&amp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s.compare(0,&nbsp;prefix.size(),&nbsp;prefix)&nbsp;==&nbsp;0;<br>
 }<br>
 <br>
-bool ends_with(const std::string &amp;s, const std::string &amp;suffix)<br>
+bool&nbsp;ends_with(const&nbsp;std::string&nbsp;&amp;s,&nbsp;const&nbsp;std::string&nbsp;&amp;suffix)<br>
 {<br>
-&#9;return s.size() &gt;= suffix.size() &amp;&amp;<br>
-&#9;&#9;s.compare(s.size() - suffix.size(), suffix.size(), suffix) == 0;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;s.size()&nbsp;&gt;=&nbsp;suffix.size()&nbsp;&amp;&amp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s.compare(s.size()&nbsp;-&nbsp;suffix.size(),&nbsp;suffix.size(),&nbsp;suffix)&nbsp;==&nbsp;0;<br>
 }<br>
 <br>
-std::string make_display_path(const fs::path &amp;p)<br>
+std::string&nbsp;make_display_path(const&nbsp;fs::path&nbsp;&amp;p)<br>
 {<br>
-&#9;if (g_use_absolute_paths)<br>
-&#9;&#9;return fs::absolute(p).string();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(g_use_absolute_paths)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;fs::absolute(p).string();<br>
 <br>
-&#9;std::error_code ec;<br>
-&#9;fs::path rel = fs::relative(p, fs::current_path(), ec);<br>
-&#9;if (!ec)<br>
-&#9;&#9;return rel.string();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::error_code&nbsp;ec;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;rel&nbsp;=&nbsp;fs::relative(p,&nbsp;fs::current_path(),&nbsp;ec);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!ec)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;rel.string();<br>
 <br>
-&#9;return p.string();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;p.string();<br>
 }<br>
 <br>
-void dump_file(const fs::path &amp;p, bool first, const Options &amp;opt)<br>
+void&nbsp;dump_file(const&nbsp;fs::path&nbsp;&amp;p,&nbsp;bool&nbsp;first,&nbsp;const&nbsp;Options&nbsp;&amp;opt)<br>
 {<br>
-&#9;std::ifstream in(p, std::ios::binary);<br>
-&#9;if (!in)<br>
-&#9;{<br>
-&#9;&#9;std::cerr &lt;&lt; &quot;Cannot open: &quot; &lt;&lt; p &lt;&lt; &quot;\n&quot;;<br>
-&#9;&#9;return;<br>
-&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::ifstream&nbsp;in(p,&nbsp;std::ios::binary);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!in)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cerr&nbsp;&lt;&lt;&nbsp;&quot;Cannot&nbsp;open:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;p&nbsp;&lt;&lt;&nbsp;&quot;\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;if (!first)<br>
-&#9;&#9;std::cout &lt;&lt; &quot;\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!first)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout&nbsp;&lt;&lt;&nbsp;&quot;\n&quot;;<br>
 <br>
-&#9;std::cout &lt;&lt; &quot;===== &quot; &lt;&lt; make_display_path(p) &lt;&lt; &quot; =====\n&quot;;<br>
-&#9;// std::cout &lt;&lt; in.rdbuf() &lt;&lt; &quot;=EOF=\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::cout&nbsp;&lt;&lt;&nbsp;&quot;=====&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;make_display_path(p)&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;=====\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;std::cout&nbsp;&lt;&lt;&nbsp;in.rdbuf()&nbsp;&lt;&lt;&nbsp;&quot;=EOF=\n&quot;;<br>
 <br>
-&#9;std::string line;<br>
-&#9;size_t line_no = 0;<br>
-&#9;while (std::getline(in, line))<br>
-&#9;{<br>
-&#9;&#9;if (opt.line_numbers)<br>
-&#9;&#9;&#9;std::cout &lt;&lt; line_no &lt;&lt; &quot;: &quot; &lt;&lt; line &lt;&lt; &quot;\n&quot;;<br>
-&#9;&#9;else<br>
-&#9;&#9;&#9;std::cout &lt;&lt; line &lt;&lt; &quot;\n&quot;;<br>
-&#9;&#9;++line_no;<br>
-&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;line;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;size_t&nbsp;line_no&nbsp;=&nbsp;0;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(std::getline(in,&nbsp;line))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(opt.line_numbers)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout&nbsp;&lt;&lt;&nbsp;line_no&nbsp;&lt;&lt;&nbsp;&quot;:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;line&nbsp;&lt;&lt;&nbsp;&quot;\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout&nbsp;&lt;&lt;&nbsp;line&nbsp;&lt;&lt;&nbsp;&quot;\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++line_no;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 }<br>
-std::uintmax_t get_file_size(const fs::path &amp;p)<br>
+std::uintmax_t&nbsp;get_file_size(const&nbsp;fs::path&nbsp;&amp;p)<br>
 {<br>
-&#9;std::error_code ec;<br>
-&#9;auto sz = fs::file_size(p, ec);<br>
-&#9;if (ec)<br>
-&#9;&#9;return 0;<br>
-&#9;return sz;<br>
-}<br>
-<br>
-bool match_simple(const fs::path &amp;p, const std::string &amp;pat)<br>
-{<br>
-&#9;std::string name = p.filename().string();<br>
-<br>
-&#9;if (pat == &quot;*&quot;)<br>
-&#9;&#9;return true;<br>
-<br>
-&#9;auto pos = pat.find('*');<br>
-&#9;if (pos == std::string::npos)<br>
-&#9;&#9;return name == pat;<br>
-<br>
-&#9;std::string a = pat.substr(0, pos);<br>
-&#9;std::string b = pat.substr(pos + 1);<br>
-<br>
-&#9;return starts_with(name, a) &amp;&amp; ends_with(name, b);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::error_code&nbsp;ec;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;sz&nbsp;=&nbsp;fs::file_size(p,&nbsp;ec);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(ec)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;0;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;sz;<br>
 }<br>
 <br>
-std::string html_escape(std::string_view src)<br>
+bool&nbsp;match_simple(const&nbsp;fs::path&nbsp;&amp;p,&nbsp;const&nbsp;std::string&nbsp;&amp;pat)<br>
 {<br>
-&#9;std::string out;<br>
-&#9;out.reserve(src.size() * 11 / 10 + 16); // чуть с запасом<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;name&nbsp;=&nbsp;p.filename().string();<br>
 <br>
-&#9;for (char ch : src)<br>
-&#9;{<br>
-&#9;&#9;switch (ch)<br>
-&#9;&#9;{<br>
-&#9;&#9;case '&amp;':<br>
-&#9;&#9;&#9;out += &quot;&amp;amp;&quot;;<br>
-&#9;&#9;&#9;break;<br>
-&#9;&#9;case '&lt;':<br>
-&#9;&#9;&#9;out += &quot;&amp;lt;&quot;;<br>
-&#9;&#9;&#9;break;<br>
-&#9;&#9;case '&gt;':<br>
-&#9;&#9;&#9;out += &quot;&amp;gt;&quot;;<br>
-&#9;&#9;&#9;break;<br>
-&#9;&#9;case '&quot;':<br>
-&#9;&#9;&#9;out += &quot;&amp;quot;&quot;;<br>
-&#9;&#9;&#9;break;<br>
-&#9;&#9;default:<br>
-&#9;&#9;&#9;out.push_back(ch);<br>
-&#9;&#9;&#9;break;<br>
-&#9;&#9;}<br>
-&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(pat&nbsp;==&nbsp;&quot;*&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;true;<br>
 <br>
-&#9;return out;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;pos&nbsp;=&nbsp;pat.find('*');<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(pos&nbsp;==&nbsp;std::string::npos)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;name&nbsp;==&nbsp;pat;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;a&nbsp;=&nbsp;pat.substr(0,&nbsp;pos);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;b&nbsp;=&nbsp;pat.substr(pos&nbsp;+&nbsp;1);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;starts_with(name,&nbsp;a)&nbsp;&amp;&amp;&nbsp;ends_with(name,&nbsp;b);<br>
 }<br>
 <br>
-std::string wrap_cpp_as_html(std::string_view cpp_code,<br>
-&#9;&#9;&#9;&#9;&#9;&#9;&#9;std::string_view title)<br>
+std::string&nbsp;html_escape(std::string_view&nbsp;src)<br>
 {<br>
-&#9;std::string html;<br>
-&#9;html.reserve(cpp_code.size() * 11 / 10 + 256);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;out;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;out.reserve(src.size()&nbsp;*&nbsp;11&nbsp;/&nbsp;10&nbsp;+&nbsp;16);&nbsp;//&nbsp;чуть&nbsp;с&nbsp;запасом<br>
 <br>
-&#9;html += &quot;&lt;!DOCTYPE html&gt;\n&quot;;<br>
-&#9;html += &quot;&lt;html lang=\&quot;en\&quot;&gt;\n&quot;;<br>
-&#9;html += &quot;&lt;head&gt;\n&quot;;<br>
-&#9;html += &quot;  &lt;meta charset=\&quot;UTF-8\&quot;&gt;\n&quot;;<br>
-&#9;html += &quot;  &lt;title&gt;&quot;;<br>
-&#9;html += html_escape(title);      // title экранируем, пробелы оставляем обычными<br>
-&#9;html += &quot;&lt;/title&gt;\n&quot;;<br>
-&#9;html += &quot;&lt;/head&gt;\n&quot;;<br>
-&#9;html += &quot;&lt;body&gt;\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(char&nbsp;ch&nbsp;:&nbsp;src)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;switch&nbsp;(ch)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case&nbsp;'&amp;':<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;+=&nbsp;&quot;&amp;amp;&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case&nbsp;'&lt;':<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;+=&nbsp;&quot;&amp;lt;&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case&nbsp;'&gt;':<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;+=&nbsp;&quot;&amp;gt;&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case&nbsp;'&quot;':<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;+=&nbsp;&quot;&amp;quot;&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.push_back(ch);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;html += &quot;&lt;!-- BEGIN SCAT CODE --&gt;\n&quot;;<br>
-<br>
-&#9;std::size_t pos = 0;<br>
-&#9;const std::size_t n = cpp_code.size();<br>
-<br>
-&#9;while (pos &lt; n)<br>
-&#9;{<br>
-&#9;&#9;std::size_t nl = cpp_code.find('\n', pos);<br>
-&#9;&#9;if (nl == std::string_view::npos)<br>
-&#9;&#9;&#9;nl = n;<br>
-<br>
-&#9;&#9;std::string_view line = cpp_code.substr(pos, nl - pos);<br>
-<br>
-&#9;&#9;// 1) экранируем спецсимволы (&amp;, &lt;, &gt;, &quot;)<br>
-&#9;&#9;std::string escaped = html_escape(line);<br>
-<br>
-&#9;&#9;// 2) превращаем каждый пробел в &amp;nbsp;, чтобы отступы не схлопывались<br>
-&#9;&#9;for (char ch : escaped)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;if (ch == ' ')<br>
-&#9;&#9;&#9;&#9;html += &quot;&amp;nbsp;&quot;;<br>
-&#9;&#9;&#9;else<br>
-&#9;&#9;&#9;&#9;html.push_back(ch);<br>
-&#9;&#9;}<br>
-<br>
-&#9;&#9;html += &quot;&lt;br&gt;\n&quot;;<br>
-<br>
-&#9;&#9;pos = nl + 1;<br>
-&#9;}<br>
-<br>
-&#9;html += &quot;&lt;!-- END SCAT CODE --&gt;\n&quot;;<br>
-<br>
-&#9;html += &quot;&lt;/body&gt;\n&quot;;<br>
-&#9;html += &quot;&lt;/html&gt;\n&quot;;<br>
-<br>
-&#9;return html;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;out;<br>
 }<br>
+<br>
+std::string&nbsp;wrap_cpp_as_html(std::string_view&nbsp;cpp_code,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string_view&nbsp;title)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;html;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;html.reserve(cpp_code.size()&nbsp;*&nbsp;11&nbsp;/&nbsp;10&nbsp;+&nbsp;256);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;html&nbsp;+=&nbsp;&quot;&lt;!DOCTYPE&nbsp;html&gt;\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;html&nbsp;+=&nbsp;&quot;&lt;html&nbsp;lang=\&quot;en\&quot;&gt;\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;html&nbsp;+=&nbsp;&quot;&lt;head&gt;\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;html&nbsp;+=&nbsp;&quot;&nbsp;&nbsp;&lt;meta&nbsp;charset=\&quot;UTF-8\&quot;&gt;\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;html&nbsp;+=&nbsp;&quot;&nbsp;&nbsp;&lt;title&gt;&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;html&nbsp;+=&nbsp;html_escape(title);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;title&nbsp;экранируем,&nbsp;пробелы&nbsp;оставляем&nbsp;обычными<br>
+&nbsp;&nbsp;&nbsp;&nbsp;html&nbsp;+=&nbsp;&quot;&lt;/title&gt;\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;html&nbsp;+=&nbsp;&quot;&lt;/head&gt;\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;html&nbsp;+=&nbsp;&quot;&lt;body&gt;\n&quot;;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;html&nbsp;+=&nbsp;&quot;&lt;!--&nbsp;BEGIN&nbsp;SCAT&nbsp;CODE&nbsp;--&gt;\n&quot;;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;pos&nbsp;=&nbsp;0;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::size_t&nbsp;n&nbsp;=&nbsp;cpp_code.size();<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(pos&nbsp;&lt;&nbsp;n)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;nl&nbsp;=&nbsp;cpp_code.find('\n',&nbsp;pos);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(nl&nbsp;==&nbsp;std::string_view::npos)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nl&nbsp;=&nbsp;n;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string_view&nbsp;line&nbsp;=&nbsp;cpp_code.substr(pos,&nbsp;nl&nbsp;-&nbsp;pos);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;1)&nbsp;экранируем&nbsp;спецсимволы&nbsp;(&amp;,&nbsp;&lt;,&nbsp;&gt;,&nbsp;&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;escaped&nbsp;=&nbsp;html_escape(line);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;2)&nbsp;превращаем&nbsp;каждый&nbsp;пробел&nbsp;в&nbsp;&amp;nbsp;,&nbsp;чтобы&nbsp;отступы&nbsp;не&nbsp;схлопывались<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(char&nbsp;ch&nbsp;:&nbsp;escaped)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(ch&nbsp;==&nbsp;'&nbsp;')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;html&nbsp;+=&nbsp;&quot;&amp;nbsp;&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;html.push_back(ch);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;html&nbsp;+=&nbsp;&quot;&lt;br&gt;\n&quot;;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pos&nbsp;=&nbsp;nl&nbsp;+&nbsp;1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;html&nbsp;+=&nbsp;&quot;&lt;!--&nbsp;END&nbsp;SCAT&nbsp;CODE&nbsp;--&gt;\n&quot;;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;html&nbsp;+=&nbsp;&quot;&lt;/body&gt;\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;html&nbsp;+=&nbsp;&quot;&lt;/html&gt;\n&quot;;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;html;<br>
+}<br>
+<br>
 <br>
 <br>
 <br>

@@ -6,340 +6,340 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#include &quot;doctest/doctest.h&quot;<br>
-#include &lt;filesystem&gt;<br>
-#include &lt;fstream&gt;<br>
-#include &lt;string&gt;<br>
-#include &lt;vector&gt;<br>
+#include&nbsp;&quot;doctest/doctest.h&quot;<br>
+#include&nbsp;&lt;filesystem&gt;<br>
+#include&nbsp;&lt;fstream&gt;<br>
+#include&nbsp;&lt;string&gt;<br>
+#include&nbsp;&lt;vector&gt;<br>
 <br>
-int apply_chunk_main(int argc, char **argv);<br>
+int&nbsp;apply_chunk_main(int&nbsp;argc,&nbsp;char&nbsp;**argv);<br>
 <br>
-namespace fs = std::filesystem;<br>
+namespace&nbsp;fs&nbsp;=&nbsp;std::filesystem;<br>
 <br>
-static std::vector&lt;std::string&gt; read_lines(const fs::path &amp;p)<br>
+static&nbsp;std::vector&lt;std::string&gt;&nbsp;read_lines(const&nbsp;fs::path&nbsp;&amp;p)<br>
 {<br>
-&#9;std::ifstream in(p);<br>
-&#9;std::vector&lt;std::string&gt; v;<br>
-&#9;std::string s;<br>
-&#9;while (std::getline(in, s))<br>
-&#9;&#9;v.push_back(s);<br>
-&#9;return v;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::ifstream&nbsp;in(p);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;v;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;s;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(std::getline(in,&nbsp;s))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v.push_back(s);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;v;<br>
 }<br>
 <br>
-static int run_apply(const fs::path &amp;patch)<br>
+static&nbsp;int&nbsp;run_apply(const&nbsp;fs::path&nbsp;&amp;patch)<br>
 {<br>
-&#9;std::string a0 = &quot;apply&quot;;<br>
-&#9;std::string a1 = patch.string();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;a0&nbsp;=&nbsp;&quot;apply&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;a1&nbsp;=&nbsp;patch.string();<br>
 <br>
-&#9;std::vector&lt;std::string&gt; store = {a0, a1};<br>
-&#9;std::vector&lt;char *&gt; argv;<br>
-&#9;argv.reserve(store.size());<br>
-&#9;for (auto &amp;s : store)<br>
-&#9;&#9;argv.push_back(s.data());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;store&nbsp;=&nbsp;{a0,&nbsp;a1};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;char&nbsp;*&gt;&nbsp;argv;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;argv.reserve(store.size());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(auto&nbsp;&amp;s&nbsp;:&nbsp;store)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;argv.push_back(s.data());<br>
 <br>
-&#9;return apply_chunk_main((int)argv.size(), argv.data());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;apply_chunk_main((int)argv.size(),&nbsp;argv.data());<br>
 }<br>
 <br>
-// ============================================================================<br>
-// C++: replace-cpp-class<br>
-// ============================================================================<br>
-TEST_CASE(&quot;symbol API: replace-cpp-class replaces only target class&quot;)<br>
+//&nbsp;============================================================================<br>
+//&nbsp;C++:&nbsp;replace-cpp-class<br>
+//&nbsp;============================================================================<br>
+TEST_CASE(&quot;symbol&nbsp;API:&nbsp;replace-cpp-class&nbsp;replaces&nbsp;only&nbsp;target&nbsp;class&quot;)<br>
 {<br>
-&#9;fs::path tmp = fs::temp_directory_path() / &quot;symbol_cpp_class&quot;;<br>
-&#9;fs::remove_all(tmp);<br>
-&#9;fs::create_directories(tmp);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;symbol_cpp_class&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(tmp);<br>
 <br>
-&#9;fs::path f = tmp / &quot;foo.cpp&quot;;<br>
-&#9;{<br>
-&#9;&#9;std::ofstream out(f);<br>
-&#9;&#9;out &lt;&lt; &quot;#include &lt;string&gt;\n&quot;<br>
-&#9;&#9;&#9;&quot;\n&quot;<br>
-&#9;&#9;&#9;&quot;class Foo {\n&quot;<br>
-&#9;&#9;&#9;&quot;public:\n&quot;<br>
-&#9;&#9;&#9;&quot;    int x() const;\n&quot;<br>
-&#9;&#9;&#9;&quot;};\n&quot;<br>
-&#9;&#9;&#9;&quot;\n&quot;<br>
-&#9;&#9;&#9;&quot;class Bar {\n&quot;<br>
-&#9;&#9;&#9;&quot;public:\n&quot;<br>
-&#9;&#9;&#9;&quot;    void ping();\n&quot;<br>
-&#9;&#9;&#9;&quot;};\n&quot;;<br>
-&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;f&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;foo.cpp&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(f);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;#include&nbsp;&lt;string&gt;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;class&nbsp;Foo&nbsp;{\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;public:\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;x()&nbsp;const;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;};\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;class&nbsp;Bar&nbsp;{\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;public:\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;void&nbsp;ping();\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;};\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;fs::path patch = tmp / &quot;patch_class.txt&quot;;<br>
-&#9;{<br>
-&#9;&#9;std::ofstream out(patch);<br>
-&#9;&#9;out &lt;&lt; &quot;=== file: &quot; &lt;&lt; f.string()<br>
-&#9;&#9;&#9;&lt;&lt; &quot; ===\n&quot;<br>
-&#9;&#9;&#9;&quot;--- replace-cpp-class Foo\n&quot;<br>
-&#9;&#9;&#9;&quot;class Foo {\n&quot;<br>
-&#9;&#9;&#9;&quot;public:\n&quot;<br>
-&#9;&#9;&#9;&quot;    int y() const { return 42; }\n&quot;<br>
-&#9;&#9;&#9;&quot;};\n&quot;<br>
-&#9;&#9;&#9;&quot;=END=\n&quot;;<br>
-&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;patch&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;patch_class.txt&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(patch);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;===&nbsp;file:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;f.string()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;===\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;replace-cpp-class&nbsp;Foo\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;class&nbsp;Foo&nbsp;{\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;public:\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;y()&nbsp;const&nbsp;{&nbsp;return&nbsp;42;&nbsp;}\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;};\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;CHECK(run_apply(patch) == 0);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(run_apply(patch)&nbsp;==&nbsp;0);<br>
 <br>
-&#9;auto L = read_lines(f);<br>
-&#9;REQUIRE(L.size() &gt;= 8);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;L&nbsp;=&nbsp;read_lines(f);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;REQUIRE(L.size()&nbsp;&gt;=&nbsp;8);<br>
 <br>
-&#9;CHECK(L[0] == &quot;#include &lt;string&gt;&quot;);<br>
-&#9;CHECK(L[1] == &quot;&quot;);<br>
-&#9;CHECK(L[2] == &quot;class Foo {&quot;);<br>
-&#9;CHECK(L[3] == &quot;public:&quot;);<br>
-&#9;CHECK(L[4] == &quot;    int y() const { return 42; }&quot;);<br>
-&#9;CHECK(L[5] == &quot;};&quot;);<br>
-&#9;CHECK(L[6] == &quot;&quot;);<br>
-&#9;CHECK(L[7] == &quot;class Bar {&quot;);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(L[0]&nbsp;==&nbsp;&quot;#include&nbsp;&lt;string&gt;&quot;);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(L[1]&nbsp;==&nbsp;&quot;&quot;);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(L[2]&nbsp;==&nbsp;&quot;class&nbsp;Foo&nbsp;{&quot;);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(L[3]&nbsp;==&nbsp;&quot;public:&quot;);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(L[4]&nbsp;==&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;y()&nbsp;const&nbsp;{&nbsp;return&nbsp;42;&nbsp;}&quot;);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(L[5]&nbsp;==&nbsp;&quot;};&quot;);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(L[6]&nbsp;==&nbsp;&quot;&quot;);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(L[7]&nbsp;==&nbsp;&quot;class&nbsp;Bar&nbsp;{&quot;);<br>
 }<br>
 <br>
-// ============================================================================<br>
-// C++: replace-cpp-method<br>
-// ============================================================================<br>
-TEST_CASE(&quot;symbol API: replace-cpp-method by separate class and method name&quot;)<br>
+//&nbsp;============================================================================<br>
+//&nbsp;C++:&nbsp;replace-cpp-method<br>
+//&nbsp;============================================================================<br>
+TEST_CASE(&quot;symbol&nbsp;API:&nbsp;replace-cpp-method&nbsp;by&nbsp;separate&nbsp;class&nbsp;and&nbsp;method&nbsp;name&quot;)<br>
 {<br>
-&#9;fs::path tmp = fs::temp_directory_path() / &quot;symbol_cpp_method_1&quot;;<br>
-&#9;fs::remove_all(tmp);<br>
-&#9;fs::create_directories(tmp);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;symbol_cpp_method_1&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(tmp);<br>
 <br>
-&#9;fs::path f = tmp / &quot;foo.cpp&quot;;<br>
-&#9;{<br>
-&#9;&#9;std::ofstream out(f);<br>
-&#9;&#9;out &lt;&lt; &quot;class Foo {\n&quot;<br>
-&#9;&#9;&#9;&quot;public:\n&quot;<br>
-&#9;&#9;&#9;&quot;    void a();\n&quot;<br>
-&#9;&#9;&#9;&quot;    int value() const;\n&quot;<br>
-&#9;&#9;&#9;&quot;};\n&quot;;<br>
-&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;f&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;foo.cpp&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(f);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;class&nbsp;Foo&nbsp;{\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;public:\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;void&nbsp;a();\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;value()&nbsp;const;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;};\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;fs::path patch = tmp / &quot;patch_method1.txt&quot;;<br>
-&#9;{<br>
-&#9;&#9;std::ofstream out(patch);<br>
-&#9;&#9;out &lt;&lt; &quot;=== file: &quot; &lt;&lt; f.string()<br>
-&#9;&#9;&#9;&lt;&lt; &quot; ===\n&quot;<br>
-&#9;&#9;&#9;&quot;--- replace-cpp-method Foo value\n&quot;<br>
-&#9;&#9;&#9;&quot;    int value() const { return 10; }\n&quot;<br>
-&#9;&#9;&#9;&quot;=END=\n&quot;;<br>
-&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;patch&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;patch_method1.txt&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(patch);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;===&nbsp;file:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;f.string()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;===\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;replace-cpp-method&nbsp;Foo&nbsp;value\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;value()&nbsp;const&nbsp;{&nbsp;return&nbsp;10;&nbsp;}\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;CHECK(run_apply(patch) == 0);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(run_apply(patch)&nbsp;==&nbsp;0);<br>
 <br>
-&#9;auto L = read_lines(f);<br>
-&#9;REQUIRE(L.size() == 5);<br>
-&#9;CHECK(L[0] == &quot;class Foo {&quot;);<br>
-&#9;CHECK(L[1] == &quot;public:&quot;);<br>
-&#9;CHECK(L[2] == &quot;    void a();&quot;);<br>
-&#9;CHECK(L[3] == &quot;    int value() const { return 10; }&quot;);<br>
-&#9;CHECK(L[4] == &quot;};&quot;);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;L&nbsp;=&nbsp;read_lines(f);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;REQUIRE(L.size()&nbsp;==&nbsp;5);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(L[0]&nbsp;==&nbsp;&quot;class&nbsp;Foo&nbsp;{&quot;);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(L[1]&nbsp;==&nbsp;&quot;public:&quot;);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(L[2]&nbsp;==&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;void&nbsp;a();&quot;);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(L[3]&nbsp;==&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;value()&nbsp;const&nbsp;{&nbsp;return&nbsp;10;&nbsp;}&quot;);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(L[4]&nbsp;==&nbsp;&quot;};&quot;);<br>
 }<br>
 <br>
-TEST_CASE(&quot;symbol API: replace-cpp-method with Class::method syntax&quot;)<br>
+TEST_CASE(&quot;symbol&nbsp;API:&nbsp;replace-cpp-method&nbsp;with&nbsp;Class::method&nbsp;syntax&quot;)<br>
 {<br>
-&#9;fs::path tmp = fs::temp_directory_path() / &quot;symbol_cpp_method_2&quot;;<br>
-&#9;fs::remove_all(tmp);<br>
-&#9;fs::create_directories(tmp);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;symbol_cpp_method_2&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(tmp);<br>
 <br>
-&#9;fs::path f = tmp / &quot;bar.cpp&quot;;<br>
-&#9;{<br>
-&#9;&#9;std::ofstream out(f);<br>
-&#9;&#9;out &lt;&lt; &quot;class Bar {\n&quot;<br>
-&#9;&#9;&#9;&quot;public:\n&quot;<br>
-&#9;&#9;&#9;&quot;    int calc(int x) const;\n&quot;<br>
-&#9;&#9;&#9;&quot;    int other() const;\n&quot;<br>
-&#9;&#9;&#9;&quot;};\n&quot;;<br>
-&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;f&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;bar.cpp&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(f);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;class&nbsp;Bar&nbsp;{\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;public:\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;calc(int&nbsp;x)&nbsp;const;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;other()&nbsp;const;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;};\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;fs::path patch = tmp / &quot;patch_method2.txt&quot;;<br>
-&#9;{<br>
-&#9;&#9;std::ofstream out(patch);<br>
-&#9;&#9;out &lt;&lt; &quot;=== file: &quot; &lt;&lt; f.string()<br>
-&#9;&#9;&#9;&lt;&lt; &quot; ===\n&quot;<br>
-&#9;&#9;&#9;&quot;--- replace-cpp-method Bar::calc\n&quot;<br>
-&#9;&#9;&#9;&quot;    int calc(int x) const { return x * 2; }\n&quot;<br>
-&#9;&#9;&#9;&quot;=END=\n&quot;;<br>
-&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;patch&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;patch_method2.txt&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(patch);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;===&nbsp;file:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;f.string()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;===\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;replace-cpp-method&nbsp;Bar::calc\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;calc(int&nbsp;x)&nbsp;const&nbsp;{&nbsp;return&nbsp;x&nbsp;*&nbsp;2;&nbsp;}\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;CHECK(run_apply(patch) == 0);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(run_apply(patch)&nbsp;==&nbsp;0);<br>
 <br>
-&#9;auto L = read_lines(f);<br>
-&#9;REQUIRE(L.size() == 5);<br>
-&#9;CHECK(L[2] == &quot;    int calc(int x) const { return x * 2; }&quot;);<br>
-&#9;CHECK(L[3] == &quot;    int other() const;&quot;);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;L&nbsp;=&nbsp;read_lines(f);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;REQUIRE(L.size()&nbsp;==&nbsp;5);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(L[2]&nbsp;==&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;calc(int&nbsp;x)&nbsp;const&nbsp;{&nbsp;return&nbsp;x&nbsp;*&nbsp;2;&nbsp;}&quot;);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(L[3]&nbsp;==&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;other()&nbsp;const;&quot;);<br>
 }<br>
 <br>
-// ============================================================================<br>
-// Python: replace-py-class<br>
-// ============================================================================<br>
-TEST_CASE(&quot;symbol API: replace-py-class replaces whole class body&quot;)<br>
+//&nbsp;============================================================================<br>
+//&nbsp;Python:&nbsp;replace-py-class<br>
+//&nbsp;============================================================================<br>
+TEST_CASE(&quot;symbol&nbsp;API:&nbsp;replace-py-class&nbsp;replaces&nbsp;whole&nbsp;class&nbsp;body&quot;)<br>
 {<br>
-&#9;fs::path tmp = fs::temp_directory_path() / &quot;symbol_py_class&quot;;<br>
-&#9;fs::remove_all(tmp);<br>
-&#9;fs::create_directories(tmp);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;symbol_py_class&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(tmp);<br>
 <br>
-&#9;fs::path f = tmp / &quot;foo.py&quot;;<br>
-&#9;{<br>
-&#9;&#9;std::ofstream out(f);<br>
-&#9;&#9;out &lt;&lt; &quot;class Foo:\n&quot;<br>
-&#9;&#9;&#9;&quot;    def __init__(self):\n&quot;<br>
-&#9;&#9;&#9;&quot;        self.x = 1\n&quot;<br>
-&#9;&#9;&#9;&quot;\n&quot;<br>
-&#9;&#9;&#9;&quot;class Bar:\n&quot;<br>
-&#9;&#9;&#9;&quot;    pass\n&quot;;<br>
-&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;f&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;foo.py&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(f);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;class&nbsp;Foo:\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;def&nbsp;__init__(self):\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;self.x&nbsp;=&nbsp;1\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;class&nbsp;Bar:\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;pass\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;fs::path patch = tmp / &quot;patch_py_class.txt&quot;;<br>
-&#9;{<br>
-&#9;&#9;std::ofstream out(patch);<br>
-&#9;&#9;out &lt;&lt; &quot;=== file: &quot; &lt;&lt; f.string()<br>
-&#9;&#9;&#9;&lt;&lt; &quot; ===\n&quot;<br>
-&#9;&#9;&#9;&quot;--- replace-py-class Foo\n&quot;<br>
-&#9;&#9;&#9;&quot;class Foo:\n&quot;<br>
-&#9;&#9;&#9;&quot;    def __init__(self):\n&quot;<br>
-&#9;&#9;&#9;&quot;        self.x = 2\n&quot;<br>
-&#9;&#9;&#9;&quot;    def answer(self):\n&quot;<br>
-&#9;&#9;&#9;&quot;        return 42\n&quot;<br>
-&#9;&#9;&#9;&quot;=END=\n&quot;;<br>
-&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;patch&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;patch_py_class.txt&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(patch);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;===&nbsp;file:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;f.string()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;===\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;replace-py-class&nbsp;Foo\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;class&nbsp;Foo:\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;def&nbsp;__init__(self):\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;self.x&nbsp;=&nbsp;2\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;def&nbsp;answer(self):\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;42\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;CHECK(run_apply(patch) == 0);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(run_apply(patch)&nbsp;==&nbsp;0);<br>
 <br>
-&#9;auto L = read_lines(f);<br>
-&#9;REQUIRE(L.size() &gt;= 5);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;L&nbsp;=&nbsp;read_lines(f);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;REQUIRE(L.size()&nbsp;&gt;=&nbsp;5);<br>
 <br>
-&#9;// Проверяем, что новый класс Foo на месте<br>
-&#9;CHECK(L[0] == &quot;class Foo:&quot;);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Проверяем,&nbsp;что&nbsp;новый&nbsp;класс&nbsp;Foo&nbsp;на&nbsp;месте<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(L[0]&nbsp;==&nbsp;&quot;class&nbsp;Foo:&quot;);<br>
 <br>
-&#9;bool found_init = false;<br>
-&#9;bool found_x2 = false;<br>
-&#9;bool found_answer = false;<br>
-&#9;bool found_ret42 = false;<br>
-&#9;bool found_bar = false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;found_init&nbsp;=&nbsp;false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;found_x2&nbsp;=&nbsp;false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;found_answer&nbsp;=&nbsp;false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;found_ret42&nbsp;=&nbsp;false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;found_bar&nbsp;=&nbsp;false;<br>
 <br>
-&#9;for (const auto &amp;line : L)<br>
-&#9;{<br>
-&#9;&#9;if (line.find(&quot;def __init__&quot;) != std::string::npos)<br>
-&#9;&#9;&#9;found_init = true;<br>
-&#9;&#9;if (line.find(&quot;self.x = 2&quot;) != std::string::npos)<br>
-&#9;&#9;&#9;found_x2 = true;<br>
-&#9;&#9;if (line.find(&quot;def answer&quot;) != std::string::npos)<br>
-&#9;&#9;&#9;found_answer = true;<br>
-&#9;&#9;if (line.find(&quot;return 42&quot;) != std::string::npos)<br>
-&#9;&#9;&#9;found_ret42 = true;<br>
-&#9;&#9;if (line == &quot;class Bar:&quot;)<br>
-&#9;&#9;&#9;found_bar = true;<br>
-&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(const&nbsp;auto&nbsp;&amp;line&nbsp;:&nbsp;L)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(line.find(&quot;def&nbsp;__init__&quot;)&nbsp;!=&nbsp;std::string::npos)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;found_init&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(line.find(&quot;self.x&nbsp;=&nbsp;2&quot;)&nbsp;!=&nbsp;std::string::npos)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;found_x2&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(line.find(&quot;def&nbsp;answer&quot;)&nbsp;!=&nbsp;std::string::npos)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;found_answer&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(line.find(&quot;return&nbsp;42&quot;)&nbsp;!=&nbsp;std::string::npos)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;found_ret42&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(line&nbsp;==&nbsp;&quot;class&nbsp;Bar:&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;found_bar&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;CHECK(found_init);<br>
-&#9;CHECK(found_x2);<br>
-&#9;CHECK(found_answer);<br>
-&#9;CHECK(found_ret42);<br>
-&#9;CHECK(found_bar);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(found_init);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(found_x2);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(found_answer);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(found_ret42);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(found_bar);<br>
 }<br>
 <br>
-// ============================================================================<br>
-// Python: replace-py-method<br>
-// ============================================================================<br>
-TEST_CASE(&quot;symbol API: replace-py-method with separate class and method name&quot;)<br>
+//&nbsp;============================================================================<br>
+//&nbsp;Python:&nbsp;replace-py-method<br>
+//&nbsp;============================================================================<br>
+TEST_CASE(&quot;symbol&nbsp;API:&nbsp;replace-py-method&nbsp;with&nbsp;separate&nbsp;class&nbsp;and&nbsp;method&nbsp;name&quot;)<br>
 {<br>
-&#9;fs::path tmp = fs::temp_directory_path() / &quot;symbol_py_method_1&quot;;<br>
-&#9;fs::remove_all(tmp);<br>
-&#9;fs::create_directories(tmp);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;symbol_py_method_1&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(tmp);<br>
 <br>
-&#9;fs::path f = tmp / &quot;weird.py&quot;;<br>
-&#9;{<br>
-&#9;&#9;std::ofstream out(f);<br>
-&#9;&#9;out &lt;&lt; &quot;class Weird:\n&quot;<br>
-&#9;&#9;&#9;&quot;    def run(self):\n&quot;<br>
-&#9;&#9;&#9;&quot;        return 1\n&quot;<br>
-&#9;&#9;&#9;&quot;\n&quot;<br>
-&#9;&#9;&#9;&quot;    def other(self):\n&quot;<br>
-&#9;&#9;&#9;&quot;        return 2\n&quot;;<br>
-&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;f&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;weird.py&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(f);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;class&nbsp;Weird:\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;def&nbsp;run(self):\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;1\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;def&nbsp;other(self):\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;2\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;fs::path patch = tmp / &quot;patch_py_method1.txt&quot;;<br>
-&#9;{<br>
-&#9;&#9;std::ofstream out(patch);<br>
-&#9;&#9;out &lt;&lt; &quot;=== file: &quot; &lt;&lt; f.string()<br>
-&#9;&#9;&#9;&lt;&lt; &quot; ===\n&quot;<br>
-&#9;&#9;&#9;&quot;--- replace-py-method Weird run\n&quot;<br>
-&#9;&#9;&#9;&quot;    def run(self):\n&quot;<br>
-&#9;&#9;&#9;&quot;        return 100\n&quot;<br>
-&#9;&#9;&#9;&quot;=END=\n&quot;;<br>
-&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;patch&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;patch_py_method1.txt&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(patch);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;===&nbsp;file:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;f.string()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;===\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;replace-py-method&nbsp;Weird&nbsp;run\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;def&nbsp;run(self):\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;100\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;CHECK(run_apply(patch) == 0);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(run_apply(patch)&nbsp;==&nbsp;0);<br>
 <br>
-&#9;auto L = read_lines(f);<br>
-&#9;REQUIRE(L.size() &gt;= 5);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;L&nbsp;=&nbsp;read_lines(f);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;REQUIRE(L.size()&nbsp;&gt;=&nbsp;5);<br>
 <br>
-&#9;bool found_run_100 = false;<br>
-&#9;bool found_other_2 = false;<br>
-&#9;bool seen_def_run = false;<br>
-&#9;bool seen_return_100 = false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;found_run_100&nbsp;=&nbsp;false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;found_other_2&nbsp;=&nbsp;false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;seen_def_run&nbsp;=&nbsp;false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;seen_return_100&nbsp;=&nbsp;false;<br>
 <br>
-&#9;for (const auto &amp;line : L)<br>
-&#9;{<br>
-&#9;&#9;if (line.find(&quot;def run&quot;) != std::string::npos)<br>
-&#9;&#9;&#9;seen_def_run = true;<br>
-&#9;&#9;if (line.find(&quot;return 100&quot;) != std::string::npos)<br>
-&#9;&#9;&#9;seen_return_100 = true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(const&nbsp;auto&nbsp;&amp;line&nbsp;:&nbsp;L)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(line.find(&quot;def&nbsp;run&quot;)&nbsp;!=&nbsp;std::string::npos)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;seen_def_run&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(line.find(&quot;return&nbsp;100&quot;)&nbsp;!=&nbsp;std::string::npos)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;seen_return_100&nbsp;=&nbsp;true;<br>
 <br>
-&#9;&#9;if (line.find(&quot;def other&quot;) != std::string::npos ||<br>
-&#9;&#9;&#9;line.find(&quot;return 2&quot;) != std::string::npos)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;// Очень грубо: убеждаемся, что следы second метода остались<br>
-&#9;&#9;&#9;found_other_2 = true;<br>
-&#9;&#9;}<br>
-&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(line.find(&quot;def&nbsp;other&quot;)&nbsp;!=&nbsp;std::string::npos&nbsp;||<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;line.find(&quot;return&nbsp;2&quot;)&nbsp;!=&nbsp;std::string::npos)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Очень&nbsp;грубо:&nbsp;убеждаемся,&nbsp;что&nbsp;следы&nbsp;second&nbsp;метода&nbsp;остались<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;found_other_2&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;found_run_100 = seen_def_run &amp;&amp; seen_return_100;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;found_run_100&nbsp;=&nbsp;seen_def_run&nbsp;&amp;&amp;&nbsp;seen_return_100;<br>
 <br>
-&#9;CHECK(found_run_100);<br>
-&#9;CHECK(found_other_2);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(found_run_100);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(found_other_2);<br>
 }<br>
 <br>
-TEST_CASE(&quot;symbol API: replace-py-method with Class.method syntax&quot;)<br>
+TEST_CASE(&quot;symbol&nbsp;API:&nbsp;replace-py-method&nbsp;with&nbsp;Class.method&nbsp;syntax&quot;)<br>
 {<br>
-&#9;fs::path tmp = fs::temp_directory_path() / &quot;symbol_py_method_2&quot;;<br>
-&#9;fs::remove_all(tmp);<br>
-&#9;fs::create_directories(tmp);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;symbol_py_method_2&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(tmp);<br>
 <br>
-&#9;fs::path f = tmp / &quot;async_foo.py&quot;;<br>
-&#9;{<br>
-&#9;&#9;std::ofstream out(f);<br>
-&#9;&#9;out &lt;&lt; &quot;class Foo:\n&quot;<br>
-&#9;&#9;&#9;&quot;    async def bar(self):\n&quot;<br>
-&#9;&#9;&#9;&quot;        return 1\n&quot;;<br>
-&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;f&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;async_foo.py&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(f);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;class&nbsp;Foo:\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;async&nbsp;def&nbsp;bar(self):\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;1\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;fs::path patch = tmp / &quot;patch_py_method2.txt&quot;;<br>
-&#9;{<br>
-&#9;&#9;std::ofstream out(patch);<br>
-&#9;&#9;out &lt;&lt; &quot;=== file: &quot; &lt;&lt; f.string()<br>
-&#9;&#9;&#9;&lt;&lt; &quot; ===\n&quot;<br>
-&#9;&#9;&#9;&quot;--- replace-py-method Foo.bar\n&quot;<br>
-&#9;&#9;&#9;&quot;    async def bar(self):\n&quot;<br>
-&#9;&#9;&#9;&quot;        return 2\n&quot;<br>
-&#9;&#9;&#9;&quot;=END=\n&quot;;<br>
-&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;patch&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;patch_py_method2.txt&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(patch);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;===&nbsp;file:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;f.string()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;===\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;replace-py-method&nbsp;Foo.bar\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;async&nbsp;def&nbsp;bar(self):\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;2\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;CHECK(run_apply(patch) == 0);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(run_apply(patch)&nbsp;==&nbsp;0);<br>
 <br>
-&#9;auto L = read_lines(f);<br>
-&#9;REQUIRE(L.size() &gt;= 2);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;L&nbsp;=&nbsp;read_lines(f);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;REQUIRE(L.size()&nbsp;&gt;=&nbsp;2);<br>
 <br>
-&#9;CHECK(L[0] == &quot;class Foo:&quot;);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(L[0]&nbsp;==&nbsp;&quot;class&nbsp;Foo:&quot;);<br>
 <br>
-&#9;bool found_bar_2 = false;<br>
-&#9;for (const auto &amp;line : L)<br>
-&#9;{<br>
-&#9;&#9;if (line.find(&quot;async def bar&quot;) != std::string::npos)<br>
-&#9;&#9;&#9;found_bar_2 = true;<br>
-&#9;&#9;if (line.find(&quot;return 2&quot;) != std::string::npos)<br>
-&#9;&#9;&#9;found_bar_2 = true;<br>
-&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;found_bar_2&nbsp;=&nbsp;false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(const&nbsp;auto&nbsp;&amp;line&nbsp;:&nbsp;L)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(line.find(&quot;async&nbsp;def&nbsp;bar&quot;)&nbsp;!=&nbsp;std::string::npos)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;found_bar_2&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(line.find(&quot;return&nbsp;2&quot;)&nbsp;!=&nbsp;std::string::npos)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;found_bar_2&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;CHECK(found_bar_2);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(found_bar_2);<br>
 }<br>
 <!-- END SCAT CODE -->
 </body>

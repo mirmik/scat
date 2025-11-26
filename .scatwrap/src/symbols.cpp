@@ -6,411 +6,411 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#include &quot;symbols.h&quot;<br>
+#include&nbsp;&quot;symbols.h&quot;<br>
 <br>
-#include &lt;cctype&gt;<br>
+#include&nbsp;&lt;cctype&gt;<br>
 <br>
-CppSymbolFinder::CppSymbolFinder(const std::string &amp;text)<br>
+CppSymbolFinder::CppSymbolFinder(const&nbsp;std::string&nbsp;&amp;text)<br>
 {<br>
-&#9;// Разбиваем текст на строки (независимо от \r\n / \n)<br>
-&#9;std::string current;<br>
-&#9;current.reserve(80);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Разбиваем&nbsp;текст&nbsp;на&nbsp;строки&nbsp;(независимо&nbsp;от&nbsp;\r\n&nbsp;/&nbsp;\n)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;current;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;current.reserve(80);<br>
 <br>
-&#9;for (char c : text)<br>
-&#9;{<br>
-&#9;&#9;if (c == '\n')<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;m_lines.push_back(current);<br>
-&#9;&#9;&#9;current.clear();<br>
-&#9;&#9;}<br>
-&#9;&#9;else if (c != '\r')<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;current.push_back(c);<br>
-&#9;&#9;}<br>
-&#9;}<br>
-&#9;m_lines.push_back(current);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(char&nbsp;c&nbsp;:&nbsp;text)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(c&nbsp;==&nbsp;'\n')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;m_lines.push_back(current);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;current.clear();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(c&nbsp;!=&nbsp;'\r')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;current.push_back(c);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;m_lines.push_back(current);<br>
 <br>
-&#9;tokenize(text);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;tokenize(text);<br>
 }<br>
 <br>
-bool CppSymbolFinder::is_ident_start(char c)<br>
+bool&nbsp;CppSymbolFinder::is_ident_start(char&nbsp;c)<br>
 {<br>
-&#9;unsigned char uc = static_cast&lt;unsigned char&gt;(c);<br>
-&#9;return std::isalpha(uc) || c == '_';<br>
+&nbsp;&nbsp;&nbsp;&nbsp;unsigned&nbsp;char&nbsp;uc&nbsp;=&nbsp;static_cast&lt;unsigned&nbsp;char&gt;(c);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;std::isalpha(uc)&nbsp;||&nbsp;c&nbsp;==&nbsp;'_';<br>
 }<br>
 <br>
-bool CppSymbolFinder::is_ident_char(char c)<br>
+bool&nbsp;CppSymbolFinder::is_ident_char(char&nbsp;c)<br>
 {<br>
-&#9;unsigned char uc = static_cast&lt;unsigned char&gt;(c);<br>
-&#9;return std::isalnum(uc) || c == '_';<br>
+&nbsp;&nbsp;&nbsp;&nbsp;unsigned&nbsp;char&nbsp;uc&nbsp;=&nbsp;static_cast&lt;unsigned&nbsp;char&gt;(c);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;std::isalnum(uc)&nbsp;||&nbsp;c&nbsp;==&nbsp;'_';<br>
 }<br>
 <br>
-void CppSymbolFinder::tokenize(const std::string &amp;text)<br>
+void&nbsp;CppSymbolFinder::tokenize(const&nbsp;std::string&nbsp;&amp;text)<br>
 {<br>
-&#9;m_tokens.clear();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;m_tokens.clear();<br>
 <br>
-&#9;bool in_block_comment = false;<br>
-&#9;bool in_string = false;<br>
-&#9;bool in_char = false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;in_block_comment&nbsp;=&nbsp;false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;in_string&nbsp;=&nbsp;false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;in_char&nbsp;=&nbsp;false;<br>
 <br>
-&#9;int line = 0;<br>
-&#9;const std::size_t n = text.size();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;line&nbsp;=&nbsp;0;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::size_t&nbsp;n&nbsp;=&nbsp;text.size();<br>
 <br>
-&#9;for (std::size_t i = 0; i &lt; n;)<br>
-&#9;{<br>
-&#9;&#9;char c = text[i];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(std::size_t&nbsp;i&nbsp;=&nbsp;0;&nbsp;i&nbsp;&lt;&nbsp;n;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;char&nbsp;c&nbsp;=&nbsp;text[i];<br>
 <br>
-&#9;&#9;if (c == '\n')<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;++line;<br>
-&#9;&#9;&#9;++i;<br>
-&#9;&#9;&#9;continue;<br>
-&#9;&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(c&nbsp;==&nbsp;'\n')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++line;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++i;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;&#9;if (in_block_comment)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;if (c == '*' &amp;&amp; i + 1 &lt; n &amp;&amp; text[i + 1] == '/')<br>
-&#9;&#9;&#9;{<br>
-&#9;&#9;&#9;&#9;in_block_comment = false;<br>
-&#9;&#9;&#9;&#9;i += 2;<br>
-&#9;&#9;&#9;}<br>
-&#9;&#9;&#9;else<br>
-&#9;&#9;&#9;{<br>
-&#9;&#9;&#9;&#9;++i;<br>
-&#9;&#9;&#9;}<br>
-&#9;&#9;&#9;continue;<br>
-&#9;&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(in_block_comment)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(c&nbsp;==&nbsp;'*'&nbsp;&amp;&amp;&nbsp;i&nbsp;+&nbsp;1&nbsp;&lt;&nbsp;n&nbsp;&amp;&amp;&nbsp;text[i&nbsp;+&nbsp;1]&nbsp;==&nbsp;'/')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;in_block_comment&nbsp;=&nbsp;false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i&nbsp;+=&nbsp;2;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++i;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;&#9;if (in_string || in_char)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;if (c == '\\' &amp;&amp; i + 1 &lt; n)<br>
-&#9;&#9;&#9;{<br>
-&#9;&#9;&#9;&#9;i += 2; // экранированный символ<br>
-&#9;&#9;&#9;&#9;continue;<br>
-&#9;&#9;&#9;}<br>
-&#9;&#9;&#9;if (in_string &amp;&amp; c == '&quot;')<br>
-&#9;&#9;&#9;{<br>
-&#9;&#9;&#9;&#9;in_string = false;<br>
-&#9;&#9;&#9;}<br>
-&#9;&#9;&#9;else if (in_char &amp;&amp; c == '\'')<br>
-&#9;&#9;&#9;{<br>
-&#9;&#9;&#9;&#9;in_char = false;<br>
-&#9;&#9;&#9;}<br>
-&#9;&#9;&#9;++i;<br>
-&#9;&#9;&#9;continue;<br>
-&#9;&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(in_string&nbsp;||&nbsp;in_char)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(c&nbsp;==&nbsp;'\\'&nbsp;&amp;&amp;&nbsp;i&nbsp;+&nbsp;1&nbsp;&lt;&nbsp;n)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i&nbsp;+=&nbsp;2;&nbsp;//&nbsp;экранированный&nbsp;символ<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(in_string&nbsp;&amp;&amp;&nbsp;c&nbsp;==&nbsp;'&quot;')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;in_string&nbsp;=&nbsp;false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(in_char&nbsp;&amp;&amp;&nbsp;c&nbsp;==&nbsp;'\'')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;in_char&nbsp;=&nbsp;false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++i;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;&#9;// Пробелы<br>
-&#9;&#9;if (c == ' ' || c == '\t' || c == '\r' || c == '\f' || c == '\v')<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;++i;<br>
-&#9;&#9;&#9;continue;<br>
-&#9;&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Пробелы<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(c&nbsp;==&nbsp;'&nbsp;'&nbsp;||&nbsp;c&nbsp;==&nbsp;'\t'&nbsp;||&nbsp;c&nbsp;==&nbsp;'\r'&nbsp;||&nbsp;c&nbsp;==&nbsp;'\f'&nbsp;||&nbsp;c&nbsp;==&nbsp;'\v')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++i;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;&#9;// Препроцессорная директива: пропускаем всю строку<br>
-&#9;&#9;if (c == '#' &amp;&amp; (i == 0 || text[i - 1] == '\n'))<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;while (i &lt; n &amp;&amp; text[i] != '\n')<br>
-&#9;&#9;&#9;&#9;++i;<br>
-&#9;&#9;&#9;continue;<br>
-&#9;&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Препроцессорная&nbsp;директива:&nbsp;пропускаем&nbsp;всю&nbsp;строку<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(c&nbsp;==&nbsp;'#'&nbsp;&amp;&amp;&nbsp;(i&nbsp;==&nbsp;0&nbsp;||&nbsp;text[i&nbsp;-&nbsp;1]&nbsp;==&nbsp;'\n'))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(i&nbsp;&lt;&nbsp;n&nbsp;&amp;&amp;&nbsp;text[i]&nbsp;!=&nbsp;'\n')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++i;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;&#9;// Однострочный комментарий //<br>
-&#9;&#9;if (c == '/' &amp;&amp; i + 1 &lt; n &amp;&amp; text[i + 1] == '/')<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;while (i &lt; n &amp;&amp; text[i] != '\n')<br>
-&#9;&#9;&#9;&#9;++i;<br>
-&#9;&#9;&#9;continue;<br>
-&#9;&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Однострочный&nbsp;комментарий&nbsp;//<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(c&nbsp;==&nbsp;'/'&nbsp;&amp;&amp;&nbsp;i&nbsp;+&nbsp;1&nbsp;&lt;&nbsp;n&nbsp;&amp;&amp;&nbsp;text[i&nbsp;+&nbsp;1]&nbsp;==&nbsp;'/')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(i&nbsp;&lt;&nbsp;n&nbsp;&amp;&amp;&nbsp;text[i]&nbsp;!=&nbsp;'\n')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++i;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;&#9;// Блочный комментарий /* ... */<br>
-&#9;&#9;if (c == '/' &amp;&amp; i + 1 &lt; n &amp;&amp; text[i + 1] == '*')<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;in_block_comment = true;<br>
-&#9;&#9;&#9;i += 2;<br>
-&#9;&#9;&#9;continue;<br>
-&#9;&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Блочный&nbsp;комментарий&nbsp;/*&nbsp;...&nbsp;*/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(c&nbsp;==&nbsp;'/'&nbsp;&amp;&amp;&nbsp;i&nbsp;+&nbsp;1&nbsp;&lt;&nbsp;n&nbsp;&amp;&amp;&nbsp;text[i&nbsp;+&nbsp;1]&nbsp;==&nbsp;'*')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;in_block_comment&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i&nbsp;+=&nbsp;2;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;&#9;// Строковый литерал<br>
-&#9;&#9;if (c == '&quot;')<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;in_string = true;<br>
-&#9;&#9;&#9;++i;<br>
-&#9;&#9;&#9;continue;<br>
-&#9;&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Строковый&nbsp;литерал<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(c&nbsp;==&nbsp;'&quot;')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;in_string&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++i;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;&#9;// Символьный литерал<br>
-&#9;&#9;if (c == '\'')<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;in_char = true;<br>
-&#9;&#9;&#9;++i;<br>
-&#9;&#9;&#9;continue;<br>
-&#9;&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Символьный&nbsp;литерал<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(c&nbsp;==&nbsp;'\'')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;in_char&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++i;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;&#9;// Идентификатор / ключевое слово<br>
-&#9;&#9;if (is_ident_start(c))<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;std::size_t start = i;<br>
-&#9;&#9;&#9;++i;<br>
-&#9;&#9;&#9;while (i &lt; n &amp;&amp; is_ident_char(text[i]))<br>
-&#9;&#9;&#9;&#9;++i;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Идентификатор&nbsp;/&nbsp;ключевое&nbsp;слово<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(is_ident_start(c))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;start&nbsp;=&nbsp;i;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++i;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(i&nbsp;&lt;&nbsp;n&nbsp;&amp;&amp;&nbsp;is_ident_char(text[i]))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++i;<br>
 <br>
-&#9;&#9;&#9;std::string ident = text.substr(start, i - start);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;ident&nbsp;=&nbsp;text.substr(start,&nbsp;i&nbsp;-&nbsp;start);<br>
 <br>
-&#9;&#9;&#9;Token tok;<br>
-&#9;&#9;&#9;tok.text = ident;<br>
-&#9;&#9;&#9;tok.line = line;<br>
-&#9;&#9;&#9;if (ident == &quot;class&quot; || ident == &quot;struct&quot;)<br>
-&#9;&#9;&#9;&#9;tok.kind = Token::Keyword;<br>
-&#9;&#9;&#9;else<br>
-&#9;&#9;&#9;&#9;tok.kind = Token::Identifier;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Token&nbsp;tok;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tok.text&nbsp;=&nbsp;ident;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tok.line&nbsp;=&nbsp;line;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(ident&nbsp;==&nbsp;&quot;class&quot;&nbsp;||&nbsp;ident&nbsp;==&nbsp;&quot;struct&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tok.kind&nbsp;=&nbsp;Token::Keyword;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tok.kind&nbsp;=&nbsp;Token::Identifier;<br>
 <br>
-&#9;&#9;&#9;m_tokens.push_back(std::move(tok));<br>
-&#9;&#9;&#9;continue;<br>
-&#9;&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;m_tokens.push_back(std::move(tok));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;&#9;// Двойное двоеточие ::<br>
-&#9;&#9;if (c == ':' &amp;&amp; i + 1 &lt; n &amp;&amp; text[i + 1] == ':')<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;Token tok;<br>
-&#9;&#9;&#9;tok.kind = Token::Symbol;<br>
-&#9;&#9;&#9;tok.text = &quot;::&quot;;<br>
-&#9;&#9;&#9;tok.line = line;<br>
-&#9;&#9;&#9;m_tokens.push_back(std::move(tok));<br>
-&#9;&#9;&#9;i += 2;<br>
-&#9;&#9;&#9;continue;<br>
-&#9;&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Двойное&nbsp;двоеточие&nbsp;::<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(c&nbsp;==&nbsp;':'&nbsp;&amp;&amp;&nbsp;i&nbsp;+&nbsp;1&nbsp;&lt;&nbsp;n&nbsp;&amp;&amp;&nbsp;text[i&nbsp;+&nbsp;1]&nbsp;==&nbsp;':')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Token&nbsp;tok;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tok.kind&nbsp;=&nbsp;Token::Symbol;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tok.text&nbsp;=&nbsp;&quot;::&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tok.line&nbsp;=&nbsp;line;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;m_tokens.push_back(std::move(tok));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i&nbsp;+=&nbsp;2;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;&#9;// Любой пунктуационный символ как отдельный токен<br>
-&#9;&#9;if (std::ispunct(static_cast&lt;unsigned char&gt;(c)))<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;Token tok;<br>
-&#9;&#9;&#9;tok.kind = Token::Symbol;<br>
-&#9;&#9;&#9;tok.text = std::string(1, c);<br>
-&#9;&#9;&#9;tok.line = line;<br>
-&#9;&#9;&#9;m_tokens.push_back(std::move(tok));<br>
-&#9;&#9;&#9;++i;<br>
-&#9;&#9;&#9;continue;<br>
-&#9;&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Любой&nbsp;пунктуационный&nbsp;символ&nbsp;как&nbsp;отдельный&nbsp;токен<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(std::ispunct(static_cast&lt;unsigned&nbsp;char&gt;(c)))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Token&nbsp;tok;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tok.kind&nbsp;=&nbsp;Token::Symbol;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tok.text&nbsp;=&nbsp;std::string(1,&nbsp;c);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tok.line&nbsp;=&nbsp;line;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;m_tokens.push_back(std::move(tok));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++i;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;&#9;// На всякий случай: пропускаем остальные символы<br>
-&#9;&#9;++i;<br>
-&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;На&nbsp;всякий&nbsp;случай:&nbsp;пропускаем&nbsp;остальные&nbsp;символы<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++i;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 }<br>
 <br>
-bool CppSymbolFinder::find_class_internal(const std::string &amp;class_name,<br>
-&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;ClassRange &amp;out) const<br>
+bool&nbsp;CppSymbolFinder::find_class_internal(const&nbsp;std::string&nbsp;&amp;class_name,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ClassRange&nbsp;&amp;out)&nbsp;const<br>
 {<br>
-&#9;const std::size_t n = m_tokens.size();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::size_t&nbsp;n&nbsp;=&nbsp;m_tokens.size();<br>
 <br>
-&#9;for (std::size_t i = 0; i &lt; n; ++i)<br>
-&#9;{<br>
-&#9;&#9;const Token &amp;t = m_tokens[i];<br>
-&#9;&#9;if (t.kind != Token::Keyword)<br>
-&#9;&#9;&#9;continue;<br>
-&#9;&#9;if (t.text != &quot;class&quot; &amp;&amp; t.text != &quot;struct&quot;)<br>
-&#9;&#9;&#9;continue;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(std::size_t&nbsp;i&nbsp;=&nbsp;0;&nbsp;i&nbsp;&lt;&nbsp;n;&nbsp;++i)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;Token&nbsp;&amp;t&nbsp;=&nbsp;m_tokens[i];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(t.kind&nbsp;!=&nbsp;Token::Keyword)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(t.text&nbsp;!=&nbsp;&quot;class&quot;&nbsp;&amp;&amp;&nbsp;t.text&nbsp;!=&nbsp;&quot;struct&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
 <br>
-&#9;&#9;// Ищем первое имя после class/struct<br>
-&#9;&#9;std::size_t j = i + 1;<br>
-&#9;&#9;while (j &lt; n &amp;&amp; m_tokens[j].kind != Token::Identifier)<br>
-&#9;&#9;&#9;++j;<br>
-&#9;&#9;if (j &gt;= n)<br>
-&#9;&#9;&#9;break;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Ищем&nbsp;первое&nbsp;имя&nbsp;после&nbsp;class/struct<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;j&nbsp;=&nbsp;i&nbsp;+&nbsp;1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(j&nbsp;&lt;&nbsp;n&nbsp;&amp;&amp;&nbsp;m_tokens[j].kind&nbsp;!=&nbsp;Token::Identifier)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++j;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(j&nbsp;&gt;=&nbsp;n)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
 <br>
-&#9;&#9;const Token &amp;name_tok = m_tokens[j];<br>
-&#9;&#9;if (name_tok.text != class_name)<br>
-&#9;&#9;&#9;continue;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;Token&nbsp;&amp;name_tok&nbsp;=&nbsp;m_tokens[j];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(name_tok.text&nbsp;!=&nbsp;class_name)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
 <br>
-&#9;&#9;// Определение или forward-declaration?<br>
-&#9;&#9;// Смотрим только до первой ';' или '{' после имени.<br>
-&#9;&#9;std::size_t k = j + 1;<br>
-&#9;&#9;bool saw_lbrace = false;<br>
-&#9;&#9;for (; k &lt; n; ++k)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;const Token &amp;tk = m_tokens[k];<br>
-&#9;&#9;&#9;if (tk.text == &quot;{&quot;)<br>
-&#9;&#9;&#9;{<br>
-&#9;&#9;&#9;&#9;saw_lbrace = true;<br>
-&#9;&#9;&#9;&#9;break;<br>
-&#9;&#9;&#9;}<br>
-&#9;&#9;&#9;if (tk.text == &quot;;&quot;)<br>
-&#9;&#9;&#9;{<br>
-&#9;&#9;&#9;&#9;// forward-decl: встретили ';' раньше '{'<br>
-&#9;&#9;&#9;&#9;break;<br>
-&#9;&#9;&#9;}<br>
-&#9;&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Определение&nbsp;или&nbsp;forward-declaration?<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Смотрим&nbsp;только&nbsp;до&nbsp;первой&nbsp;';'&nbsp;или&nbsp;'{'&nbsp;после&nbsp;имени.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;k&nbsp;=&nbsp;j&nbsp;+&nbsp;1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;saw_lbrace&nbsp;=&nbsp;false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(;&nbsp;k&nbsp;&lt;&nbsp;n;&nbsp;++k)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;Token&nbsp;&amp;tk&nbsp;=&nbsp;m_tokens[k];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(tk.text&nbsp;==&nbsp;&quot;{&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;saw_lbrace&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(tk.text&nbsp;==&nbsp;&quot;;&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;forward-decl:&nbsp;встретили&nbsp;';'&nbsp;раньше&nbsp;'{'<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;&#9;// Если до ';' так и не встретили '{', это forward-declaration.<br>
-&#9;&#9;if (!saw_lbrace)<br>
-&#9;&#9;&#9;continue;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Если&nbsp;до&nbsp;';'&nbsp;так&nbsp;и&nbsp;не&nbsp;встретили&nbsp;'{',&nbsp;это&nbsp;forward-declaration.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!saw_lbrace)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
 <br>
-&#9;&#9;// Ищем соответствующую закрывающую '}'<br>
-&#9;&#9;int depth = 1;<br>
-&#9;&#9;std::size_t body_start = k;<br>
-&#9;&#9;std::size_t body_end = k;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Ищем&nbsp;соответствующую&nbsp;закрывающую&nbsp;'}'<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;depth&nbsp;=&nbsp;1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;body_start&nbsp;=&nbsp;k;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;body_end&nbsp;=&nbsp;k;<br>
 <br>
-&#9;&#9;for (std::size_t p = k + 1; p &lt; n; ++p)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;const Token &amp;tp = m_tokens[p];<br>
-&#9;&#9;&#9;if (tp.text == &quot;{&quot;)<br>
-&#9;&#9;&#9;{<br>
-&#9;&#9;&#9;&#9;++depth;<br>
-&#9;&#9;&#9;}<br>
-&#9;&#9;&#9;else if (tp.text == &quot;}&quot;)<br>
-&#9;&#9;&#9;{<br>
-&#9;&#9;&#9;&#9;--depth;<br>
-&#9;&#9;&#9;&#9;if (depth == 0)<br>
-&#9;&#9;&#9;&#9;{<br>
-&#9;&#9;&#9;&#9;&#9;body_end = p;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(std::size_t&nbsp;p&nbsp;=&nbsp;k&nbsp;+&nbsp;1;&nbsp;p&nbsp;&lt;&nbsp;n;&nbsp;++p)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;Token&nbsp;&amp;tp&nbsp;=&nbsp;m_tokens[p];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(tp.text&nbsp;==&nbsp;&quot;{&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++depth;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(tp.text&nbsp;==&nbsp;&quot;}&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--depth;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(depth&nbsp;==&nbsp;0)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;body_end&nbsp;=&nbsp;p;<br>
 <br>
-&#9;&#9;&#9;&#9;&#9;// Захватываем возможное ';' после '}' (class Foo {...};)<br>
-&#9;&#9;&#9;&#9;&#9;std::size_t q = p + 1;<br>
-&#9;&#9;&#9;&#9;&#9;if (q &lt; n &amp;&amp; m_tokens[q].text == &quot;;&quot;)<br>
-&#9;&#9;&#9;&#9;&#9;&#9;body_end = q;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Захватываем&nbsp;возможное&nbsp;';'&nbsp;после&nbsp;'}'&nbsp;(class&nbsp;Foo&nbsp;{...};)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;q&nbsp;=&nbsp;p&nbsp;+&nbsp;1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(q&nbsp;&lt;&nbsp;n&nbsp;&amp;&amp;&nbsp;m_tokens[q].text&nbsp;==&nbsp;&quot;;&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;body_end&nbsp;=&nbsp;q;<br>
 <br>
-&#9;&#9;&#9;&#9;&#9;out.region.start_line = t.line;<br>
-&#9;&#9;&#9;&#9;&#9;out.region.end_line = m_tokens[body_end].line;<br>
-&#9;&#9;&#9;&#9;&#9;out.body_start_token = body_start;<br>
-&#9;&#9;&#9;&#9;&#9;out.body_end_token = body_end;<br>
-&#9;&#9;&#9;&#9;&#9;return true;<br>
-&#9;&#9;&#9;&#9;}<br>
-&#9;&#9;&#9;}<br>
-&#9;&#9;}<br>
-&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.region.start_line&nbsp;=&nbsp;t.line;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.region.end_line&nbsp;=&nbsp;m_tokens[body_end].line;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.body_start_token&nbsp;=&nbsp;body_start;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.body_end_token&nbsp;=&nbsp;body_end;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;return false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;false;<br>
 }<br>
 <br>
-bool CppSymbolFinder::find_class(const std::string &amp;class_name,<br>
-&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;Region &amp;out) const<br>
+bool&nbsp;CppSymbolFinder::find_class(const&nbsp;std::string&nbsp;&amp;class_name,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;&amp;out)&nbsp;const<br>
 {<br>
-&#9;ClassRange cr;<br>
-&#9;if (!find_class_internal(class_name, cr))<br>
-&#9;&#9;return false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ClassRange&nbsp;cr;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!find_class_internal(class_name,&nbsp;cr))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;false;<br>
 <br>
-&#9;out = cr.region;<br>
-&#9;return true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;=&nbsp;cr.region;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;true;<br>
 }<br>
 <br>
-bool CppSymbolFinder::find_method(const std::string &amp;class_name,<br>
-&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;const std::string &amp;method_name,<br>
-&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;Region &amp;out) const<br>
+bool&nbsp;CppSymbolFinder::find_method(const&nbsp;std::string&nbsp;&amp;class_name,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;&amp;method_name,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;&amp;out)&nbsp;const<br>
 {<br>
-&#9;ClassRange cr;<br>
-&#9;if (!find_class_internal(class_name, cr))<br>
-&#9;&#9;return false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ClassRange&nbsp;cr;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!find_class_internal(class_name,&nbsp;cr))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;false;<br>
 <br>
-&#9;const std::size_t begin = cr.body_start_token + 1;<br>
-&#9;const std::size_t end = cr.body_end_token;<br>
-&#9;const std::size_t n = m_tokens.size();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::size_t&nbsp;begin&nbsp;=&nbsp;cr.body_start_token&nbsp;+&nbsp;1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::size_t&nbsp;end&nbsp;=&nbsp;cr.body_end_token;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::size_t&nbsp;n&nbsp;=&nbsp;m_tokens.size();<br>
 <br>
-&#9;if (begin &gt;= n || begin &gt;= end)<br>
-&#9;&#9;return false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(begin&nbsp;&gt;=&nbsp;n&nbsp;||&nbsp;begin&nbsp;&gt;=&nbsp;end)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;false;<br>
 <br>
-&#9;// Ищем внутри тела класса<br>
-&#9;for (std::size_t i = begin; i &lt; end; ++i)<br>
-&#9;{<br>
-&#9;&#9;const Token &amp;t = m_tokens[i];<br>
-&#9;&#9;if (t.kind != Token::Identifier)<br>
-&#9;&#9;&#9;continue;<br>
-&#9;&#9;if (t.text != method_name)<br>
-&#9;&#9;&#9;continue;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Ищем&nbsp;внутри&nbsp;тела&nbsp;класса<br>
+&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(std::size_t&nbsp;i&nbsp;=&nbsp;begin;&nbsp;i&nbsp;&lt;&nbsp;end;&nbsp;++i)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;Token&nbsp;&amp;t&nbsp;=&nbsp;m_tokens[i];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(t.kind&nbsp;!=&nbsp;Token::Identifier)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(t.text&nbsp;!=&nbsp;method_name)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
 <br>
-&#9;&#9;// После имени должен идти '('<br>
-&#9;&#9;std::size_t j = i + 1;<br>
-&#9;&#9;if (j &gt;= end || m_tokens[j].text != &quot;(&quot;)<br>
-&#9;&#9;&#9;continue;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;После&nbsp;имени&nbsp;должен&nbsp;идти&nbsp;'('<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;j&nbsp;=&nbsp;i&nbsp;+&nbsp;1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(j&nbsp;&gt;=&nbsp;end&nbsp;||&nbsp;m_tokens[j].text&nbsp;!=&nbsp;&quot;(&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
 <br>
-&#9;&#9;// Определяем начало объявления:<br>
-&#9;&#9;// идём назад до ближайшего ';', '{' или '}'.<br>
-&#9;&#9;std::size_t start_tok = begin;<br>
-&#9;&#9;for (std::size_t k = i; k &gt; begin; --k)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;const std::string &amp;s = m_tokens[k].text;<br>
-&#9;&#9;&#9;if (s == &quot;;&quot; || s == &quot;{&quot; || s == &quot;}&quot;)<br>
-&#9;&#9;&#9;{<br>
-&#9;&#9;&#9;&#9;start_tok = k + 1;<br>
-&#9;&#9;&#9;&#9;break;<br>
-&#9;&#9;&#9;}<br>
-&#9;&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Определяем&nbsp;начало&nbsp;объявления:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;идём&nbsp;назад&nbsp;до&nbsp;ближайшего&nbsp;';',&nbsp;'{'&nbsp;или&nbsp;'}'.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;start_tok&nbsp;=&nbsp;begin;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(std::size_t&nbsp;k&nbsp;=&nbsp;i;&nbsp;k&nbsp;&gt;&nbsp;begin;&nbsp;--k)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;&amp;s&nbsp;=&nbsp;m_tokens[k].text;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(s&nbsp;==&nbsp;&quot;;&quot;&nbsp;||&nbsp;s&nbsp;==&nbsp;&quot;{&quot;&nbsp;||&nbsp;s&nbsp;==&nbsp;&quot;}&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;start_tok&nbsp;=&nbsp;k&nbsp;+&nbsp;1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;&#9;// 1) Пропускаем параметры (балансируем скобки)<br>
-&#9;&#9;std::size_t pos = j;<br>
-&#9;&#9;int paren_depth = 0;<br>
-&#9;&#9;for (; pos &lt; end; ++pos)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;const std::string &amp;s = m_tokens[pos].text;<br>
-&#9;&#9;&#9;if (s == &quot;(&quot;)<br>
-&#9;&#9;&#9;{<br>
-&#9;&#9;&#9;&#9;++paren_depth;<br>
-&#9;&#9;&#9;}<br>
-&#9;&#9;&#9;else if (s == &quot;)&quot;)<br>
-&#9;&#9;&#9;{<br>
-&#9;&#9;&#9;&#9;--paren_depth;<br>
-&#9;&#9;&#9;&#9;if (paren_depth == 0)<br>
-&#9;&#9;&#9;&#9;{<br>
-&#9;&#9;&#9;&#9;&#9;++pos; // идём на токен после ')'<br>
-&#9;&#9;&#9;&#9;&#9;break;<br>
-&#9;&#9;&#9;&#9;}<br>
-&#9;&#9;&#9;}<br>
-&#9;&#9;}<br>
-&#9;&#9;if (paren_depth != 0)<br>
-&#9;&#9;&#9;continue; // сломанная сигнатура<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;1)&nbsp;Пропускаем&nbsp;параметры&nbsp;(балансируем&nbsp;скобки)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;pos&nbsp;=&nbsp;j;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;paren_depth&nbsp;=&nbsp;0;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(;&nbsp;pos&nbsp;&lt;&nbsp;end;&nbsp;++pos)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;&amp;s&nbsp;=&nbsp;m_tokens[pos].text;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(s&nbsp;==&nbsp;&quot;(&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++paren_depth;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(s&nbsp;==&nbsp;&quot;)&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--paren_depth;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(paren_depth&nbsp;==&nbsp;0)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++pos;&nbsp;//&nbsp;идём&nbsp;на&nbsp;токен&nbsp;после&nbsp;')'<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(paren_depth&nbsp;!=&nbsp;0)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;&nbsp;//&nbsp;сломанная&nbsp;сигнатура<br>
 <br>
-&#9;&#9;// 2) Ищем ';' или '{' (начало тела)<br>
-&#9;&#9;std::size_t end_tok = start_tok;<br>
-&#9;&#9;int brace_depth = 0;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;2)&nbsp;Ищем&nbsp;';'&nbsp;или&nbsp;'{'&nbsp;(начало&nbsp;тела)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;end_tok&nbsp;=&nbsp;start_tok;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;brace_depth&nbsp;=&nbsp;0;<br>
 <br>
-&#9;&#9;for (; pos &lt; end; ++pos)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;const std::string &amp;s = m_tokens[pos].text;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(;&nbsp;pos&nbsp;&lt;&nbsp;end;&nbsp;++pos)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;&amp;s&nbsp;=&nbsp;m_tokens[pos].text;<br>
 <br>
-&#9;&#9;&#9;if (s == &quot;;&quot;)<br>
-&#9;&#9;&#9;{<br>
-&#9;&#9;&#9;&#9;end_tok = pos;<br>
-&#9;&#9;&#9;&#9;break;<br>
-&#9;&#9;&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(s&nbsp;==&nbsp;&quot;;&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end_tok&nbsp;=&nbsp;pos;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;&#9;&#9;if (s == &quot;{&quot;)<br>
-&#9;&#9;&#9;{<br>
-&#9;&#9;&#9;&#9;brace_depth = 1;<br>
-&#9;&#9;&#9;&#9;end_tok = pos;<br>
-&#9;&#9;&#9;&#9;++pos;<br>
-&#9;&#9;&#9;&#9;for (; pos &lt; end; ++pos)<br>
-&#9;&#9;&#9;&#9;{<br>
-&#9;&#9;&#9;&#9;&#9;const std::string &amp;sb = m_tokens[pos].text;<br>
-&#9;&#9;&#9;&#9;&#9;if (sb == &quot;{&quot;)<br>
-&#9;&#9;&#9;&#9;&#9;&#9;++brace_depth;<br>
-&#9;&#9;&#9;&#9;&#9;else if (sb == &quot;}&quot;)<br>
-&#9;&#9;&#9;&#9;&#9;{<br>
-&#9;&#9;&#9;&#9;&#9;&#9;--brace_depth;<br>
-&#9;&#9;&#9;&#9;&#9;&#9;if (brace_depth == 0)<br>
-&#9;&#9;&#9;&#9;&#9;&#9;{<br>
-&#9;&#9;&#9;&#9;&#9;&#9;&#9;end_tok = pos;<br>
-&#9;&#9;&#9;&#9;&#9;&#9;&#9;break;<br>
-&#9;&#9;&#9;&#9;&#9;&#9;}<br>
-&#9;&#9;&#9;&#9;&#9;}<br>
-&#9;&#9;&#9;&#9;}<br>
-&#9;&#9;&#9;&#9;break;<br>
-&#9;&#9;&#9;}<br>
-&#9;&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(s&nbsp;==&nbsp;&quot;{&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;brace_depth&nbsp;=&nbsp;1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end_tok&nbsp;=&nbsp;pos;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++pos;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(;&nbsp;pos&nbsp;&lt;&nbsp;end;&nbsp;++pos)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;&amp;sb&nbsp;=&nbsp;m_tokens[pos].text;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(sb&nbsp;==&nbsp;&quot;{&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++brace_depth;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(sb&nbsp;==&nbsp;&quot;}&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--brace_depth;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(brace_depth&nbsp;==&nbsp;0)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end_tok&nbsp;=&nbsp;pos;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;&#9;if (end_tok &lt; start_tok)<br>
-&#9;&#9;&#9;continue;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(end_tok&nbsp;&lt;&nbsp;start_tok)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
 <br>
-&#9;&#9;int start_line_token = m_tokens[start_tok].line;<br>
-&#9;&#9;int method_line = t.line;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;start_line_token&nbsp;=&nbsp;m_tokens[start_tok].line;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;method_line&nbsp;=&nbsp;t.line;<br>
 <br>
-&#9;&#9;// Не вываливаемся на строку с access-specifier'ом (public:)<br>
-&#9;&#9;out.start_line =<br>
-&#9;&#9;&#9;(start_line_token &lt; method_line) ? method_line : start_line_token;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Не&nbsp;вываливаемся&nbsp;на&nbsp;строку&nbsp;с&nbsp;access-specifier'ом&nbsp;(public:)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.start_line&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(start_line_token&nbsp;&lt;&nbsp;method_line)&nbsp;?&nbsp;method_line&nbsp;:&nbsp;start_line_token;<br>
 <br>
-&#9;&#9;out.end_line = m_tokens[end_tok].line;<br>
-&#9;&#9;return true;<br>
-&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.end_line&nbsp;=&nbsp;m_tokens[end_tok].line;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;return false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;false;<br>
 }<br>
 <!-- END SCAT CODE -->
 </body>

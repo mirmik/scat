@@ -6,173 +6,173 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#include &quot;options.h&quot;<br>
-#include &lt;cstdlib&gt;<br>
-#include &lt;iostream&gt;<br>
+#include&nbsp;&quot;options.h&quot;<br>
+#include&nbsp;&lt;cstdlib&gt;<br>
+#include&nbsp;&lt;iostream&gt;<br>
 <br>
-static void print_help()<br>
+static&nbsp;void&nbsp;print_help()<br>
 {<br>
-&#9;std::cout &lt;&lt; &quot;Usage: scat [options] [paths...]\n&quot;<br>
-&#9;&#9;&#9;&#9;&quot;\n&quot;<br>
-&#9;&#9;&#9;&#9;&quot;Options:\n&quot;<br>
-&#9;&#9;&#9;&#9;&quot;  -r            Recursive directory processing\n&quot;<br>
-&#9;&#9;&#9;&#9;&quot;  -l            List files only\n&quot;<br>
-&#9;&#9;&#9;&#9;&quot;  --size        Show file sizes in -l output\n&quot;<br>
-&#9;&#9;&#9;&#9;&quot;  --sorted      Sort list (-l) by size (desc)\n&quot;<br>
-&#9;&#9;&#9;&#9;&quot;  -n            Show line numbers\n&quot;<br>
-&#9;&#9;&#9;&#9;&quot;  --abs         Show absolute paths\n&quot;<br>
-&#9;&#9;&#9;&#9;&quot;  --config F    Read patterns from file F\n&quot;<br>
-&#9;&#9;&#9;&#9;&quot;  --apply F     Apply patch from file F\n&quot;<br>
-&#9;&#9;&#9;&#9;&quot;  --apply-stdin Apply patch from stdin\n&quot;<br>
-&#9;&#9;&#9;&#9;&quot;  --server P    Run HTTP server on port P\n&quot;<br>
-&#9;&#9;&#9;&#9;&quot;  -c, --chunk   Print chunk trailer after output\n&quot;<br>
-&#9;&#9;&#9;&#9;&quot;  --chunk-help  Show chunk v2 help\n&quot;<br>
-&#9;&#9;&#9;&#9;&quot;  --wrap DIR    Wrap collected files as HTML into DIR\n&quot;<br>
-&#9;&#9;&#9;&#9;&quot;  --prefix P    Prepend P before file paths in -l output\n&quot;<br>
-&#9;&#9;&#9;&#9;&quot;  --git-info    Print git commit hash and remote origin\n&quot;<br>
-&#9;&#9;&#9;&#9;&quot;  --ghmap       List raw.githubusercontent.com URLs for &quot;<br>
-&#9;&#9;&#9;&#9;&quot;current commit\n&quot;<br>
-&#9;&#9;&#9;&#9;&quot;  --copy        Copy all stdout output to system clipboard\n&quot;<br>
-&#9;&#9;&#9;&#9;&quot;  --hook-install Install or update .git/hooks/pre-commit for &quot;<br>
-&#9;&#9;&#9;&#9;&quot;scat wrap\n&quot;<br>
-&#9;&#9;&#9;&#9;&quot;  -h, --help    Show this help\n&quot;<br>
-&#9;&#9;&#9;&#9;&quot;\n&quot;<br>
-&#9;&#9;&#9;&#9;&quot;If no paths are given, scat reads patterns from scat.txt.\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::cout&nbsp;&lt;&lt;&nbsp;&quot;Usage:&nbsp;scat&nbsp;[options]&nbsp;[paths...]\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;Options:\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;-r&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Recursive&nbsp;directory&nbsp;processing\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;-l&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;List&nbsp;files&nbsp;only\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;--size&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Show&nbsp;file&nbsp;sizes&nbsp;in&nbsp;-l&nbsp;output\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;--sorted&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sort&nbsp;list&nbsp;(-l)&nbsp;by&nbsp;size&nbsp;(desc)\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;-n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Show&nbsp;line&nbsp;numbers\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;--abs&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Show&nbsp;absolute&nbsp;paths\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;--config&nbsp;F&nbsp;&nbsp;&nbsp;&nbsp;Read&nbsp;patterns&nbsp;from&nbsp;file&nbsp;F\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;--apply&nbsp;F&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Apply&nbsp;patch&nbsp;from&nbsp;file&nbsp;F\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;--apply-stdin&nbsp;Apply&nbsp;patch&nbsp;from&nbsp;stdin\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;--server&nbsp;P&nbsp;&nbsp;&nbsp;&nbsp;Run&nbsp;HTTP&nbsp;server&nbsp;on&nbsp;port&nbsp;P\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;-c,&nbsp;--chunk&nbsp;&nbsp;&nbsp;Print&nbsp;chunk&nbsp;trailer&nbsp;after&nbsp;output\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;--chunk-help&nbsp;&nbsp;Show&nbsp;chunk&nbsp;v2&nbsp;help\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;--wrap&nbsp;DIR&nbsp;&nbsp;&nbsp;&nbsp;Wrap&nbsp;collected&nbsp;files&nbsp;as&nbsp;HTML&nbsp;into&nbsp;DIR\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;--prefix&nbsp;P&nbsp;&nbsp;&nbsp;&nbsp;Prepend&nbsp;P&nbsp;before&nbsp;file&nbsp;paths&nbsp;in&nbsp;-l&nbsp;output\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;--git-info&nbsp;&nbsp;&nbsp;&nbsp;Print&nbsp;git&nbsp;commit&nbsp;hash&nbsp;and&nbsp;remote&nbsp;origin\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;--ghmap&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;List&nbsp;raw.githubusercontent.com&nbsp;URLs&nbsp;for&nbsp;&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;current&nbsp;commit\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;--copy&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Copy&nbsp;all&nbsp;stdout&nbsp;output&nbsp;to&nbsp;system&nbsp;clipboard\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;--hook-install&nbsp;Install&nbsp;or&nbsp;update&nbsp;.git/hooks/pre-commit&nbsp;for&nbsp;&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;scat&nbsp;wrap\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;-h,&nbsp;--help&nbsp;&nbsp;&nbsp;&nbsp;Show&nbsp;this&nbsp;help\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;If&nbsp;no&nbsp;paths&nbsp;are&nbsp;given,&nbsp;scat&nbsp;reads&nbsp;patterns&nbsp;from&nbsp;scat.txt.\n&quot;;<br>
 }<br>
 <br>
-Options parse_options(int argc, char **argv)<br>
+Options&nbsp;parse_options(int&nbsp;argc,&nbsp;char&nbsp;**argv)<br>
 {<br>
-&#9;Options opt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Options&nbsp;opt;<br>
 <br>
-&#9;for (int i = 1; i &lt; argc; ++i)<br>
-&#9;{<br>
-&#9;&#9;std::string a = argv[i];<br>
-&#9;&#9;if (a == &quot;-r&quot;)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;opt.recursive = true;<br>
-&#9;&#9;}<br>
-&#9;&#9;else if (a == &quot;-l&quot;)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;opt.list_only = true;<br>
-&#9;&#9;}<br>
-&#9;&#9;else if (a == &quot;--size&quot;)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;opt.show_size = true;<br>
-&#9;&#9;}<br>
-&#9;&#9;else if (a == &quot;-n&quot;)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;opt.line_numbers = true;<br>
-&#9;&#9;}<br>
-&#9;&#9;else if (a == &quot;--abs&quot;)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;opt.abs_paths = true;<br>
-&#9;&#9;}<br>
-&#9;&#9;else if (a == &quot;--hook-install&quot;)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;opt.hook_install = true;<br>
-&#9;&#9;}<br>
-&#9;&#9;else if (a == &quot;--sorted&quot;)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;opt.sorted = true;<br>
-&#9;&#9;}<br>
-&#9;&#9;else if (a.rfind(&quot;--prefix=&quot;, 0) == 0)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;opt.path_prefix = a.substr(std::string(&quot;--prefix=&quot;).size());<br>
-&#9;&#9;}<br>
-&#9;&#9;else if (a == &quot;--prefix&quot;)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;if (i + 1 &lt; argc)<br>
-&#9;&#9;&#9;{<br>
-&#9;&#9;&#9;&#9;opt.path_prefix = argv[++i];<br>
-&#9;&#9;&#9;}<br>
-&#9;&#9;&#9;else<br>
-&#9;&#9;&#9;{<br>
-&#9;&#9;&#9;&#9;std::cerr &lt;&lt; &quot;--prefix requires value\n&quot;;<br>
-&#9;&#9;&#9;&#9;std::exit(1);<br>
-&#9;&#9;&#9;}<br>
-&#9;&#9;}<br>
-&#9;&#9;else if (a == &quot;--server&quot;)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;if (i + 1 &lt; argc)<br>
-&#9;&#9;&#9;&#9;opt.server_port = std::atoi(argv[++i]);<br>
-&#9;&#9;&#9;else<br>
-&#9;&#9;&#9;{<br>
-&#9;&#9;&#9;&#9;std::cerr &lt;&lt; &quot;--server requires port\n&quot;;<br>
-&#9;&#9;&#9;&#9;std::exit(1);<br>
-&#9;&#9;&#9;}<br>
-&#9;&#9;}<br>
-&#9;&#9;else if (a == &quot;--chunk-help&quot;)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;opt.chunk_help = true;<br>
-&#9;&#9;}<br>
-&#9;&#9;else if (a == &quot;-c&quot; || a == &quot;--chunk&quot;)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;opt.chunk_trailer = true;<br>
-&#9;&#9;}<br>
-&#9;&#9;else if (a == &quot;--apply-stdin&quot;)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;opt.apply_stdin = true;<br>
-&#9;&#9;}<br>
-&#9;&#9;else if (a == &quot;--apply&quot;)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;if (i + 1 &lt; argc)<br>
-&#9;&#9;&#9;&#9;opt.apply_file = argv[++i];<br>
-&#9;&#9;&#9;else<br>
-&#9;&#9;&#9;{<br>
-&#9;&#9;&#9;&#9;std::cerr &lt;&lt; &quot;--apply requires file\n&quot;;<br>
-&#9;&#9;&#9;&#9;std::exit(1);<br>
-&#9;&#9;&#9;}<br>
-&#9;&#9;}<br>
-&#9;&#9;else if (a == &quot;--config&quot;)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;if (i + 1 &lt; argc)<br>
-&#9;&#9;&#9;&#9;opt.config_file = argv[++i];<br>
-&#9;&#9;&#9;else<br>
-&#9;&#9;&#9;{<br>
-&#9;&#9;&#9;&#9;std::cerr &lt;&lt; &quot;--config requires file\n&quot;;<br>
-&#9;&#9;&#9;&#9;std::exit(1);<br>
-&#9;&#9;&#9;}<br>
-&#9;&#9;}<br>
-&#9;&#9;else if (a == &quot;--git-info&quot;)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;opt.git_info = true;<br>
-&#9;&#9;}<br>
-&#9;&#9;else if (a == &quot;--ghmap&quot;)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;opt.gh_map = true;<br>
-&#9;&#9;}<br>
-&#9;&#9;else if (a == &quot;--copy&quot;)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;opt.copy_out = true;<br>
-&#9;&#9;}<br>
-&#9;&#9;else if (a == &quot;-h&quot; || a == &quot;--help&quot;)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;print_help();<br>
-&#9;&#9;&#9;std::exit(0);<br>
-&#9;&#9;}<br>
-&#9;&#9;else if (a == &quot;--wrap&quot;)<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;if (i + 1 &lt; argc)<br>
-&#9;&#9;&#9;{<br>
-&#9;&#9;&#9;&#9;opt.wrap_root = argv[++i];<br>
-&#9;&#9;&#9;}<br>
-&#9;&#9;&#9;else<br>
-&#9;&#9;&#9;{<br>
-&#9;&#9;&#9;&#9;std::cerr &lt;&lt; &quot;--wrap requires directory name\n&quot;;<br>
-&#9;&#9;&#9;&#9;std::exit(1);<br>
-&#9;&#9;&#9;}<br>
-&#9;&#9;}<br>
-&#9;&#9;else<br>
-&#9;&#9;{<br>
-&#9;&#9;&#9;opt.paths.push_back(a);<br>
-&#9;&#9;}<br>
-&#9;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(int&nbsp;i&nbsp;=&nbsp;1;&nbsp;i&nbsp;&lt;&nbsp;argc;&nbsp;++i)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;a&nbsp;=&nbsp;argv[i];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(a&nbsp;==&nbsp;&quot;-r&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;opt.recursive&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(a&nbsp;==&nbsp;&quot;-l&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;opt.list_only&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(a&nbsp;==&nbsp;&quot;--size&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;opt.show_size&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(a&nbsp;==&nbsp;&quot;-n&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;opt.line_numbers&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(a&nbsp;==&nbsp;&quot;--abs&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;opt.abs_paths&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(a&nbsp;==&nbsp;&quot;--hook-install&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;opt.hook_install&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(a&nbsp;==&nbsp;&quot;--sorted&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;opt.sorted&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(a.rfind(&quot;--prefix=&quot;,&nbsp;0)&nbsp;==&nbsp;0)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;opt.path_prefix&nbsp;=&nbsp;a.substr(std::string(&quot;--prefix=&quot;).size());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(a&nbsp;==&nbsp;&quot;--prefix&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(i&nbsp;+&nbsp;1&nbsp;&lt;&nbsp;argc)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;opt.path_prefix&nbsp;=&nbsp;argv[++i];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cerr&nbsp;&lt;&lt;&nbsp;&quot;--prefix&nbsp;requires&nbsp;value\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::exit(1);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(a&nbsp;==&nbsp;&quot;--server&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(i&nbsp;+&nbsp;1&nbsp;&lt;&nbsp;argc)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;opt.server_port&nbsp;=&nbsp;std::atoi(argv[++i]);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cerr&nbsp;&lt;&lt;&nbsp;&quot;--server&nbsp;requires&nbsp;port\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::exit(1);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(a&nbsp;==&nbsp;&quot;--chunk-help&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;opt.chunk_help&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(a&nbsp;==&nbsp;&quot;-c&quot;&nbsp;||&nbsp;a&nbsp;==&nbsp;&quot;--chunk&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;opt.chunk_trailer&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(a&nbsp;==&nbsp;&quot;--apply-stdin&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;opt.apply_stdin&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(a&nbsp;==&nbsp;&quot;--apply&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(i&nbsp;+&nbsp;1&nbsp;&lt;&nbsp;argc)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;opt.apply_file&nbsp;=&nbsp;argv[++i];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cerr&nbsp;&lt;&lt;&nbsp;&quot;--apply&nbsp;requires&nbsp;file\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::exit(1);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(a&nbsp;==&nbsp;&quot;--config&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(i&nbsp;+&nbsp;1&nbsp;&lt;&nbsp;argc)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;opt.config_file&nbsp;=&nbsp;argv[++i];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cerr&nbsp;&lt;&lt;&nbsp;&quot;--config&nbsp;requires&nbsp;file\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::exit(1);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(a&nbsp;==&nbsp;&quot;--git-info&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;opt.git_info&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(a&nbsp;==&nbsp;&quot;--ghmap&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;opt.gh_map&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(a&nbsp;==&nbsp;&quot;--copy&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;opt.copy_out&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(a&nbsp;==&nbsp;&quot;-h&quot;&nbsp;||&nbsp;a&nbsp;==&nbsp;&quot;--help&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print_help();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::exit(0);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(a&nbsp;==&nbsp;&quot;--wrap&quot;)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(i&nbsp;+&nbsp;1&nbsp;&lt;&nbsp;argc)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;opt.wrap_root&nbsp;=&nbsp;argv[++i];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cerr&nbsp;&lt;&lt;&nbsp;&quot;--wrap&nbsp;requires&nbsp;directory&nbsp;name\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::exit(1);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;opt.paths.push_back(a);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>
-&#9;// auto-config mode if no paths and no explicit config<br>
-&#9;if (opt.paths.empty() &amp;&amp; opt.config_file.empty())<br>
-&#9;&#9;opt.config_file = &quot;scat.txt&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;auto-config&nbsp;mode&nbsp;if&nbsp;no&nbsp;paths&nbsp;and&nbsp;no&nbsp;explicit&nbsp;config<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(opt.paths.empty()&nbsp;&amp;&amp;&nbsp;opt.config_file.empty())<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;opt.config_file&nbsp;=&nbsp;&quot;scat.txt&quot;;<br>
 <br>
-&#9;return opt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;opt;<br>
 }<br>
 <!-- END SCAT CODE -->
 </body>
