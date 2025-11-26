@@ -7,11 +7,15 @@
 <body>
 <pre><code>
 #include &quot;scat.h&quot;
+#include &quot;clipboard.h&quot;
 #include &quot;collector.h&quot;
+#include &quot;git_info.h&quot;
 #include &quot;options.h&quot;
 #include &quot;parser.h&quot;
 #include &quot;rules.h&quot;
 #include &quot;util.h&quot;
+#include &lt;cstdio&gt;
+#include &lt;exception&gt;
 #include &lt;filesystem&gt;
 #include &lt;fstream&gt;
 #include &lt;functional&gt;
@@ -19,41 +23,29 @@
 #include &lt;map&gt;
 #include &lt;set&gt;
 #include &lt;sstream&gt;
-#include &lt;exception&gt;
-#include &lt;cstdio&gt;
-    #include &quot;git_info.h&quot;
-    #include &quot;clipboard.h&quot;
 
-
-
-
-
-int wrap_files_to_html(const std::vector&lt;std::filesystem::path&gt;&amp; files,
-                              const Options&amp; opt);
-
+int wrap_files_to_html(const std::vector&lt;std::filesystem::path&gt; &amp;files,
+                       const Options &amp;opt);
 
 namespace fs = std::filesystem;
 
 bool g_use_absolute_paths = false;
 
+int apply_chunk_main(int argc, char **argv);
 
-
-
-int apply_chunk_main(int argc, char** argv);
-
-void print_tree(const std::vector&lt;std::filesystem::path&gt;&amp; files)
+void print_tree(const std::vector&lt;std::filesystem::path&gt; &amp;files)
 {
     // Собираем относительные пути
     std::vector&lt;std::string&gt; rels;
     rels.reserve(files.size());
-    for (auto&amp; p : files)
+    for (auto &amp;p : files)
         rels.push_back(make_display_path(p));
 
     std::sort(rels.begin(), rels.end());
 
     struct Node
     {
-        std::map&lt;std::string, Node*&gt; children;
+        std::map&lt;std::string, Node *&gt; children;
         bool is_file = false;
     };
 
@@ -62,21 +54,21 @@ void print_tree(const std::vector&lt;std::filesystem::path&gt;&amp; files)
     // ----------------------------
     //  Построение дерева
     // ----------------------------
-    for (auto&amp; r : rels)
+    for (auto &amp;r : rels)
     {
         fs::path p = r;
-        Node* cur = &amp;root;
+        Node *cur = &amp;root;
 
         // вытаскиваем компоненты p в список
         std::vector&lt;std::string&gt; parts;
-        for (auto&amp; part : p)
+        for (auto &amp;part : p)
             parts.push_back(part.string());
 
         int total = (int)parts.size();
 
         for (int i = 0; i &lt; total; ++i)
         {
-            const std::string&amp; name = parts[i];
+            const std::string &amp;name = parts[i];
             bool last = (i == total - 1);
 
             if (!cur-&gt;children.count(name))
@@ -91,9 +83,14 @@ void print_tree(const std::vector&lt;std::filesystem::path&gt;&amp; files)
     // ----------------------------
     //  Рекурсивная печать
     // ----------------------------
-    std::function&lt;void(Node*, const std::string&amp;, bool, const std::string&amp;)&gt; go;
+    std::function&lt;void(Node *, const std::string &amp;, bool, const std::string &amp;)&gt;
+        go;
 
-    go = [&amp;](Node* node, const std::string&amp; name, bool last, const std::string&amp; prefix) {
+    go = [&amp;](Node *node,
+             const std::string &amp;name,
+             bool last,
+             const std::string &amp;prefix)
+    {
         if (!name.empty())
         {
             std::cout &lt;&lt; prefix &lt;&lt; (last ? &quot;└── &quot; : &quot;├── &quot;) &lt;&lt; name;
@@ -107,16 +104,19 @@ void print_tree(const std::vector&lt;std::filesystem::path&gt;&amp; files)
         // сортируем детей по имени
         std::vector&lt;std::string&gt; keys;
         keys.reserve(node-&gt;children.size());
-        for (auto&amp; [k, _] : node-&gt;children)
+        for (auto &amp;[k, _] : node-&gt;children)
             keys.push_back(k);
         std::sort(keys.begin(), keys.end());
 
         for (size_t i = 0; i &lt; keys.size(); ++i)
         {
             bool is_last = (i + 1 == keys.size());
-            Node* child = node-&gt;children[keys[i]];
+            Node *child = node-&gt;children[keys[i]];
 
-            go(child, keys[i], is_last, prefix + (name.empty() ? &quot;&quot; : (last ? &quot;    &quot; : &quot;│   &quot;)));
+            go(child,
+               keys[i],
+               is_last,
+               prefix + (name.empty() ? &quot;&quot; : (last ? &quot;    &quot; : &quot;│   &quot;)));
         }
     };
 
@@ -125,26 +125,29 @@ void print_tree(const std::vector&lt;std::filesystem::path&gt;&amp; files)
     std::cout &lt;&lt; &quot;========================\n\n&quot;;
 }
 
-static void print_list_with_sizes_to(const std::vector&lt;std::filesystem::path&gt;&amp; files,
-                                     const Options&amp; opt,
-                                     std::ostream&amp; os)
+static void
+print_list_with_sizes_to(const std::vector&lt;std::filesystem::path&gt; &amp;files,
+                         const Options &amp;opt,
+                         std::ostream &amp;os)
 {
     namespace fs = std::filesystem;
 
-    struct Item {
-        fs::path           path;
-        std::string        display;
-        std::uintmax_t     size;
+    struct Item
+    {
+        fs::path path;
+        std::string display;
+        std::uintmax_t size;
     };
 
     std::vector&lt;Item&gt; items;
     items.reserve(files.size());
-    std::uintmax_t total   = 0;
-    std::size_t    max_len = 0;
+    std::uintmax_t total = 0;
+    std::size_t max_len = 0;
 
-    for (auto&amp; f : files) {
+    for (auto &amp;f : files)
+    {
         auto disp = make_display_path(f);
-        auto sz   = get_file_size(f);
+        auto sz = get_file_size(f);
 
         total += sz;
 
@@ -155,9 +158,12 @@ static void print_list_with_sizes_to(const std::vector&lt;std::filesystem::path&
         items.push_back(Item{f, std::move(disp), sz});
     }
 
-    if (opt.sorted) {
-        std::sort(items.begin(), items.end(),
-                  [](const Item&amp; a, const Item&amp; b) {
+    if (opt.sorted)
+    {
+        std::sort(items.begin(),
+                  items.end(),
+                  [](const Item &amp;a, const Item &amp;b)
+                  {
                       if (a.size != b.size)
                           return a.size &gt; b.size; // по убыванию
                       return a.display &lt; b.display;
@@ -165,12 +171,15 @@ static void print_list_with_sizes_to(const std::vector&lt;std::filesystem::path&
     }
 
     const bool show_size = opt.show_size;
-    for (const auto&amp; it : items) {
+    for (const auto &amp;it : items)
+    {
         std::string shown = opt.path_prefix + it.display;
         os &lt;&lt; shown;
 
-        if (show_size) {
-            if (max_len &gt; shown.size()) {
+        if (show_size)
+        {
+            if (max_len &gt; shown.size())
+            {
                 std::size_t pad = max_len - shown.size();
                 for (std::size_t i = 0; i &lt; pad; ++i)
                     os &lt;&lt; ' ';
@@ -181,28 +190,29 @@ static void print_list_with_sizes_to(const std::vector&lt;std::filesystem::path&
         os &lt;&lt; &quot;\n&quot;;
     }
 
-    if (show_size) {
+    if (show_size)
+    {
         os &lt;&lt; &quot;Total size: &quot; &lt;&lt; total &lt;&lt; &quot; bytes\n&quot;;
     }
 }
 
 // старая функция теперь просто обёртка вокруг новой
-static void print_list_with_sizes(const std::vector&lt;std::filesystem::path&gt;&amp; files,
-                                  const Options&amp; opt)
+static void
+print_list_with_sizes(const std::vector&lt;std::filesystem::path&gt; &amp;files,
+                      const Options &amp;opt)
 {
     print_list_with_sizes_to(files, opt, std::cout);
 }
 
-
-
 // Вывод всех файлов и подсчёт суммарного размера
-static std::uintmax_t dump_files_and_total(const std::vector&lt;std::filesystem::path&gt;&amp; files,
-                                           const Options&amp; opt)
+static std::uintmax_t
+dump_files_and_total(const std::vector&lt;std::filesystem::path&gt; &amp;files,
+                     const Options &amp;opt)
 {
     std::uintmax_t total = 0;
     bool first = true;
 
-    for (auto&amp; f : files)
+    for (auto &amp;f : files)
     {
         dump_file(f, first, opt);
         first = false;
@@ -212,14 +222,12 @@ static std::uintmax_t dump_files_and_total(const std::vector&lt;std::filesystem:
     return total;
 }
 
-
-int run_server(const Options&amp; opt);
-
+int run_server(const Options &amp;opt);
 
 // общий каркас обработки списка файлов
-static int process_files(const std::vector&lt;std::filesystem::path&gt;&amp; files,
-                         const Options&amp; opt,
-                         const std::function&lt;void(std::uintmax_t)&gt;&amp; after_dump)
+static int process_files(const std::vector&lt;std::filesystem::path&gt; &amp;files,
+                         const Options &amp;opt,
+                         const std::function&lt;void(std::uintmax_t)&gt; &amp;after_dump)
 {
     if (files.empty())
     {
@@ -248,14 +256,14 @@ static int process_files(const std::vector&lt;std::filesystem::path&gt;&amp; fil
 // CONFIG MODE
 // =========================
 
-static int run_config_mode(const Options&amp; opt)
+static int run_config_mode(const Options &amp;opt)
 {
     Config cfg;
     try
     {
         cfg = parse_config(opt.config_file);
     }
-    catch (const std::exception&amp; e)
+    catch (const std::exception &amp;e)
     {
         std::cerr &lt;&lt; e.what() &lt;&lt; &quot;\n&quot;;
         return 1;
@@ -263,7 +271,8 @@ static int run_config_mode(const Options&amp; opt)
 
     auto text_files = collect_from_rules(cfg.text_rules, opt);
 
-    auto after_dump = [&amp;](std::uintmax_t total) {
+    auto after_dump = [&amp;](std::uintmax_t total)
+    {
         // TREE rules (если есть)
         if (!cfg.tree_rules.empty())
         {
@@ -291,11 +300,13 @@ static int run_config_mode(const Options&amp; opt)
 // NORMAL MODE
 // =========================
 
-static int run_normal_mode(const Options&amp; opt)
+static int run_normal_mode(const Options &amp;opt)
 {
-    std::vector&lt;std::filesystem::path&gt; files = collect_from_paths(opt.paths, opt);
+    std::vector&lt;std::filesystem::path&gt; files =
+        collect_from_paths(opt.paths, opt);
 
-    auto after_dump = [&amp;](std::uintmax_t total) {
+    auto after_dump = [&amp;](std::uintmax_t total)
+    {
         // В обычном режиме дерево не печатаем
         if (opt.chunk_trailer)
         {
@@ -309,9 +320,8 @@ static int run_normal_mode(const Options&amp; opt)
     return process_files(files, opt, after_dump);
 }
 
-
-static std::string substitute_rawmap(const std::string&amp; tmpl,
-                                     const std::string&amp; rawmap)
+static std::string substitute_rawmap(const std::string &amp;tmpl,
+                                     const std::string &amp;rawmap)
 {
     const std::string token = &quot;{RAWMAP}&quot;;
     if (tmpl.empty())
@@ -321,9 +331,11 @@ static std::string substitute_rawmap(const std::string&amp; tmpl,
     out.reserve(tmpl.size() + rawmap.size() + 16);
 
     std::size_t pos = 0;
-    while (true) {
+    while (true)
+    {
         std::size_t p = tmpl.find(token, pos);
-        if (p == std::string::npos) {
+        if (p == std::string::npos)
+        {
             out.append(tmpl, pos, std::string::npos);
             break;
         }
@@ -334,53 +346,57 @@ static std::string substitute_rawmap(const std::string&amp; tmpl,
     return out;
 }
 
-
-
-int scat_main(int argc, char** argv)
+int scat_main(int argc, char **argv)
 {
     Options opt = parse_options(argc, argv);
     g_use_absolute_paths = opt.abs_paths;
     CopyGuard copy_guard(opt.copy_out);
 
-        // Git info mode: print repository metadata and exit
-        if (opt.git_info)
+    // Git info mode: print repository metadata and exit
+    if (opt.git_info)
+    {
+        GitInfo info = detect_git_info();
+
+        if (!info.has_commit &amp;&amp; !info.has_remote)
         {
-            GitInfo info = detect_git_info();
-
-            if (!info.has_commit &amp;&amp; !info.has_remote) {
-                std::cout &lt;&lt; &quot;Git: not a repository or git is not available\n&quot;;
-            } else {
-                if (info.has_commit)
-                    std::cout &lt;&lt; &quot;Git commit: &quot; &lt;&lt; info.commit &lt;&lt; &quot;\n&quot;;
-                if (info.has_remote)
-                    std::cout &lt;&lt; &quot;Git remote: &quot; &lt;&lt; info.remote &lt;&lt; &quot;\n&quot;;
-            }
-
-            return 0;
+            std::cout &lt;&lt; &quot;Git: not a repository or git is not available\n&quot;;
+        }
+        else
+        {
+            if (info.has_commit)
+                std::cout &lt;&lt; &quot;Git commit: &quot; &lt;&lt; info.commit &lt;&lt; &quot;\n&quot;;
+            if (info.has_remote)
+                std::cout &lt;&lt; &quot;Git remote: &quot; &lt;&lt; info.remote &lt;&lt; &quot;\n&quot;;
         }
 
+        return 0;
+    }
 
-        // GH map mode: построить prefix = raw.githubusercontent/... и дальше работать как -l --prefix
+    // GH map mode: построить prefix = raw.githubusercontent/... и дальше
+    // работать как -l --prefix
     if (opt.gh_map)
-{
-    GitHubInfo gh = detect_github_info();
-    if (!gh.ok) {
-        std::cerr &lt;&lt; &quot;--ghmap: unable to detect GitHub remote/commit\n&quot;;
-        return 1;
+    {
+        GitHubInfo gh = detect_github_info();
+        if (!gh.ok)
+        {
+            std::cerr &lt;&lt; &quot;--ghmap: unable to detect GitHub remote/commit\n&quot;;
+            return 1;
+        }
+
+        std::string prefix = &quot;https://raw.githubusercontent.com/&quot; + gh.user +
+                             &quot;/&quot; + gh.repo + &quot;/&quot; + gh.commit + &quot;/.scatwrap/&quot;;
+
+        if (!opt.config_file.empty())
+        {
+            // тут уже чисто логика MAPFORMAT + collect_from_rules
+        }
+        else
+        {
+            opt.list_only = true;
+            opt.wrap_root.clear();
+            opt.path_prefix = prefix;
+        }
     }
-
-    std::string prefix = &quot;https://raw.githubusercontent.com/&quot; +
-                         gh.user + &quot;/&quot; + gh.repo + &quot;/&quot; + gh.commit + &quot;/.scatwrap/&quot;;
-
-    if (!opt.config_file.empty()) {
-        // тут уже чисто логика MAPFORMAT + collect_from_rules
-    } else {
-        opt.list_only = true;
-        opt.wrap_root.clear();
-        opt.path_prefix = prefix;
-    }
-}
-
 
     // HTTP server mode
     if (opt.server_port != 0)
@@ -413,16 +429,16 @@ int scat_main(int argc, char** argv)
             }
 
             std::string tmp_str = tmp.string();
-            const char* args[] = {&quot;apply&quot;, tmp_str.c_str()};
-            int r = apply_chunk_main(2, const_cast&lt;char**&gt;(args));
+            const char *args[] = {&quot;apply&quot;, tmp_str.c_str()};
+            int r = apply_chunk_main(2, const_cast&lt;char **&gt;(args));
             fs::remove(tmp);
             return r;
         }
         else
         {
             std::string file = opt.apply_file;
-            const char* args[] = {&quot;apply&quot;, file.c_str()};
-            return apply_chunk_main(2, const_cast&lt;char**&gt;(args));
+            const char *args[] = {&quot;apply&quot;, file.c_str()};
+            return apply_chunk_main(2, const_cast&lt;char **&gt;(args));
         }
     }
 
@@ -438,14 +454,13 @@ int scat_main(int argc, char** argv)
     return run_normal_mode(opt);
 }
 
-
-
-int wrap_files_to_html(const std::vector&lt;std::filesystem::path&gt;&amp; files,
-                              const Options&amp; opt)
+int wrap_files_to_html(const std::vector&lt;std::filesystem::path&gt; &amp;files,
+                       const Options &amp;opt)
 {
     namespace fs = std::filesystem;
 
-    if (opt.wrap_root.empty()) {
+    if (opt.wrap_root.empty())
+    {
         return 0;
     }
 
@@ -454,11 +469,13 @@ int wrap_files_to_html(const std::vector&lt;std::filesystem::path&gt;&amp; files
     std::error_code ec;
     fs::create_directories(root, ec);
 
-    for (const auto&amp; f : files) {
+    for (const auto &amp;f : files)
+    {
         // считаем относительный путь относительно текущего каталога
         std::error_code rec;
         fs::path rel = fs::relative(f, fs::current_path(), rec);
-        if (rec) {
+        if (rec)
+        {
             // если не получилось — хотя бы имя файла
             rel = f.filename();
         }
@@ -467,7 +484,8 @@ int wrap_files_to_html(const std::vector&lt;std::filesystem::path&gt;&amp; files
         fs::create_directories(dst.parent_path(), ec);
 
         std::ifstream in(f, std::ios::binary);
-        if (!in) {
+        if (!in)
+        {
             std::cerr &lt;&lt; &quot;Cannot open for wrap: &quot; &lt;&lt; f &lt;&lt; &quot;\n&quot;;
             continue;
         }
@@ -479,7 +497,8 @@ int wrap_files_to_html(const std::vector&lt;std::filesystem::path&gt;&amp; files
         std::string html = wrap_cpp_as_html(ss.str(), title);
 
         std::ofstream out(dst, std::ios::binary);
-        if (!out) {
+        if (!out)
+        {
             std::cerr &lt;&lt; &quot;Cannot write wrapped file: &quot; &lt;&lt; dst &lt;&lt; &quot;\n&quot;;
             continue;
         }

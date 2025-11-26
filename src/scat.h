@@ -1,7 +1,7 @@
 #pragma once
-#include <vector>
-#include <filesystem>
 #include "chunk_help.h"
+#include <filesystem>
+#include <vector>
 
-int scat_main(int argc, char** argv);
-void print_tree(const std::vector<std::filesystem::path>& files);
+int scat_main(int argc, char **argv);
+void print_tree(const std::vector<std::filesystem::path> &files);

@@ -7,28 +7,29 @@
 <body>
 <pre><code>
 #pragma once
-    #include &lt;string&gt;
-    #include &lt;vector&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
 
-struct Options {
+struct Options
+{
     bool chunk_trailer = false;
-    bool recursive     = false;
-    bool list_only     = false;
-    bool abs_paths     = false;
-    bool line_numbers  = false;
-    bool sorted        = false;  // --sorted: sort list (-l) by size
+    bool recursive = false;
+    bool list_only = false;
+    bool abs_paths = false;
+    bool line_numbers = false;
+    bool sorted = false; // --sorted: sort list (-l) by size
 
-    bool show_size     = false;  // --size: show file sizes in -l
-    int  server_port   = 0;      // --server PORT
+    bool show_size = false; // --size: show file sizes in -l
+    int server_port = 0;    // --server PORT
     std::string apply_file;
-    bool        apply_stdin = false;
+    bool apply_stdin = false;
 
-    std::string config_file;  // empty = no config mode
-    bool        chunk_help = false;
+    std::string config_file; // empty = no config mode
+    bool chunk_help = false;
 
-    bool        git_info = false; // --git-info: print git meta info
-    bool        gh_map   = false; // --ghmap: print GitHub raw URLs for current commit
-    bool        copy_out = false; // --copy: also send stdout to clipboard
+    bool git_info = false; // --git-info: print git meta info
+    bool gh_map = false;   // --ghmap: print GitHub raw URLs for current commit
+    bool copy_out = false; // --copy: also send stdout to clipboard
 
     std::vector&lt;std::string&gt; paths; // positional paths
 
@@ -36,8 +37,7 @@ struct Options {
     std::string path_prefix; // --prefix P
 };
 
-
-    Options parse_options(int argc, char** argv);
+Options parse_options(int argc, char **argv);
 
 </code></pre>
 </body>

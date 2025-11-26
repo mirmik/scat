@@ -1,13 +1,14 @@
 #pragma once
-#include <vector>
+#include "rules.h"
 #include <filesystem>
 #include <string>
-#include "rules.h"
+#include <vector>
 
-struct Config {
+struct Config
+{
     std::vector<Rule> text_rules;
     std::vector<Rule> tree_rules;
-    std::string       map_format;   // новый блок [MAPFORMAT], может быть пустым
+    std::string map_format; // новый блок [MAPFORMAT], может быть пустым
 };
 
-Config parse_config(const std::filesystem::path& path);
+Config parse_config(const std::filesystem::path &path);

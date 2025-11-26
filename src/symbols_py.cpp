@@ -2,7 +2,7 @@
 
 #include <cctype>
 
-PythonSymbolFinder::PythonSymbolFinder(const std::string& text)
+PythonSymbolFinder::PythonSymbolFinder(const std::string &text)
 {
     m_lines.clear();
     std::string current;
@@ -23,7 +23,7 @@ PythonSymbolFinder::PythonSymbolFinder(const std::string& text)
     m_lines.push_back(current);
 }
 
-int PythonSymbolFinder::calc_indent(const std::string& line)
+int PythonSymbolFinder::calc_indent(const std::string &line)
 {
     int indent = 0;
     for (char c : line)
@@ -38,7 +38,7 @@ int PythonSymbolFinder::calc_indent(const std::string& line)
     return indent;
 }
 
-std::size_t PythonSymbolFinder::first_code_pos(const std::string& line)
+std::size_t PythonSymbolFinder::first_code_pos(const std::string &line)
 {
     std::size_t i = 0;
     while (i < line.size() && (line[i] == ' ' || line[i] == '\t'))
@@ -46,14 +46,14 @@ std::size_t PythonSymbolFinder::first_code_pos(const std::string& line)
     return i;
 }
 
-bool PythonSymbolFinder::find_class_internal(const std::string& class_name,
-                                             Region& out,
-                                             int& class_indent) const
+bool PythonSymbolFinder::find_class_internal(const std::string &class_name,
+                                             Region &out,
+                                             int &class_indent) const
 {
     const int n = static_cast<int>(m_lines.size());
     for (int i = 0; i < n; ++i)
     {
-        const std::string& line = m_lines[static_cast<std::size_t>(i)];
+        const std::string &line = m_lines[static_cast<std::size_t>(i)];
         std::size_t pos = first_code_pos(line);
         if (pos >= line.size())
             continue;
@@ -66,17 +66,20 @@ bool PythonSymbolFinder::find_class_internal(const std::string& class_name,
             continue;
 
         char after = (pos + 5 < line.size()) ? line[pos + 5] : '\0';
-        if (!(after == '\0' || std::isspace(static_cast<unsigned char>(after)) ||
-              after == '(' || after == ':'))
+        if (!(after == '\0' ||
+              std::isspace(static_cast<unsigned char>(after)) || after == '(' ||
+              after == ':'))
             continue;
 
         std::size_t p = pos + 5;
-        while (p < line.size() && std::isspace(static_cast<unsigned char>(line[p])))
+        while (p < line.size() &&
+               std::isspace(static_cast<unsigned char>(line[p])))
             ++p;
 
         std::size_t name_start = p;
         while (p < line.size() &&
-               (std::isalnum(static_cast<unsigned char>(line[p])) || line[p] == '_'))
+               (std::isalnum(static_cast<unsigned char>(line[p])) ||
+                line[p] == '_'))
             ++p;
 
         if (name_start == p)
@@ -91,7 +94,7 @@ bool PythonSymbolFinder::find_class_internal(const std::string& class_name,
 
         for (int k = i + 1; k < n; ++k)
         {
-            const std::string& l2 = m_lines[static_cast<std::size_t>(k)];
+            const std::string &l2 = m_lines[static_cast<std::size_t>(k)];
             std::size_t pos2 = first_code_pos(l2);
             if (pos2 >= l2.size())
                 continue; // пустая строка в теле
@@ -111,15 +114,16 @@ bool PythonSymbolFinder::find_class_internal(const std::string& class_name,
     return false;
 }
 
-bool PythonSymbolFinder::find_class(const std::string& class_name, Region& out) const
+bool PythonSymbolFinder::find_class(const std::string &class_name,
+                                    Region &out) const
 {
     int indent = 0;
     return find_class_internal(class_name, out, indent);
 }
 
-bool PythonSymbolFinder::find_method(const std::string& class_name,
-                                     const std::string& method_name,
-                                     Region& out) const
+bool PythonSymbolFinder::find_method(const std::string &class_name,
+                                     const std::string &method_name,
+                                     Region &out) const
 {
     Region class_region;
     int class_indent = 0;
@@ -133,7 +137,7 @@ bool PythonSymbolFinder::find_method(const std::string& class_name,
     int member_indent = -1;
     for (int i = start + 1; i <= end; ++i)
     {
-        const std::string& line = m_lines[static_cast<std::size_t>(i)];
+        const std::string &line = m_lines[static_cast<std::size_t>(i)];
         std::size_t pos = first_code_pos(line);
         if (pos >= line.size())
             continue;
@@ -155,7 +159,7 @@ bool PythonSymbolFinder::find_method(const std::string& class_name,
 
     for (int i = start + 1; i <= end && i < n; ++i)
     {
-        const std::string& line = m_lines[static_cast<std::size_t>(i)];
+        const std::string &line = m_lines[static_cast<std::size_t>(i)];
         std::size_t pos = first_code_pos(line);
         if (pos >= line.size())
             continue;
@@ -172,11 +176,13 @@ bool PythonSymbolFinder::find_method(const std::string& class_name,
         bool is_async = false;
 
         if (line.compare(p, 5, "async") == 0 &&
-            (p + 5 >= line.size() || std::isspace(static_cast<unsigned char>(line[p + 5]))))
+            (p + 5 >= line.size() ||
+             std::isspace(static_cast<unsigned char>(line[p + 5]))))
         {
             is_async = true;
             p += 5;
-            while (p < line.size() && std::isspace(static_cast<unsigned char>(line[p])))
+            while (p < line.size() &&
+                   std::isspace(static_cast<unsigned char>(line[p])))
                 ++p;
         }
 
@@ -188,12 +194,14 @@ bool PythonSymbolFinder::find_method(const std::string& class_name,
         }
 
         p += 3;
-        while (p < line.size() && std::isspace(static_cast<unsigned char>(line[p])))
+        while (p < line.size() &&
+               std::isspace(static_cast<unsigned char>(line[p])))
             ++p;
 
         std::size_t name_start = p;
         while (p < line.size() &&
-               (std::isalnum(static_cast<unsigned char>(line[p])) || line[p] == '_'))
+               (std::isalnum(static_cast<unsigned char>(line[p])) ||
+                line[p] == '_'))
             ++p;
 
         if (name_start == p)
@@ -209,7 +217,7 @@ bool PythonSymbolFinder::find_method(const std::string& class_name,
         // Захватываем декораторы над методом (тем же отступом)
         for (int j = i - 1; j > start; --j)
         {
-            const std::string& pline = m_lines[static_cast<std::size_t>(j)];
+            const std::string &pline = m_lines[static_cast<std::size_t>(j)];
             std::size_t ppos = first_code_pos(pline);
             if (ppos >= pline.size())
                 break;
@@ -226,7 +234,7 @@ bool PythonSymbolFinder::find_method(const std::string& class_name,
         int last_body = i;
         for (int k = i + 1; k <= end && k < n; ++k)
         {
-            const std::string& l2 = m_lines[static_cast<std::size_t>(k)];
+            const std::string &l2 = m_lines[static_cast<std::size_t>(k)];
             std::size_t pos2 = first_code_pos(l2);
             if (pos2 >= l2.size())
                 continue;
@@ -251,7 +259,8 @@ bool PythonSymbolFinder::find_method(const std::string& class_name,
                 }
                 else if (l2.compare(pos2, 3, "def") == 0 &&
                          (pos2 + 3 >= l2.size() ||
-                          std::isspace(static_cast<unsigned char>(l2[pos2 + 3]))))
+                          std::isspace(
+                              static_cast<unsigned char>(l2[pos2 + 3]))))
                 {
                     is_new_block = true;
                 }

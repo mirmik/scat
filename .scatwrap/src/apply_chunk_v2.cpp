@@ -30,13 +30,13 @@ struct Section
     std::vector&lt;std::string&gt; payload;
     std::vector&lt;std::string&gt; marker;
     std::vector&lt;std::string&gt; before; // контекст до маркера (BEFORE:)
-    std::vector&lt;std::string&gt; after;  // контекст после маркера (AFTER:)
+    std::vector&lt;std::string&gt; after; // контекст после маркера (AFTER:)
     int seq = 0;
     std::string arg1; // доп. аргументы команды (например, имя класса)
     std::string arg2; // второй аргумент (например, имя метода)
 };
 
-static std::vector&lt;std::string&gt; read_file_lines(const fs::path&amp; p)
+static std::vector&lt;std::string&gt; read_file_lines(const fs::path &amp;p)
 {
     std::ifstream in(p);
     if (!in)
@@ -50,49 +50,54 @@ static std::vector&lt;std::string&gt; read_file_lines(const fs::path&amp; p)
     return out;
 }
 
-static void write_file_lines(const fs::path&amp; p, const std::vector&lt;std::string&gt;&amp; lines)
+static void write_file_lines(const fs::path &amp;p,
+                             const std::vector&lt;std::string&gt; &amp;lines)
 {
     std::ofstream out(p, std::ios::trunc);
     if (!out)
         throw std::runtime_error(&quot;cannot write file: &quot; + p.string());
 
-    for (const auto&amp; s : lines)
+    for (const auto &amp;s : lines)
         out &lt;&lt; s &lt;&lt; &quot;\n&quot;;
 }
 
-std::string trim(const std::string_view&amp; view)
+std::string trim(const std::string_view &amp;view)
 {
     if (view.size() == 0)
         return &quot;&quot;;
 
-    const char* left = view.data();
-    const char* right = view.data() + view.size() - 1;
-    const char* end = view.data() + view.size();
+    const char *left = view.data();
+    const char *right = view.data() + view.size() - 1;
+    const char *end = view.data() + view.size();
 
-    while (left != end &amp;&amp; (*left == ' ' || *left == '\n' || *left == '\r' || *left == '\t'))
+    while (left != end &amp;&amp;
+           (*left == ' ' || *left == '\n' || *left == '\r' || *left == '\t'))
         ++left;
 
     if (left == end)
         return &quot;&quot;;
 
-    while (left != right &amp;&amp; (*right == ' ' || *right == '\n' || *right == '\r' || *right == '\t'))
+    while (left != right &amp;&amp; (*right == ' ' || *right == '\n' ||
+                             *right == '\r' || *right == '\t'))
         --right;
 
     return std::string(left, (right - left) + 1);
 }
 
-static bool is_text_command(const std::string&amp; cmd)
+static bool is_text_command(const std::string &amp;cmd)
 {
-    return cmd == &quot;insert-after-text&quot; || cmd == &quot;insert-before-text&quot; || cmd == &quot;replace-text&quot; || cmd == &quot;delete-text&quot;;
+    return cmd == &quot;insert-after-text&quot; || cmd == &quot;insert-before-text&quot; ||
+           cmd == &quot;replace-text&quot; || cmd == &quot;delete-text&quot;;
 }
 
-static bool is_symbol_command(const std::string&amp; cmd)
+static bool is_symbol_command(const std::string &amp;cmd)
 {
-    return cmd == &quot;replace-cpp-method&quot; || cmd == &quot;replace-cpp-class&quot; || cmd == &quot;replace-py-method&quot; ||
-           cmd == &quot;replace-py-class&quot;;
+    return cmd == &quot;replace-cpp-method&quot; || cmd == &quot;replace-cpp-class&quot; ||
+           cmd == &quot;replace-py-method&quot; || cmd == &quot;replace-py-class&quot;;
 }
 
-static int find_subsequence(const std::vector&lt;std::string&gt;&amp; haystack, const std::vector&lt;std::string&gt;&amp; needle)
+static int find_subsequence(const std::vector&lt;std::string&gt; &amp;haystack,
+                            const std::vector&lt;std::string&gt; &amp;needle)
 {
     if (needle.empty() || needle.size() &gt; haystack.size())
         return -1;
@@ -122,8 +127,9 @@ static int find_subsequence(const std::vector&lt;std::string&gt;&amp; haystack, 
 
 // Строгий выбор позиции маркера с учётом BEFORE/AFTER.
 // Никакого fuzzy, только точное позиционное совпадение.
-static int find_best_marker_match(const std::vector&lt;std::string&gt;&amp; lines, const Section* s,
-                                  const std::vector&lt;int&gt;&amp; candidates)
+static int find_best_marker_match(const std::vector&lt;std::string&gt; &amp;lines,
+                                  const Section *s,
+                                  const std::vector&lt;int&gt; &amp;candidates)
 {
     if (candidates.empty())
         return -1;
@@ -132,7 +138,8 @@ static int find_best_marker_match(const std::vector&lt;std::string&gt;&amp; line
     if (s-&gt;before.empty() &amp;&amp; s-&gt;after.empty())
         return candidates.front();
 
-    auto trim_eq = [&amp;](const std::string&amp; a, const std::string&amp; b) { return trim(a) == trim(b); };
+    auto trim_eq = [&amp;](const std::string &amp;a, const std::string &amp;b)
+    { return trim(a) == trim(b); };
 
     std::vector&lt;int&gt; strict;
 
@@ -150,11 +157,14 @@ static int find_best_marker_match(const std::vector&lt;std::string&gt;&amp; line
             }
             else
             {
-                // Последняя строка BEFORE должна быть непосредственно над первой строкой маркера.
+                // Последняя строка BEFORE должна быть непосредственно над
+                // первой строкой маркера.
                 for (int i = 0; i &lt; need; ++i)
                 {
-                    const std::string&amp; want = s-&gt;before[static_cast&lt;std::size_t&gt;(need - 1 - i)];
-                    const std::string&amp; got = lines[static_cast&lt;std::size_t&gt;(pos - 1 - i)];
+                    const std::string &amp;want =
+                        s-&gt;before[static_cast&lt;std::size_t&gt;(need - 1 - i)];
+                    const std::string &amp;got =
+                        lines[static_cast&lt;std::size_t&gt;(pos - 1 - i)];
                     if (!trim_eq(got, want))
                     {
                         ok = false;
@@ -178,8 +188,10 @@ static int find_best_marker_match(const std::vector&lt;std::string&gt;&amp; line
             {
                 for (int i = 0; i &lt; need; ++i)
                 {
-                    const std::string&amp; want = s-&gt;after[static_cast&lt;std::size_t&gt;(i)];
-                    const std::string&amp; got = lines[static_cast&lt;std::size_t&gt;(start + i)];
+                    const std::string &amp;want =
+                        s-&gt;after[static_cast&lt;std::size_t&gt;(i)];
+                    const std::string &amp;got =
+                        lines[static_cast&lt;std::size_t&gt;(start + i)];
                     if (!trim_eq(got, want))
                     {
                         ok = false;
@@ -202,13 +214,15 @@ static int find_best_marker_match(const std::vector&lt;std::string&gt;&amp; line
     return strict.front();
 }
 
-static void apply_text_commands(const std::string&amp; filepath, std::vector&lt;std::string&gt;&amp; lines,
-                                const std::vector&lt;const Section*&gt;&amp; sections)
+static void apply_text_commands(const std::string &amp;filepath,
+                                std::vector&lt;std::string&gt; &amp;lines,
+                                const std::vector&lt;const Section *&gt; &amp;sections)
 {
-    for (const Section* s : sections)
+    for (const Section *s : sections)
     {
         if (s-&gt;marker.empty())
-            throw std::runtime_error(&quot;empty marker in text command for file: &quot; + filepath);
+            throw std::runtime_error(&quot;empty marker in text command for file: &quot; +
+                                     filepath);
 
         // Собираем все вхождения маркера
         std::vector&lt;int&gt; candidates;
@@ -226,7 +240,9 @@ static void apply_text_commands(const std::string&amp; filepath, std::vector&lt;
         }
 
         if (candidates.empty())
-            throw std::runtime_error(&quot;text marker not found for file: &quot; + filepath + &quot;\ncommand: &quot; + s-&gt;command + &quot;\n&quot;);
+            throw std::runtime_error(
+                &quot;text marker not found for file: &quot; + filepath +
+                &quot;\ncommand: &quot; + s-&gt;command + &quot;\n&quot;);
 
         int idx = find_best_marker_match(lines, s, candidates);
         if (idx &lt; 0)
@@ -237,18 +253,24 @@ static void apply_text_commands(const std::string&amp; filepath, std::vector&lt;
         if (s-&gt;command == &quot;insert-after-text&quot;)
         {
             pos += s-&gt;marker.size();
-            lines.insert(lines.begin() + static_cast&lt;std::ptrdiff_t&gt;(pos), s-&gt;payload.begin(), s-&gt;payload.end());
+            lines.insert(lines.begin() + static_cast&lt;std::ptrdiff_t&gt;(pos),
+                         s-&gt;payload.begin(),
+                         s-&gt;payload.end());
         }
         else if (s-&gt;command == &quot;insert-before-text&quot;)
         {
-            lines.insert(lines.begin() + static_cast&lt;std::ptrdiff_t&gt;(pos), s-&gt;payload.begin(), s-&gt;payload.end());
+            lines.insert(lines.begin() + static_cast&lt;std::ptrdiff_t&gt;(pos),
+                         s-&gt;payload.begin(),
+                         s-&gt;payload.end());
         }
         else if (s-&gt;command == &quot;replace-text&quot;)
         {
             auto begin = lines.begin() + static_cast&lt;std::ptrdiff_t&gt;(pos);
             auto end = begin + static_cast&lt;std::ptrdiff_t&gt;(s-&gt;marker.size());
             lines.erase(begin, end);
-            lines.insert(lines.begin() + static_cast&lt;std::ptrdiff_t&gt;(pos), s-&gt;payload.begin(), s-&gt;payload.end());
+            lines.insert(lines.begin() + static_cast&lt;std::ptrdiff_t&gt;(pos),
+                         s-&gt;payload.begin(),
+                         s-&gt;payload.end());
         }
         else if (s-&gt;command == &quot;delete-text&quot;)
         {
@@ -263,14 +285,14 @@ static void apply_text_commands(const std::string&amp; filepath, std::vector&lt;
     }
 }
 
-static std::string join_lines(const std::vector&lt;std::string&gt;&amp; lines)
+static std::string join_lines(const std::vector&lt;std::string&gt; &amp;lines)
 {
     if (lines.empty())
         return std::string();
 
     std::string text;
     std::size_t total = 0;
-    for (const auto&amp; s : lines)
+    for (const auto &amp;s : lines)
         total += s.size() + 1;
     text.reserve(total);
 
@@ -284,35 +306,44 @@ static std::string join_lines(const std::vector&lt;std::string&gt;&amp; lines)
     return text;
 }
 
-static void apply_symbol_commands(const std::string&amp; filepath, std::vector&lt;std::string&gt;&amp; lines,
-                                  const std::vector&lt;const Section*&gt;&amp; sections)
+static void apply_symbol_commands(const std::string &amp;filepath,
+                                  std::vector&lt;std::string&gt; &amp;lines,
+                                  const std::vector&lt;const Section *&gt; &amp;sections)
 {
-    for (const Section* s : sections)
+    for (const Section *s : sections)
     {
         // Всегда работаем с текущей версией файла
         std::string text = join_lines(lines);
 
-        if (s-&gt;command == &quot;replace-cpp-class&quot; || s-&gt;command == &quot;replace-cpp-method&quot;)
+        if (s-&gt;command == &quot;replace-cpp-class&quot; ||
+            s-&gt;command == &quot;replace-cpp-method&quot;)
         {
             CppSymbolFinder finder(text);
 
             if (s-&gt;command == &quot;replace-cpp-class&quot;)
             {
                 if (s-&gt;arg1.empty())
-                    throw std::runtime_error(&quot;replace-cpp-class: missing class name for file: &quot; + filepath);
+                    throw std::runtime_error(
+                        &quot;replace-cpp-class: missing class name for file: &quot; +
+                        filepath);
 
                 Region r;
                 if (!finder.find_class(s-&gt;arg1, r))
-                    throw std::runtime_error(&quot;replace-cpp-class: class not found: &quot; + s-&gt;arg1 +
-                                             &quot; in file: &quot; + filepath);
+                    throw std::runtime_error(
+                        &quot;replace-cpp-class: class not found: &quot; + s-&gt;arg1 +
+                        &quot; in file: &quot; + filepath);
 
-                if (r.start_line &lt; 0 || r.end_line &lt; r.start_line || r.end_line &gt;= static_cast&lt;int&gt;(lines.size()))
-                    throw std::runtime_error(&quot;replace-cpp-class: invalid region&quot;);
+                if (r.start_line &lt; 0 || r.end_line &lt; r.start_line ||
+                    r.end_line &gt;= static_cast&lt;int&gt;(lines.size()))
+                    throw std::runtime_error(
+                        &quot;replace-cpp-class: invalid region&quot;);
 
                 auto begin = lines.begin() + r.start_line;
                 auto end = lines.begin() + (r.end_line + 1);
                 lines.erase(begin, end);
-                lines.insert(lines.begin() + r.start_line, s-&gt;payload.begin(), s-&gt;payload.end());
+                lines.insert(lines.begin() + r.start_line,
+                             s-&gt;payload.begin(),
+                             s-&gt;payload.end());
             }
             else // replace-cpp-method
             {
@@ -328,52 +359,69 @@ static void apply_symbol_commands(const std::string&amp; filepath, std::vector&l
                 {
                     auto pos = s-&gt;arg1.find(&quot;::&quot;);
                     if (pos == std::string::npos)
-                        throw std::runtime_error(&quot;replace-cpp-method: expected 'Class::method' or 'Class method'&quot;);
+                        throw std::runtime_error(
+                            &quot;replace-cpp-method: expected 'Class::method' or &quot;
+                            &quot;'Class method'&quot;);
 
                     cls = s-&gt;arg1.substr(0, pos);
                     method = s-&gt;arg1.substr(pos + 2);
                 }
 
                 if (cls.empty() || method.empty())
-                    throw std::runtime_error(&quot;replace-cpp-method: empty class or method name&quot;);
+                    throw std::runtime_error(
+                        &quot;replace-cpp-method: empty class or method name&quot;);
 
                 Region r;
                 if (!finder.find_method(cls, method, r))
-                    throw std::runtime_error(&quot;replace-cpp-method: method not found: &quot; + cls + &quot;::&quot; + method +
-                                             &quot; in file: &quot; + filepath);
+                    throw std::runtime_error(
+                        &quot;replace-cpp-method: method not found: &quot; + cls +
+                        &quot;::&quot; + method + &quot; in file: &quot; + filepath);
 
-                if (r.start_line &lt; 0 || r.end_line &lt; r.start_line || r.end_line &gt;= static_cast&lt;int&gt;(lines.size()))
-                    throw std::runtime_error(&quot;replace-cpp-method: invalid region&quot;);
+                if (r.start_line &lt; 0 || r.end_line &lt; r.start_line ||
+                    r.end_line &gt;= static_cast&lt;int&gt;(lines.size()))
+                    throw std::runtime_error(
+                        &quot;replace-cpp-method: invalid region&quot;);
 
                 auto begin = lines.begin() + r.start_line;
                 auto end = lines.begin() + (r.end_line + 1);
                 lines.erase(begin, end);
-                lines.insert(lines.begin() + r.start_line, s-&gt;payload.begin(), s-&gt;payload.end());
+                lines.insert(lines.begin() + r.start_line,
+                             s-&gt;payload.begin(),
+                             s-&gt;payload.end());
             }
 
             continue;
         }
 
-        if (s-&gt;command == &quot;replace-py-class&quot; || s-&gt;command == &quot;replace-py-method&quot;)
+        if (s-&gt;command == &quot;replace-py-class&quot; ||
+            s-&gt;command == &quot;replace-py-method&quot;)
         {
             PythonSymbolFinder finder(text);
 
             if (s-&gt;command == &quot;replace-py-class&quot;)
             {
                 if (s-&gt;arg1.empty())
-                    throw std::runtime_error(&quot;replace-py-class: missing class name for file: &quot; + filepath);
+                    throw std::runtime_error(
+                        &quot;replace-py-class: missing class name for file: &quot; +
+                        filepath);
 
                 Region r;
                 if (!finder.find_class(s-&gt;arg1, r))
-                    throw std::runtime_error(&quot;replace-py-class: class not found: &quot; + s-&gt;arg1 + &quot; in file: &quot; + filepath);
+                    throw std::runtime_error(
+                        &quot;replace-py-class: class not found: &quot; + s-&gt;arg1 +
+                        &quot; in file: &quot; + filepath);
 
-                if (r.start_line &lt; 0 || r.end_line &lt; r.start_line || r.end_line &gt;= static_cast&lt;int&gt;(lines.size()))
-                    throw std::runtime_error(&quot;replace-py-class: invalid region&quot;);
+                if (r.start_line &lt; 0 || r.end_line &lt; r.start_line ||
+                    r.end_line &gt;= static_cast&lt;int&gt;(lines.size()))
+                    throw std::runtime_error(
+                        &quot;replace-py-class: invalid region&quot;);
 
                 auto begin = lines.begin() + r.start_line;
                 auto end = lines.begin() + (r.end_line + 1);
                 lines.erase(begin, end);
-                lines.insert(lines.begin() + r.start_line, s-&gt;payload.begin(), s-&gt;payload.end());
+                lines.insert(lines.begin() + r.start_line,
+                             s-&gt;payload.begin(),
+                             s-&gt;payload.end());
             }
             else // replace-py-method
             {
@@ -389,37 +437,46 @@ static void apply_symbol_commands(const std::string&amp; filepath, std::vector&l
                 {
                     auto pos = s-&gt;arg1.find('.');
                     if (pos == std::string::npos)
-                        throw std::runtime_error(&quot;replace-py-method: expected 'Class.method' or 'Class method'&quot;);
+                        throw std::runtime_error(
+                            &quot;replace-py-method: expected 'Class.method' or &quot;
+                            &quot;'Class method'&quot;);
 
                     cls = s-&gt;arg1.substr(0, pos);
                     method = s-&gt;arg1.substr(pos + 1);
                 }
 
                 if (cls.empty() || method.empty())
-                    throw std::runtime_error(&quot;replace-py-method: empty class or method name&quot;);
+                    throw std::runtime_error(
+                        &quot;replace-py-method: empty class or method name&quot;);
 
                 Region r;
                 if (!finder.find_method(cls, method, r))
-                    throw std::runtime_error(&quot;replace-py-method: method not found: &quot; + cls + &quot;.&quot; + method +
-                                             &quot; in file: &quot; + filepath);
+                    throw std::runtime_error(
+                        &quot;replace-py-method: method not found: &quot; + cls + &quot;.&quot; +
+                        method + &quot; in file: &quot; + filepath);
 
-                if (r.start_line &lt; 0 || r.end_line &lt; r.start_line || r.end_line &gt;= static_cast&lt;int&gt;(lines.size()))
-                    throw std::runtime_error(&quot;replace-py-method: invalid region&quot;);
+                if (r.start_line &lt; 0 || r.end_line &lt; r.start_line ||
+                    r.end_line &gt;= static_cast&lt;int&gt;(lines.size()))
+                    throw std::runtime_error(
+                        &quot;replace-py-method: invalid region&quot;);
 
                 auto begin = lines.begin() + r.start_line;
                 auto end = lines.begin() + (r.end_line + 1);
                 lines.erase(begin, end);
-                lines.insert(lines.begin() + r.start_line, s-&gt;payload.begin(), s-&gt;payload.end());
+                lines.insert(lines.begin() + r.start_line,
+                             s-&gt;payload.begin(),
+                             s-&gt;payload.end());
             }
 
             continue;
         }
 
-        throw std::runtime_error(&quot;apply_symbol_commands: unknown command: &quot; + s-&gt;command);
+        throw std::runtime_error(&quot;apply_symbol_commands: unknown command: &quot; +
+                                 s-&gt;command);
     }
 }
 
-static Section parse_section(std::istream&amp; in, const std::string&amp; header)
+static Section parse_section(std::istream &amp;in, const std::string &amp;header)
 {
     Section s;
 
@@ -468,7 +525,8 @@ static Section parse_section(std::istream&amp; in, const std::string&amp; header
         }
         else
         {
-            throw std::runtime_error(&quot;index-based commands removed: &quot; + s.command);
+            throw std::runtime_error(&quot;index-based commands removed: &quot; +
+                                     s.command);
         }
     }
 
@@ -489,10 +547,12 @@ static Section parse_section(std::istream&amp; in, const std::string&amp; header
     if (is_text_command(s.command))
     {
         // Определяем, в YAML-режиме мы или в старом формате.
-        // Если сразу после команды нет BEFORE:/MARKER:/AFTER:, используется старая логика.
+        // Если сразу после команды нет BEFORE:/MARKER:/AFTER:, используется
+        // старая логика.
         bool yaml_mode = false;
         std::size_t first_non_empty = 0;
-        while (first_non_empty &lt; s.payload.size() &amp;&amp; trim(s.payload[first_non_empty]).empty())
+        while (first_non_empty &lt; s.payload.size() &amp;&amp;
+               trim(s.payload[first_non_empty]).empty())
             ++first_non_empty;
 
         if (first_non_empty &lt; s.payload.size())
@@ -505,9 +565,11 @@ static Section parse_section(std::istream&amp; in, const std::string&amp; header
         if (!yaml_mode)
         {
             // Старый режим: всё до '---' — marker, после — payload
-            auto it = std::find(s.payload.begin(), s.payload.end(), std::string(&quot;---&quot;));
+            auto it = std::find(
+                s.payload.begin(), s.payload.end(), std::string(&quot;---&quot;));
             if (it == s.payload.end())
-                throw std::runtime_error(&quot;text command requires '---' separator&quot;);
+                throw std::runtime_error(
+                    &quot;text command requires '---' separator&quot;);
 
             s.marker.assign(s.payload.begin(), it);
 
@@ -550,7 +612,7 @@ static Section parse_section(std::istream&amp; in, const std::string&amp; header
 
             for (std::size_t i = first_non_empty; i &lt; s.payload.size(); ++i)
             {
-                const std::string&amp; ln = s.payload[i];
+                const std::string &amp;ln = s.payload[i];
 
                 if (!seen_separator &amp;&amp; ln == &quot;---&quot;)
                 {
@@ -579,17 +641,18 @@ static Section parse_section(std::istream&amp; in, const std::string&amp; header
 
                     switch (blk)
                     {
-                        case Block::BEFORE:
-                            s.before.push_back(ln);
-                            break;
-                        case Block::MARKER:
-                            s.marker.push_back(ln);
-                            break;
-                        case Block::AFTER:
-                            s.after.push_back(ln);
-                            break;
-                        case Block::NONE:
-                            throw std::runtime_error(&quot;unexpected content before YAML block tag&quot;);
+                    case Block::BEFORE:
+                        s.before.push_back(ln);
+                        break;
+                    case Block::MARKER:
+                        s.marker.push_back(ln);
+                        break;
+                    case Block::AFTER:
+                        s.after.push_back(ln);
+                        break;
+                    case Block::NONE:
+                        throw std::runtime_error(
+                            &quot;unexpected content before YAML block tag&quot;);
                     }
                 }
                 else
@@ -601,14 +664,16 @@ static Section parse_section(std::istream&amp; in, const std::string&amp; header
             s.payload.swap(new_payload);
 
             if (s.marker.empty())
-                throw std::runtime_error(&quot;YAML text command requires MARKER: section&quot;);
+                throw std::runtime_error(
+                    &quot;YAML text command requires MARKER: section&quot;);
         }
     }
 
     return s;
 }
 
-static void apply_for_file(const std::string&amp; filepath, const std::vector&lt;const Section*&gt;&amp; sections)
+static void apply_for_file(const std::string &amp;filepath,
+                           const std::vector&lt;const Section *&gt; &amp;sections)
 {
     fs::path p = filepath;
     std::vector&lt;std::string&gt; orig;
@@ -624,13 +689,13 @@ static void apply_for_file(const std::string&amp; filepath, const std::vector&lt
         orig.clear();
     }
 
-    for (const Section* s : sections)
+    for (const Section *s : sections)
     {
         if (!existed &amp;&amp; s-&gt;command == &quot;delete-file&quot;)
             throw std::runtime_error(&quot;delete-file: file does not exist&quot;);
     }
 
-    for (const Section* s : sections)
+    for (const Section *s : sections)
     {
         if (s-&gt;command == &quot;create-file&quot;)
         {
@@ -647,17 +712,18 @@ static void apply_for_file(const std::string&amp; filepath, const std::vector&lt
         }
     }
 
-    std::vector&lt;const Section*&gt; text_sections;
-    std::vector&lt;const Section*&gt; symbol_sections;
+    std::vector&lt;const Section *&gt; text_sections;
+    std::vector&lt;const Section *&gt; symbol_sections;
 
-    for (const Section* s : sections)
+    for (const Section *s : sections)
     {
         if (is_text_command(s-&gt;command))
             text_sections.push_back(s);
         else if (is_symbol_command(s-&gt;command))
             symbol_sections.push_back(s);
         else
-            throw std::runtime_error(&quot;unexpected non-text command: &quot; + s-&gt;command);
+            throw std::runtime_error(&quot;unexpected non-text command: &quot; +
+                                     s-&gt;command);
     }
 
     if (!text_sections.empty())
@@ -670,14 +736,14 @@ static void apply_for_file(const std::string&amp; filepath, const std::vector&lt
         write_file_lines(p, orig);
 }
 
-static void apply_all(const std::vector&lt;Section&gt;&amp; sections)
+static void apply_all(const std::vector&lt;Section&gt; &amp;sections)
 {
     namespace fs = std::filesystem;
 
     // 1. Собираем список всех файлов, которые будут затронуты
     std::vector&lt;std::string&gt; files;
     files.reserve(sections.size());
-    for (auto&amp; s : sections)
+    for (auto &amp;s : sections)
         files.push_back(s.filepath);
 
     std::sort(files.begin(), files.end());
@@ -692,7 +758,7 @@ static void apply_all(const std::vector&lt;Section&gt;&amp; sections)
     std::map&lt;std::string, Backup&gt; backup;
 
     // 2. Делаем резервную копию всех файлов
-    for (auto&amp; f : files)
+    for (auto &amp;f : files)
     {
         Backup b;
         fs::path p = f;
@@ -723,16 +789,16 @@ static void apply_all(const std::vector&lt;Section&gt;&amp; sections)
     // 3. Применяем секции с защитой (try/catch)
     try
     {
-        for (auto&amp; s : sections)
+        for (auto &amp;s : sections)
         {
-            std::vector&lt;const Section*&gt; single{&amp;s};
+            std::vector&lt;const Section *&gt; single{&amp;s};
             apply_for_file(s.filepath, single);
         }
     }
     catch (...)
     {
         // 4. Откат (rollback)
-        for (auto&amp; [path, b] : backup)
+        for (auto &amp;[path, b] : backup)
         {
             fs::path p = path;
             std::error_code ec;
@@ -758,7 +824,7 @@ static void apply_all(const std::vector&lt;Section&gt;&amp; sections)
     }
 }
 
-int apply_chunk_main(int argc, char** argv)
+int apply_chunk_main(int argc, char **argv)
 {
     if (argc &lt; 2)
     {
@@ -791,7 +857,7 @@ int apply_chunk_main(int argc, char** argv)
 
         apply_all(sections);
     }
-    catch (const std::exception&amp; e)
+    catch (const std::exception &amp;e)
     {
         std::cerr &lt;&lt; &quot;error while applying patch: &quot; &lt;&lt; e.what() &lt;&lt; &quot;\n&quot;;
         return 1;

@@ -1,28 +1,38 @@
 #include "parser.h"
+#include "rules.h"
+#include <cctype>
 #include <fstream>
 #include <stdexcept>
-#include <cctype>
-#include "rules.h"
 
 namespace fs = std::filesystem;
 
-static inline void trim(std::string& s)
+static inline void trim(std::string &s)
 {
     size_t b = s.find_first_not_of(" \t\r\n");
-    if (b == std::string::npos) { s.clear(); return; }
+    if (b == std::string::npos)
+    {
+        s.clear();
+        return;
+    }
     size_t e = s.find_last_not_of(" \t\r\n");
     s = s.substr(b, e - b + 1);
 }
 
-Config parse_config(const fs::path& path)
+Config parse_config(const fs::path &path)
 {
     Config cfg;
-    enum Section { TEXT_RULES, TREE_RULES, MAPFORMAT_TEXT };
+    enum Section
+    {
+        TEXT_RULES,
+        TREE_RULES,
+        MAPFORMAT_TEXT
+    };
     Section current = TEXT_RULES;
 
     std::ifstream in(path);
     if (!in.is_open())
-        throw std::runtime_error("Failed to open config file: " + path.string());
+        throw std::runtime_error("Failed to open config file: " +
+                                 path.string());
 
     std::string raw_line;
     while (std::getline(in, raw_line))
@@ -32,8 +42,8 @@ Config parse_config(const fs::path& path)
 
         if (current == MAPFORMAT_TEXT)
         {
-            // Всё, что после [MAPFORMAT], идёт как есть (с сохранением пустых строк и #)
-            // до конца файла (пока новых секций у нас нет).
+            // Всё, что после [MAPFORMAT], идёт как есть (с сохранением пустых
+            // строк и #) до конца файла (пока новых секций у нас нет).
             cfg.map_format += raw_line;
             cfg.map_format += "\n";
             continue;

@@ -2,7 +2,7 @@
 
 #include <cctype>
 
-CppSymbolFinder::CppSymbolFinder(const std::string& text)
+CppSymbolFinder::CppSymbolFinder(const std::string &text)
 {
     // Разбиваем текст на строки (независимо от \r\n / \n)
     std::string current;
@@ -37,7 +37,7 @@ bool CppSymbolFinder::is_ident_char(char c)
     return std::isalnum(uc) || c == '_';
 }
 
-void CppSymbolFinder::tokenize(const std::string& text)
+void CppSymbolFinder::tokenize(const std::string &text)
 {
     m_tokens.clear();
 
@@ -190,13 +190,14 @@ void CppSymbolFinder::tokenize(const std::string& text)
     }
 }
 
-bool CppSymbolFinder::find_class_internal(const std::string& class_name, ClassRange& out) const
+bool CppSymbolFinder::find_class_internal(const std::string &class_name,
+                                          ClassRange &out) const
 {
     const std::size_t n = m_tokens.size();
 
     for (std::size_t i = 0; i < n; ++i)
     {
-        const Token& t = m_tokens[i];
+        const Token &t = m_tokens[i];
         if (t.kind != Token::Keyword)
             continue;
         if (t.text != "class" && t.text != "struct")
@@ -209,7 +210,7 @@ bool CppSymbolFinder::find_class_internal(const std::string& class_name, ClassRa
         if (j >= n)
             break;
 
-        const Token& name_tok = m_tokens[j];
+        const Token &name_tok = m_tokens[j];
         if (name_tok.text != class_name)
             continue;
 
@@ -219,7 +220,7 @@ bool CppSymbolFinder::find_class_internal(const std::string& class_name, ClassRa
         bool saw_lbrace = false;
         for (; k < n; ++k)
         {
-            const Token& tk = m_tokens[k];
+            const Token &tk = m_tokens[k];
             if (tk.text == "{")
             {
                 saw_lbrace = true;
@@ -243,7 +244,7 @@ bool CppSymbolFinder::find_class_internal(const std::string& class_name, ClassRa
 
         for (std::size_t p = k + 1; p < n; ++p)
         {
-            const Token& tp = m_tokens[p];
+            const Token &tp = m_tokens[p];
             if (tp.text == "{")
             {
                 ++depth;
@@ -273,7 +274,8 @@ bool CppSymbolFinder::find_class_internal(const std::string& class_name, ClassRa
     return false;
 }
 
-bool CppSymbolFinder::find_class(const std::string& class_name, Region& out) const
+bool CppSymbolFinder::find_class(const std::string &class_name,
+                                 Region &out) const
 {
     ClassRange cr;
     if (!find_class_internal(class_name, cr))
@@ -283,7 +285,9 @@ bool CppSymbolFinder::find_class(const std::string& class_name, Region& out) con
     return true;
 }
 
-bool CppSymbolFinder::find_method(const std::string& class_name, const std::string& method_name, Region& out) const
+bool CppSymbolFinder::find_method(const std::string &class_name,
+                                  const std::string &method_name,
+                                  Region &out) const
 {
     ClassRange cr;
     if (!find_class_internal(class_name, cr))
@@ -299,7 +303,7 @@ bool CppSymbolFinder::find_method(const std::string& class_name, const std::stri
     // Ищем внутри тела класса
     for (std::size_t i = begin; i < end; ++i)
     {
-        const Token& t = m_tokens[i];
+        const Token &t = m_tokens[i];
         if (t.kind != Token::Identifier)
             continue;
         if (t.text != method_name)
@@ -315,7 +319,7 @@ bool CppSymbolFinder::find_method(const std::string& class_name, const std::stri
         std::size_t start_tok = begin;
         for (std::size_t k = i; k > begin; --k)
         {
-            const std::string& s = m_tokens[k].text;
+            const std::string &s = m_tokens[k].text;
             if (s == ";" || s == "{" || s == "}")
             {
                 start_tok = k + 1;
@@ -328,7 +332,7 @@ bool CppSymbolFinder::find_method(const std::string& class_name, const std::stri
         int paren_depth = 0;
         for (; pos < end; ++pos)
         {
-            const std::string& s = m_tokens[pos].text;
+            const std::string &s = m_tokens[pos].text;
             if (s == "(")
             {
                 ++paren_depth;
@@ -352,7 +356,7 @@ bool CppSymbolFinder::find_method(const std::string& class_name, const std::stri
 
         for (; pos < end; ++pos)
         {
-            const std::string& s = m_tokens[pos].text;
+            const std::string &s = m_tokens[pos].text;
 
             if (s == ";")
             {
@@ -367,7 +371,7 @@ bool CppSymbolFinder::find_method(const std::string& class_name, const std::stri
                 ++pos;
                 for (; pos < end; ++pos)
                 {
-                    const std::string& sb = m_tokens[pos].text;
+                    const std::string &sb = m_tokens[pos].text;
                     if (sb == "{")
                         ++brace_depth;
                     else if (sb == "}")
@@ -391,9 +395,8 @@ bool CppSymbolFinder::find_method(const std::string& class_name, const std::stri
         int method_line = t.line;
 
         // Не вываливаемся на строку с access-specifier'ом (public:)
-        out.start_line = (start_line_token < method_line)
-                             ? method_line
-                             : start_line_token;
+        out.start_line =
+            (start_line_token < method_line) ? method_line : start_line_token;
 
         out.end_line = m_tokens[end_tok].line;
         return true;

@@ -13,12 +13,12 @@
 
 // Runs a shell command and captures its stdout.
 // Returns empty string on error or if nothing was printed.
-static std::string run_command_capture(const char* cmd)
+static std::string run_command_capture(const char *cmd)
 {
 #ifdef _WIN32
-    FILE* pipe = _popen(cmd, &quot;r&quot;);
+    FILE *pipe = _popen(cmd, &quot;r&quot;);
 #else
-    FILE* pipe = popen(cmd, &quot;r&quot;);
+    FILE *pipe = popen(cmd, &quot;r&quot;);
 #endif
     if (!pipe)
         return {};
@@ -26,7 +26,8 @@ static std::string run_command_capture(const char* cmd)
     std::string result;
     char buffer[256];
 
-    while (fgets(buffer, sizeof(buffer), pipe)) {
+    while (fgets(buffer, sizeof(buffer), pipe))
+    {
         result += buffer;
     }
 
@@ -37,8 +38,8 @@ static std::string run_command_capture(const char* cmd)
 #endif
 
     // strip trailing newlines
-    while (!result.empty() &amp;&amp;
-           (result.back() == '\n' || result.back() == '\r')) {
+    while (!result.empty() &amp;&amp; (result.back() == '\n' || result.back() == '\r'))
+    {
         result.pop_back();
     }
 
@@ -51,18 +52,22 @@ GitInfo detect_git_info()
 
 #ifdef _WIN32
     std::string commit = run_command_capture(&quot;git rev-parse HEAD 2&gt;nul&quot;);
-    std::string remote = run_command_capture(&quot;git config --get remote.origin.url 2&gt;nul&quot;);
+    std::string remote =
+        run_command_capture(&quot;git config --get remote.origin.url 2&gt;nul&quot;);
 #else
     std::string commit = run_command_capture(&quot;git rev-parse HEAD 2&gt;/dev/null&quot;);
-    std::string remote = run_command_capture(&quot;git config --get remote.origin.url 2&gt;/dev/null&quot;);
+    std::string remote =
+        run_command_capture(&quot;git config --get remote.origin.url 2&gt;/dev/null&quot;);
 #endif
 
-    if (!commit.empty()) {
+    if (!commit.empty())
+    {
         info.commit = commit;
         info.has_commit = true;
     }
 
-    if (!remote.empty()) {
+    if (!remote.empty())
+    {
         info.remote = remote;
         info.has_remote = true;
     }
@@ -70,11 +75,11 @@ GitInfo detect_git_info()
     return info;
 }
 
-
-// Разбор remote вроде git@github.com:user/repo.git или https://github.com/user/repo(.git)
-bool parse_github_remote(const std::string&amp; remote,
-                                std::string&amp; user,
-                                std::string&amp; repo)
+// Разбор remote вроде git@github.com:user/repo.git или
+// https://github.com/user/repo(.git)
+bool parse_github_remote(const std::string &amp;remote,
+                         std::string &amp;user,
+                         std::string &amp;repo)
 {
     const std::string host = &quot;github.com&quot;;
     auto pos = remote.find(host);
@@ -110,7 +115,8 @@ bool parse_github_remote(const std::string&amp; remote,
     // обрежем .git в конце, если есть
     const std::string dot_git = &quot;.git&quot;;
     if (repo_part.size() &gt; dot_git.size() &amp;&amp;
-        repo_part.compare(repo_part.size() - dot_git.size(), dot_git.size(), dot_git) == 0)
+        repo_part.compare(
+            repo_part.size() - dot_git.size(), dot_git.size(), dot_git) == 0)
     {
         repo_part.resize(repo_part.size() - dot_git.size());
     }
@@ -122,7 +128,8 @@ bool parse_github_remote(const std::string&amp; remote,
     return true;
 }
 
-GitHubInfo detect_github_info() {
+GitHubInfo detect_github_info()
+{
     GitInfo gi = detect_git_info();
     GitHubInfo out;
     if (!gi.has_commit || !gi.has_remote)

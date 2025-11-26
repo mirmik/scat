@@ -7,27 +7,28 @@
 <body>
 <pre><code>
 #include &quot;util.h&quot;
-#include &lt;fstream&gt;
-#include &lt;sstream&gt;
-#include &lt;iostream&gt;      // у тебя уже есть для std::cerr
 #include &lt;filesystem&gt;
-
+#include &lt;fstream&gt;
+#include &lt;iostream&gt; // у тебя уже есть для std::cerr
+#include &lt;sstream&gt;
 
 namespace fs = std::filesystem;
 
 extern bool g_use_absolute_paths;
 
-bool starts_with(const std::string&amp; s, const std::string&amp; prefix)
+bool starts_with(const std::string &amp;s, const std::string &amp;prefix)
 {
-    return s.size() &gt;= prefix.size() &amp;&amp; s.compare(0, prefix.size(), prefix) == 0;
+    return s.size() &gt;= prefix.size() &amp;&amp;
+           s.compare(0, prefix.size(), prefix) == 0;
 }
 
-bool ends_with(const std::string&amp; s, const std::string&amp; suffix)
+bool ends_with(const std::string &amp;s, const std::string &amp;suffix)
 {
-    return s.size() &gt;= suffix.size() &amp;&amp; s.compare(s.size() - suffix.size(), suffix.size(), suffix) == 0;
+    return s.size() &gt;= suffix.size() &amp;&amp;
+           s.compare(s.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
 
-std::string make_display_path(const fs::path&amp; p)
+std::string make_display_path(const fs::path &amp;p)
 {
     if (g_use_absolute_paths)
         return fs::absolute(p).string();
@@ -40,7 +41,7 @@ std::string make_display_path(const fs::path&amp; p)
     return p.string();
 }
 
-void dump_file(const fs::path&amp; p, bool first, const Options&amp; opt)
+void dump_file(const fs::path &amp;p, bool first, const Options &amp;opt)
 {
     std::ifstream in(p, std::ios::binary);
     if (!in)
@@ -53,7 +54,7 @@ void dump_file(const fs::path&amp; p, bool first, const Options&amp; opt)
         std::cout &lt;&lt; &quot;\n&quot;;
 
     std::cout &lt;&lt; &quot;===== &quot; &lt;&lt; make_display_path(p) &lt;&lt; &quot; =====\n&quot;;
-    //std::cout &lt;&lt; in.rdbuf() &lt;&lt; &quot;=EOF=\n&quot;;
+    // std::cout &lt;&lt; in.rdbuf() &lt;&lt; &quot;=EOF=\n&quot;;
 
     std::string line;
     size_t line_no = 0;
@@ -66,7 +67,7 @@ void dump_file(const fs::path&amp; p, bool first, const Options&amp; opt)
         ++line_no;
     }
 }
-std::uintmax_t get_file_size(const fs::path&amp; p)
+std::uintmax_t get_file_size(const fs::path &amp;p)
 {
     std::error_code ec;
     auto sz = fs::file_size(p, ec);
@@ -75,7 +76,7 @@ std::uintmax_t get_file_size(const fs::path&amp; p)
     return sz;
 }
 
-bool match_simple(const fs::path&amp; p, const std::string&amp; pat)
+bool match_simple(const fs::path &amp;p, const std::string &amp;pat)
 {
     std::string name = p.filename().string();
 
@@ -92,12 +93,15 @@ bool match_simple(const fs::path&amp; p, const std::string&amp; pat)
     return starts_with(name, a) &amp;&amp; ends_with(name, b);
 }
 
-std::string html_escape(std::string_view src) {
+std::string html_escape(std::string_view src)
+{
     std::string out;
     out.reserve(src.size() * 11 / 10 + 16); // чуть с запасом
 
-    for (char ch : src) {
-        switch (ch) {
+    for (char ch : src)
+    {
+        switch (ch)
+        {
         case '&amp;':
             out += &quot;&amp;amp;&quot;;
             break;
@@ -119,10 +123,8 @@ std::string html_escape(std::string_view src) {
     return out;
 }
 
-
-
-std::string wrap_cpp_as_html(std::string_view cpp_code,
-                             std::string_view title) {
+std::string wrap_cpp_as_html(std::string_view cpp_code, std::string_view title)
+{
     std::string escaped = html_escape(cpp_code);
 
     std::string html;

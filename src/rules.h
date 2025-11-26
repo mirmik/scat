@@ -6,7 +6,7 @@ struct Rule
     std::string pattern;
     bool exclude = false;
 
-    static Rule from_string(const std::string& line)
+    static Rule from_string(const std::string &line)
     {
         Rule r;
         if (!line.empty() && line[0] == '!')

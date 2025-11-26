@@ -1,27 +1,27 @@
-#include "options.h"
 #include "collector.h"
+#include "options.h"
 #include "parser.h"
 #include "util.h"
 
+#include <cstdint>
 #include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <sstream>
-#include <fstream>
 #include <vector>
-#include <cstdint>
 
 namespace fs = std::filesystem;
 
 #ifndef _WIN32
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 #include <unistd.h>
 #endif
 
-static std::string json_escape(const std::string& s)
+static std::string json_escape(const std::string &s)
 {
     std::string out;
     out.reserve(s.size());
@@ -29,18 +29,30 @@ static std::string json_escape(const std::string& s)
     {
         switch (c)
         {
-            case '\\': out += "\\\\"; break;
-            case '"':  out += "\\\""; break;
-            case '\n': out += "\\n";  break;
-            case '\r': out += "\\r";  break;
-            case '\t': out += "\\t";  break;
-            default:   out += c;      break;
+        case '\\':
+            out += "\\\\";
+            break;
+        case '"':
+            out += "\\\"";
+            break;
+        case '\n':
+            out += "\\n";
+            break;
+        case '\r':
+            out += "\\r";
+            break;
+        case '\t':
+            out += "\\t";
+            break;
+        default:
+            out += c;
+            break;
         }
     }
     return out;
 }
 
-int run_server(const Options& opt)
+int run_server(const Options &opt)
 {
 #ifdef _WIN32
     (void)opt;
@@ -76,7 +88,7 @@ int run_server(const Options& opt)
 
     // Ключ: строковый путь (как печатаем в scat), значение: реальный путь
     std::map<std::string, fs::path> file_map;
-    for (auto& f : files)
+    for (auto &f : files)
     {
         std::string key = make_display_path(f);
         file_map[key] = f;
@@ -97,7 +109,8 @@ int run_server(const Options& opt)
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
     addr.sin_port = htons(static_cast<uint16_t>(opt.server_port));
 
-    if (::bind(server_fd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) < 0)
+    if (::bind(server_fd, reinterpret_cast<sockaddr *>(&addr), sizeof(addr)) <
+        0)
     {
         perror("bind");
         ::close(server_fd);
@@ -140,9 +153,9 @@ int run_server(const Options& opt)
         std::string method, target, version;
         req_stream >> method >> target >> version;
 
-        auto send_response = [&](const std::string& status_line,
-                                 const std::string& content_type,
-                                 const std::string& body)
+        auto send_response = [&](const std::string &status_line,
+                                 const std::string &content_type,
+                                 const std::string &body)
         {
             std::ostringstream out;
             out << status_line << "\r\n";
@@ -171,23 +184,23 @@ int run_server(const Options& opt)
         if (target == "/")
         {
             std::ostringstream body;
-            body
-                << "<!DOCTYPE html>\n"
-                << "<html><head><meta charset=\"utf-8\">"
-                << "<title>scat server</title></head><body>\n"
-                << "<h1>scat server</h1>\n"
-                << "<p>This is a read-only file server started by "
-                << "<code>scat --server PORT</code>.</p>\n"
-                << "<ul>\n"
-                << "  <li><code>/index.json</code> – list of files as JSON.</li>\n"
-                << "  <li><code>/{relative-path}</code> – raw file contents. "
-                << "Path must match an entry from <code>index.json</code>.</li>\n"
-                << "</ul>\n"
-                << "</body></html>\n";
+            body << "<!DOCTYPE html>\n"
+                 << "<html><head><meta charset=\"utf-8\">"
+                 << "<title>scat server</title></head><body>\n"
+                 << "<h1>scat server</h1>\n"
+                 << "<p>This is a read-only file server started by "
+                 << "<code>scat --server PORT</code>.</p>\n"
+                 << "<ul>\n"
+                 << "  <li><code>/index.json</code> – list of files as "
+                    "JSON.</li>\n"
+                 << "  <li><code>/{relative-path}</code> – raw file contents. "
+                 << "Path must match an entry from "
+                    "<code>index.json</code>.</li>\n"
+                 << "</ul>\n"
+                 << "</body></html>\n";
 
-            send_response("HTTP/1.0 200 OK",
-                          "text/html; charset=utf-8",
-                          body.str());
+            send_response(
+                "HTTP/1.0 200 OK", "text/html; charset=utf-8", body.str());
             ::close(client);
             continue;
         }
@@ -197,7 +210,7 @@ int run_server(const Options& opt)
             std::ostringstream body;
             body << "{\n  \"files\": [\n";
             bool first = true;
-            for (const auto& [name, _] : file_map)
+            for (const auto &[name, _] : file_map)
             {
                 if (!first)
                     body << ",\n";
@@ -239,9 +252,8 @@ int run_server(const Options& opt)
         std::ostringstream body;
         body << in.rdbuf();
 
-        send_response("HTTP/1.0 200 OK",
-                      "text/plain; charset=utf-8",
-                      body.str());
+        send_response(
+            "HTTP/1.0 200 OK", "text/plain; charset=utf-8", body.str());
         ::close(client);
     }
 

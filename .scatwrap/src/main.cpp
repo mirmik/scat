@@ -8,7 +8,7 @@
 <pre><code>
 #include &quot;scat.h&quot;
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
     return scat_main(argc, argv);
 }

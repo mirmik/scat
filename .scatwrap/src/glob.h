@@ -18,8 +18,7 @@
 //     * сложные пути вида &quot;foo/*/bar/**/*.txt&quot;
 //
 // Возвращает список regular files.
-std::vector&lt;std::filesystem::path&gt;
-expand_glob(const std::string&amp; pattern);
+std::vector&lt;std::filesystem::path&gt; expand_glob(const std::string &amp;pattern);
 
 </code></pre>
 </body>

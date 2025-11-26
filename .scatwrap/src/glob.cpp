@@ -8,33 +8,34 @@
 <pre><code>
 #include &quot;glob.h&quot;
 #include &quot;util.h&quot;
+#include &lt;algorithm&gt;
 #include &lt;filesystem&gt;
+#include &lt;functional&gt;
+#include &lt;sstream&gt;
 #include &lt;string&gt;
 #include &lt;vector&gt;
-#include &lt;sstream&gt;
-#include &lt;algorithm&gt;
-#include &lt;functional&gt;
 
 namespace fs = std::filesystem;
 
-static bool is_wildcard(const std::string&amp; s) {
+static bool is_wildcard(const std::string &amp;s)
+{
     return s == &quot;*&quot; || s == &quot;**&quot; || s.find('*') != std::string::npos;
 }
 
 // matcit только filename, НЕ директорию
-static bool match_name(const fs::path&amp; p, const std::string&amp; seg)
+static bool match_name(const fs::path &amp;p, const std::string &amp;seg)
 {
     return match_simple(p, seg);
 }
 
-std::vector&lt;fs::path&gt; expand_glob(const std::string&amp; pattern)
+std::vector&lt;fs::path&gt; expand_glob(const std::string &amp;pattern)
 {
     std::vector&lt;fs::path&gt; out;
     std::error_code ec;
 
     fs::path pat(pattern);
-    fs::path root = pat.root_path();      // &quot;/&quot; или &quot;C:&quot; или &quot;&quot;
-    fs::path rel  = pat.relative_path();
+    fs::path root = pat.root_path(); // &quot;/&quot; или &quot;C:&quot; или &quot;&quot;
+    fs::path rel = pat.relative_path();
 
     if (root.empty())
         root = &quot;.&quot;;
@@ -52,7 +53,7 @@ std::vector&lt;fs::path&gt; expand_glob(const std::string&amp; pattern)
     size_t start = 0;
     for (; start &lt; parts.size(); ++start)
     {
-        const auto&amp; seg = parts[start];
+        const auto &amp;seg = parts[start];
         if (is_wildcard(seg))
             break;
         root /= seg;
@@ -62,8 +63,8 @@ std::vector&lt;fs::path&gt; expand_glob(const std::string&amp; pattern)
         return out;
 
     // Основной обход
-    std::function&lt;void(const fs::path&amp;, size_t)&gt; walk =
-        [&amp;](const fs::path&amp; base, size_t idx)
+    std::function&lt;void(const fs::path &amp;, size_t)&gt; walk =
+        [&amp;](const fs::path &amp;base, size_t idx)
     {
         if (idx == parts.size())
         {
@@ -72,7 +73,7 @@ std::vector&lt;fs::path&gt; expand_glob(const std::string&amp; pattern)
             return;
         }
 
-        const std::string&amp; seg = parts[idx];
+        const std::string &amp;seg = parts[idx];
 
         // ---------------------------------------------------------------------
         // &quot;**&quot; → полный рекурсивный обход
@@ -85,7 +86,7 @@ std::vector&lt;fs::path&gt; expand_glob(const std::string&amp; pattern)
             // вариант 1+ уровней
             if (fs::is_directory(base, ec))
             {
-                for (auto&amp; e : fs::directory_iterator(base, ec))
+                for (auto &amp;e : fs::directory_iterator(base, ec))
                     walk(e.path(), idx); // двигаемся дальше, idx НЕ увеличиваем
             }
             return;
@@ -99,7 +100,7 @@ std::vector&lt;fs::path&gt; expand_glob(const std::string&amp; pattern)
             if (!fs::is_directory(base, ec))
                 return;
 
-            for (auto&amp; e : fs::directory_iterator(base, ec))
+            for (auto &amp;e : fs::directory_iterator(base, ec))
             {
                 if (!match_name(e.path(), seg))
                     continue;

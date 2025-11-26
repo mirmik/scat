@@ -1,12 +1,12 @@
 #include "collector.h"
+#include "glob.h"
 #include "util.h"
 #include <algorithm>
-#include <iostream>
-#include <unordered_set>
 #include <filesystem>
-#include <sstream>
 #include <functional>
-#include "glob.h"
+#include <iostream>
+#include <sstream>
+#include <unordered_set>
 
 namespace fs = std::filesystem;
 
@@ -15,20 +15,20 @@ namespace fs = std::filesystem;
 // ---------------------------------------------------------------
 
 // pattern like:  "src/*"  or  "datas/**"
-static bool has_double_star(const std::string& s)
+static bool has_double_star(const std::string &s)
 {
     return s.find("**") != std::string::npos;
 }
 
-static bool has_single_star(const std::string& s)
+static bool has_single_star(const std::string &s)
 {
     return s.find('*') != std::string::npos && !has_double_star(s);
 }
 
 // Расширение одного правила
-static void expand_rule(const Rule& r, std::vector<fs::path>& out)
+static void expand_rule(const Rule &r, std::vector<fs::path> &out)
 {
-    const std::string& pat = r.pattern;
+    const std::string &pat = r.pattern;
     std::error_code ec;
 
     // ------------------------------------------------------------------
@@ -48,7 +48,7 @@ static void expand_rule(const Rule& r, std::vector<fs::path>& out)
         if (!fs::exists(dir, ec) || !fs::is_directory(dir, ec))
             return;
 
-        for (auto& e : fs::directory_iterator(dir, ec))
+        for (auto &e : fs::directory_iterator(dir, ec))
         {
             if (e.is_regular_file() && match_simple(e.path(), mask))
                 out.push_back(e.path());
@@ -67,7 +67,7 @@ static void expand_rule(const Rule& r, std::vector<fs::path>& out)
 
     if (fs::is_directory(p, ec))
     {
-        for (auto& e : fs::directory_iterator(p, ec))
+        for (auto &e : fs::directory_iterator(p, ec))
             if (e.is_regular_file())
                 out.push_back(e.path());
         return;
@@ -78,18 +78,19 @@ static void expand_rule(const Rule& r, std::vector<fs::path>& out)
 // collect_from_rules()
 // ---------------------------------------------------------------
 
-std::vector<fs::path> collect_from_rules(const std::vector<Rule>& rules, const Options& opt)
+std::vector<fs::path> collect_from_rules(const std::vector<Rule> &rules,
+                                         const Options &opt)
 {
     std::vector<fs::path> tmp;
     std::error_code ec;
 
     // 1. Собираем все include-рулы
-    for (const auto& r : rules)
+    for (const auto &r : rules)
         if (!r.exclude)
             expand_rule(r, tmp);
-        
+
     // 2. Применяем exclude-рулы через нормальный glob
-    for (const auto& r : rules)
+    for (const auto &r : rules)
     {
         if (!r.exclude)
             continue;
@@ -99,26 +100,24 @@ std::vector<fs::path> collect_from_rules(const std::vector<Rule>& rules, const O
         std::unordered_set<std::string> bad_abs;
         bad_abs.reserve(bad.size());
 
-        for (auto& b : bad)
+        for (auto &b : bad)
         {
             std::error_code ec;
             auto absb = fs::absolute(b, ec);
             bad_abs.insert(absb.string());
         }
 
-        tmp.erase(
-            std::remove_if(
-                tmp.begin(), tmp.end(),
-                [&](const fs::path& p)
-                {
-                    std::error_code ec;
-                    auto absp = fs::absolute(p, ec);
-                    return bad_abs.find(absp.string()) != bad_abs.end();
-                }),
-            tmp.end());
+        tmp.erase(std::remove_if(tmp.begin(),
+                                 tmp.end(),
+                                 [&](const fs::path &p)
+                                 {
+                                     std::error_code ec;
+                                     auto absp = fs::absolute(p, ec);
+                                     return bad_abs.find(absp.string()) !=
+                                            bad_abs.end();
+                                 }),
+                  tmp.end());
     }
-
-
 
     // 3. Убираем дубликаты
     std::sort(tmp.begin(), tmp.end());
@@ -131,11 +130,12 @@ std::vector<fs::path> collect_from_rules(const std::vector<Rule>& rules, const O
 // collect_from_paths()
 // ---------------------------------------------------------------
 
-std::vector<fs::path> collect_from_paths(const std::vector<std::string>& paths, const Options& opt)
+std::vector<fs::path> collect_from_paths(const std::vector<std::string> &paths,
+                                         const Options &opt)
 {
     std::vector<fs::path> out;
 
-    for (auto& s : paths)
+    for (auto &s : paths)
     {
         fs::path p = s;
         std::error_code ec;
@@ -156,13 +156,13 @@ std::vector<fs::path> collect_from_paths(const std::vector<std::string>& paths, 
         {
             if (opt.recursive)
             {
-                for (auto& e : fs::recursive_directory_iterator(p, ec))
+                for (auto &e : fs::recursive_directory_iterator(p, ec))
                     if (e.is_regular_file())
                         out.push_back(e.path());
             }
             else
             {
-                for (auto& e : fs::directory_iterator(p, ec))
+                for (auto &e : fs::directory_iterator(p, ec))
                     if (e.is_regular_file())
                         out.push_back(e.path());
             }

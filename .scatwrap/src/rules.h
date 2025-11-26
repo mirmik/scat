@@ -14,7 +14,7 @@ struct Rule
     std::string pattern;
     bool exclude = false;
 
-    static Rule from_string(const std::string&amp; line)
+    static Rule from_string(const std::string &amp;line)
     {
         Rule r;
         if (!line.empty() &amp;&amp; line[0] == '!')
