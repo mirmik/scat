@@ -16,6 +16,11 @@
 #include <set>
 #include <sstream>
 
+#ifndef _WIN32
+#include <sys/stat.h>
+#include <sys/types.h>
+#endif
+
 int wrap_files_to_html(const std::vector<std::filesystem::path> &files,
                        const Options &opt);
 
@@ -338,11 +343,132 @@ static std::string substitute_rawmap(const std::string &tmpl,
     return out;
 }
 
+static int install_pre_commit_hook()
+{
+    // Узнаём .git-директорию через git
+    std::string git_dir = detect_git_dir();
+    if (git_dir.empty())
+    {
+        std::cerr
+            << "--hook-install: not a git repository or git not available\n";
+        return 1;
+    }
+
+    fs::path git_path = fs::path(git_dir);
+    fs::path hooks_dir = git_path / "hooks";
+    std::error_code ec;
+    fs::create_directories(hooks_dir, ec);
+
+    fs::path hook_path = hooks_dir / "pre-commit";
+
+    std::cout << "===== .git/hooks/pre-commit =====\n";
+
+    std::string existing;
+    if (fs::exists(hook_path))
+    {
+        std::ifstream in(hook_path);
+        if (in)
+        {
+            std::ostringstream ss;
+            ss << in.rdbuf();
+            existing = ss.str();
+        }
+    }
+
+    const std::string marker = "# pre-commit hook for scat wrapping";
+
+    // Если наш хук уже есть — ничего не делаем
+    if (!existing.empty() && existing.find(marker) != std::string::npos)
+    {
+        std::cout << "scat: pre-commit hook already contains scat wrapper\n";
+        return 0;
+    }
+
+    if (existing.empty())
+    {
+        // Создаём новый pre-commit с твоим скриптом
+        std::ofstream out(hook_path, std::ios::trunc);
+        if (!out)
+        {
+            std::cerr << "scat: cannot write hook file: " << hook_path << "\n";
+            return 1;
+        }
+
+        out << "#!/bin/sh\n"
+               "# pre-commit hook for scat wrapping\n"
+               "\n"
+               "set -e  # если любая команда упадёт — прерываем коммит\n"
+               "\n"
+               "# Опционально: не мешаемся, если scat не установлен\n"
+               "if ! command -v scat >/dev/null 2>&1; then\n"
+               "    echo \"pre-commit: 'scat' not found in PATH, skipping "
+               "wrap\"\n"
+               "    exit 0\n"
+               "fi\n"
+               "\n"
+               "echo \"pre-commit: running 'scat --wrap wrapped'...\"\n"
+               "\n"
+               "# Рабочая директория хуков по умолчанию — корень репозитория,\n"
+               "# так что можно просто дернуть scat.\n"
+               "scat --wrap .scatwrap\n"
+               "\n"
+               "# Добавляем всё из wrapped в индекс (новые, изменённые, "
+               "удалённые)\n"
+               "git add -A .scatwrap\n"
+               "\n"
+               "echo \"pre-commit: wrapped/ updated and added to commit\"\n"
+               "\n"
+               "exit 0\n";
+    }
+    else
+    {
+        // Уже есть какой-то хук — аккуратно добавляем наш блок в конец
+        std::ofstream out(hook_path, std::ios::app);
+        if (!out)
+        {
+            std::cerr << "scat: cannot append to hook file: " << hook_path
+                      << "\n";
+            return 1;
+        }
+
+        if (!existing.empty() && existing.back() != '\n')
+            out << "\n";
+
+        out << "\n# ----- added by scat --hook-install -----\n"
+               "if command -v scat >/dev/null 2>&1; then\n"
+               "    echo \"pre-commit: running 'scat --wrap wrapped'...\"\n"
+               "    scat --wrap .scatwrap\n"
+               "    git add -A .scatwrap\n"
+               "    echo \"pre-commit: wrapped/ updated and added to commit\"\n"
+               "fi\n"
+               "# ----- end scat hook -----\n";
+    }
+
+#ifndef _WIN32
+    // chmod +x на Unix-подобных
+    std::string hp = hook_path.string();
+    struct stat st;
+    if (::stat(hp.c_str(), &st) == 0)
+    {
+        mode_t mode = st.st_mode | S_IXUSR | S_IXGRP | S_IXOTH;
+        ::chmod(hp.c_str(), mode);
+    }
+#endif
+
+    return 0;
+}
+
 int scat_main(int argc, char **argv)
 {
     Options opt = parse_options(argc, argv);
     g_use_absolute_paths = opt.abs_paths;
     CopyGuard copy_guard(opt.copy_out);
+
+    // Установка git pre-commit hook'а и выход
+    if (opt.hook_install)
+    {
+        return install_pre_commit_hook();
+    }
 
     // Git info mode: print repository metadata and exit
     if (opt.git_info)

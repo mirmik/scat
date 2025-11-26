@@ -33,6 +33,8 @@ static void print_help()
                  &quot;  --ghmap       List raw.githubusercontent.com URLs for &quot;
                  &quot;current commit\n&quot;
                  &quot;  --copy        Copy all stdout output to system clipboard\n&quot;
+                 &quot;  --hook-install Install or update .git/hooks/pre-commit for &quot;
+                 &quot;scat wrap\n&quot;
                  &quot;  -h, --help    Show this help\n&quot;
                  &quot;\n&quot;
                  &quot;If no paths are given, scat reads patterns from scat.txt.\n&quot;;
@@ -64,6 +66,10 @@ Options parse_options(int argc, char **argv)
         else if (a == &quot;--abs&quot;)
         {
             opt.abs_paths = true;
+        }
+        else if (a == &quot;--hook-install&quot;)
+        {
+            opt.hook_install = true;
         }
         else if (a == &quot;--sorted&quot;)
         {

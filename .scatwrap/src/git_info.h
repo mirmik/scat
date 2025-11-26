@@ -33,6 +33,7 @@ bool parse_github_remote(const std::string &amp;remote,
                          std::string &amp;repo);
 
 GitHubInfo detect_github_info();
+std::string detect_git_dir(); // NEW
 </code></pre>
 </body>
 </html>

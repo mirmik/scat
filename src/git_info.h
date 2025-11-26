@@ -25,3 +25,4 @@ bool parse_github_remote(const std::string &remote,
                          std::string &repo);
 
 GitHubInfo detect_github_info();
+std::string detect_git_dir(); // NEW

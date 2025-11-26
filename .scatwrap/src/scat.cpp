@@ -24,6 +24,11 @@
 #include &lt;set&gt;
 #include &lt;sstream&gt;
 
+#ifndef _WIN32
+#include &lt;sys/stat.h&gt;
+#include &lt;sys/types.h&gt;
+#endif
+
 int wrap_files_to_html(const std::vector&lt;std::filesystem::path&gt; &amp;files,
                        const Options &amp;opt);
 
@@ -346,11 +351,132 @@ static std::string substitute_rawmap(const std::string &amp;tmpl,
     return out;
 }
 
+static int install_pre_commit_hook()
+{
+    // Узнаём .git-директорию через git
+    std::string git_dir = detect_git_dir();
+    if (git_dir.empty())
+    {
+        std::cerr
+            &lt;&lt; &quot;--hook-install: not a git repository or git not available\n&quot;;
+        return 1;
+    }
+
+    fs::path git_path = fs::path(git_dir);
+    fs::path hooks_dir = git_path / &quot;hooks&quot;;
+    std::error_code ec;
+    fs::create_directories(hooks_dir, ec);
+
+    fs::path hook_path = hooks_dir / &quot;pre-commit&quot;;
+
+    std::cout &lt;&lt; &quot;===== .git/hooks/pre-commit =====\n&quot;;
+
+    std::string existing;
+    if (fs::exists(hook_path))
+    {
+        std::ifstream in(hook_path);
+        if (in)
+        {
+            std::ostringstream ss;
+            ss &lt;&lt; in.rdbuf();
+            existing = ss.str();
+        }
+    }
+
+    const std::string marker = &quot;# pre-commit hook for scat wrapping&quot;;
+
+    // Если наш хук уже есть — ничего не делаем
+    if (!existing.empty() &amp;&amp; existing.find(marker) != std::string::npos)
+    {
+        std::cout &lt;&lt; &quot;scat: pre-commit hook already contains scat wrapper\n&quot;;
+        return 0;
+    }
+
+    if (existing.empty())
+    {
+        // Создаём новый pre-commit с твоим скриптом
+        std::ofstream out(hook_path, std::ios::trunc);
+        if (!out)
+        {
+            std::cerr &lt;&lt; &quot;scat: cannot write hook file: &quot; &lt;&lt; hook_path &lt;&lt; &quot;\n&quot;;
+            return 1;
+        }
+
+        out &lt;&lt; &quot;#!/bin/sh\n&quot;
+               &quot;# pre-commit hook for scat wrapping\n&quot;
+               &quot;\n&quot;
+               &quot;set -e  # если любая команда упадёт — прерываем коммит\n&quot;
+               &quot;\n&quot;
+               &quot;# Опционально: не мешаемся, если scat не установлен\n&quot;
+               &quot;if ! command -v scat &gt;/dev/null 2&gt;&amp;1; then\n&quot;
+               &quot;    echo \&quot;pre-commit: 'scat' not found in PATH, skipping &quot;
+               &quot;wrap\&quot;\n&quot;
+               &quot;    exit 0\n&quot;
+               &quot;fi\n&quot;
+               &quot;\n&quot;
+               &quot;echo \&quot;pre-commit: running 'scat --wrap wrapped'...\&quot;\n&quot;
+               &quot;\n&quot;
+               &quot;# Рабочая директория хуков по умолчанию — корень репозитория,\n&quot;
+               &quot;# так что можно просто дернуть scat.\n&quot;
+               &quot;scat --wrap .scatwrap\n&quot;
+               &quot;\n&quot;
+               &quot;# Добавляем всё из wrapped в индекс (новые, изменённые, &quot;
+               &quot;удалённые)\n&quot;
+               &quot;git add -A .scatwrap\n&quot;
+               &quot;\n&quot;
+               &quot;echo \&quot;pre-commit: wrapped/ updated and added to commit\&quot;\n&quot;
+               &quot;\n&quot;
+               &quot;exit 0\n&quot;;
+    }
+    else
+    {
+        // Уже есть какой-то хук — аккуратно добавляем наш блок в конец
+        std::ofstream out(hook_path, std::ios::app);
+        if (!out)
+        {
+            std::cerr &lt;&lt; &quot;scat: cannot append to hook file: &quot; &lt;&lt; hook_path
+                      &lt;&lt; &quot;\n&quot;;
+            return 1;
+        }
+
+        if (!existing.empty() &amp;&amp; existing.back() != '\n')
+            out &lt;&lt; &quot;\n&quot;;
+
+        out &lt;&lt; &quot;\n# ----- added by scat --hook-install -----\n&quot;
+               &quot;if command -v scat &gt;/dev/null 2&gt;&amp;1; then\n&quot;
+               &quot;    echo \&quot;pre-commit: running 'scat --wrap wrapped'...\&quot;\n&quot;
+               &quot;    scat --wrap .scatwrap\n&quot;
+               &quot;    git add -A .scatwrap\n&quot;
+               &quot;    echo \&quot;pre-commit: wrapped/ updated and added to commit\&quot;\n&quot;
+               &quot;fi\n&quot;
+               &quot;# ----- end scat hook -----\n&quot;;
+    }
+
+#ifndef _WIN32
+    // chmod +x на Unix-подобных
+    std::string hp = hook_path.string();
+    struct stat st;
+    if (::stat(hp.c_str(), &amp;st) == 0)
+    {
+        mode_t mode = st.st_mode | S_IXUSR | S_IXGRP | S_IXOTH;
+        ::chmod(hp.c_str(), mode);
+    }
+#endif
+
+    return 0;
+}
+
 int scat_main(int argc, char **argv)
 {
     Options opt = parse_options(argc, argv);
     g_use_absolute_paths = opt.abs_paths;
     CopyGuard copy_guard(opt.copy_out);
+
+    // Установка git pre-commit hook'а и выход
+    if (opt.hook_install)
+    {
+        return install_pre_commit_hook();
+    }
 
     // Git info mode: print repository metadata and exit
     if (opt.git_info)

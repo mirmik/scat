@@ -134,3 +134,12 @@ GitHubInfo detect_github_info()
     out.ok = true;
     return out;
 }
+
+std::string detect_git_dir()
+{
+#ifdef _WIN32
+    return run_command_capture("git rev-parse --git-dir 2>nul");
+#else
+    return run_command_capture("git rev-parse --git-dir 2>/dev/null");
+#endif
+}

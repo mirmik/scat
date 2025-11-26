@@ -15,13 +15,14 @@ struct Options
     int server_port = 0;    // --server PORT
     std::string apply_file;
     bool apply_stdin = false;
-
     std::string config_file; // empty = no config mode
     bool chunk_help = false;
 
     bool git_info = false; // --git-info: print git meta info
     bool gh_map = false;   // --ghmap: print GitHub raw URLs for current commit
     bool copy_out = false; // --copy: also send stdout to clipboard
+    bool hook_install =
+        false; // --hook-install: install/update git pre-commit hook
 
     std::vector<std::string> paths; // positional paths
 
