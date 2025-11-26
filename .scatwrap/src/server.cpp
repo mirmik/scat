@@ -6,268 +6,268 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#include&#32;&quot;collector.h&quot;<br>
-#include&#32;&quot;options.h&quot;<br>
-#include&#32;&quot;parser.h&quot;<br>
-#include&#32;&quot;util.h&quot;<br>
+#include &quot;collector.h&quot;<br>
+#include &quot;options.h&quot;<br>
+#include &quot;parser.h&quot;<br>
+#include &quot;util.h&quot;<br>
 <br>
-#include&#32;&lt;cstdint&gt;<br>
-#include&#32;&lt;filesystem&gt;<br>
-#include&#32;&lt;fstream&gt;<br>
-#include&#32;&lt;iostream&gt;<br>
-#include&#32;&lt;map&gt;<br>
-#include&#32;&lt;sstream&gt;<br>
-#include&#32;&lt;vector&gt;<br>
+#include &lt;cstdint&gt;<br>
+#include &lt;filesystem&gt;<br>
+#include &lt;fstream&gt;<br>
+#include &lt;iostream&gt;<br>
+#include &lt;map&gt;<br>
+#include &lt;sstream&gt;<br>
+#include &lt;vector&gt;<br>
 <br>
-namespace&#32;fs&#32;=&#32;std::filesystem;<br>
+namespace fs = std::filesystem;<br>
 <br>
-#ifndef&#32;_WIN32<br>
-#include&#32;&lt;arpa/inet.h&gt;<br>
-#include&#32;&lt;netinet/in.h&gt;<br>
-#include&#32;&lt;sys/socket.h&gt;<br>
-#include&#32;&lt;sys/types.h&gt;<br>
-#include&#32;&lt;unistd.h&gt;<br>
+#ifndef _WIN32<br>
+#include &lt;arpa/inet.h&gt;<br>
+#include &lt;netinet/in.h&gt;<br>
+#include &lt;sys/socket.h&gt;<br>
+#include &lt;sys/types.h&gt;<br>
+#include &lt;unistd.h&gt;<br>
 #endif<br>
 <br>
-static&#32;std::string&#32;json_escape(const&#32;std::string&#32;&amp;s)<br>
+static std::string json_escape(const std::string &amp;s)<br>
 {<br>
-&#32;&#32;&#32;&#32;std::string&#32;out;<br>
-&#32;&#32;&#32;&#32;out.reserve(s.size());<br>
-&#32;&#32;&#32;&#32;for&#32;(char&#32;c&#32;:&#32;s)<br>
-&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;switch&#32;(c)<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;case&#32;'\\':<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;out&#32;+=&#32;&quot;\\\\&quot;;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;break;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;case&#32;'&quot;':<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;out&#32;+=&#32;&quot;\\\&quot;&quot;;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;break;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;case&#32;'\n':<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;out&#32;+=&#32;&quot;\\n&quot;;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;break;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;case&#32;'\r':<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;out&#32;+=&#32;&quot;\\r&quot;;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;break;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;case&#32;'\t':<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;out&#32;+=&#32;&quot;\\t&quot;;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;break;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;default:<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;out&#32;+=&#32;c;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;break;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}<br>
-&#32;&#32;&#32;&#32;}<br>
-&#32;&#32;&#32;&#32;return&#32;out;<br>
+&#9;std::string out;<br>
+&#9;out.reserve(s.size());<br>
+&#9;for (char c : s)<br>
+&#9;{<br>
+&#9;&#9;switch (c)<br>
+&#9;&#9;{<br>
+&#9;&#9;case '\\':<br>
+&#9;&#9;&#9;out += &quot;\\\\&quot;;<br>
+&#9;&#9;&#9;break;<br>
+&#9;&#9;case '&quot;':<br>
+&#9;&#9;&#9;out += &quot;\\\&quot;&quot;;<br>
+&#9;&#9;&#9;break;<br>
+&#9;&#9;case '\n':<br>
+&#9;&#9;&#9;out += &quot;\\n&quot;;<br>
+&#9;&#9;&#9;break;<br>
+&#9;&#9;case '\r':<br>
+&#9;&#9;&#9;out += &quot;\\r&quot;;<br>
+&#9;&#9;&#9;break;<br>
+&#9;&#9;case '\t':<br>
+&#9;&#9;&#9;out += &quot;\\t&quot;;<br>
+&#9;&#9;&#9;break;<br>
+&#9;&#9;default:<br>
+&#9;&#9;&#9;out += c;<br>
+&#9;&#9;&#9;break;<br>
+&#9;&#9;}<br>
+&#9;}<br>
+&#9;return out;<br>
 }<br>
 <br>
-int&#32;run_server(const&#32;Options&#32;&amp;opt)<br>
+int run_server(const Options &amp;opt)<br>
 {<br>
-#ifdef&#32;_WIN32<br>
-&#32;&#32;&#32;&#32;(void)opt;<br>
-&#32;&#32;&#32;&#32;std::cerr&#32;&lt;&lt;&#32;&quot;--server&#32;is&#32;not&#32;supported&#32;on&#32;Windows&#32;yet.\n&quot;;<br>
-&#32;&#32;&#32;&#32;return&#32;1;<br>
+#ifdef _WIN32<br>
+&#9;(void)opt;<br>
+&#9;std::cerr &lt;&lt; &quot;--server is not supported on Windows yet.\n&quot;;<br>
+&#9;return 1;<br>
 #else<br>
-&#32;&#32;&#32;&#32;if&#32;(opt.server_port&#32;&lt;=&#32;0&#32;||&#32;opt.server_port&#32;&gt;&#32;65535)<br>
-&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;std::cerr&#32;&lt;&lt;&#32;&quot;Invalid&#32;port&#32;for&#32;--server:&#32;&quot;&#32;&lt;&lt;&#32;opt.server_port&#32;&lt;&lt;&#32;&quot;\n&quot;;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;return&#32;1;<br>
-&#32;&#32;&#32;&#32;}<br>
+&#9;if (opt.server_port &lt;= 0 || opt.server_port &gt; 65535)<br>
+&#9;{<br>
+&#9;&#9;std::cerr &lt;&lt; &quot;Invalid port for --server: &quot; &lt;&lt; opt.server_port &lt;&lt; &quot;\n&quot;;<br>
+&#9;&#9;return 1;<br>
+&#9;}<br>
 <br>
-&#32;&#32;&#32;&#32;//&#32;Собираем&#32;список&#32;файлов&#32;так&#32;же,&#32;как&#32;в&#32;обычном&#32;scat:<br>
-&#32;&#32;&#32;&#32;//&#32;при&#32;наличии&#32;config_file&#32;—&#32;через&#32;scat.txt/--config,<br>
-&#32;&#32;&#32;&#32;//&#32;иначе&#32;—&#32;из&#32;paths.<br>
-&#32;&#32;&#32;&#32;std::vector&lt;fs::path&gt;&#32;files;<br>
+&#9;// Собираем список файлов так же, как в обычном scat:<br>
+&#9;// при наличии config_file — через scat.txt/--config,<br>
+&#9;// иначе — из paths.<br>
+&#9;std::vector&lt;fs::path&gt; files;<br>
 <br>
-&#32;&#32;&#32;&#32;if&#32;(!opt.config_file.empty())<br>
-&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Config&#32;cfg&#32;=&#32;parse_config(opt.config_file);<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;files&#32;=&#32;collect_from_rules(cfg.text_rules,&#32;opt);<br>
-&#32;&#32;&#32;&#32;}<br>
-&#32;&#32;&#32;&#32;else<br>
-&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;files&#32;=&#32;collect_from_paths(opt.paths,&#32;opt);<br>
-&#32;&#32;&#32;&#32;}<br>
+&#9;if (!opt.config_file.empty())<br>
+&#9;{<br>
+&#9;&#9;Config cfg = parse_config(opt.config_file);<br>
+&#9;&#9;files = collect_from_rules(cfg.text_rules, opt);<br>
+&#9;}<br>
+&#9;else<br>
+&#9;{<br>
+&#9;&#9;files = collect_from_paths(opt.paths, opt);<br>
+&#9;}<br>
 <br>
-&#32;&#32;&#32;&#32;if&#32;(files.empty())<br>
-&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;std::cerr&#32;&lt;&lt;&#32;&quot;No&#32;files&#32;collected&#32;for&#32;server.\n&quot;;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;return&#32;1;<br>
-&#32;&#32;&#32;&#32;}<br>
+&#9;if (files.empty())<br>
+&#9;{<br>
+&#9;&#9;std::cerr &lt;&lt; &quot;No files collected for server.\n&quot;;<br>
+&#9;&#9;return 1;<br>
+&#9;}<br>
 <br>
-&#32;&#32;&#32;&#32;//&#32;Ключ:&#32;строковый&#32;путь&#32;(как&#32;печатаем&#32;в&#32;scat),&#32;значение:&#32;реальный&#32;путь<br>
-&#32;&#32;&#32;&#32;std::map&lt;std::string,&#32;fs::path&gt;&#32;file_map;<br>
-&#32;&#32;&#32;&#32;for&#32;(auto&#32;&amp;f&#32;:&#32;files)<br>
-&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;std::string&#32;key&#32;=&#32;make_display_path(f);<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;file_map[key]&#32;=&#32;f;<br>
-&#32;&#32;&#32;&#32;}<br>
+&#9;// Ключ: строковый путь (как печатаем в scat), значение: реальный путь<br>
+&#9;std::map&lt;std::string, fs::path&gt; file_map;<br>
+&#9;for (auto &amp;f : files)<br>
+&#9;{<br>
+&#9;&#9;std::string key = make_display_path(f);<br>
+&#9;&#9;file_map[key] = f;<br>
+&#9;}<br>
 <br>
-&#32;&#32;&#32;&#32;int&#32;server_fd&#32;=&#32;::socket(AF_INET,&#32;SOCK_STREAM,&#32;0);<br>
-&#32;&#32;&#32;&#32;if&#32;(server_fd&#32;&lt;&#32;0)<br>
-&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;perror(&quot;socket&quot;);<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;return&#32;1;<br>
-&#32;&#32;&#32;&#32;}<br>
+&#9;int server_fd = ::socket(AF_INET, SOCK_STREAM, 0);<br>
+&#9;if (server_fd &lt; 0)<br>
+&#9;{<br>
+&#9;&#9;perror(&quot;socket&quot;);<br>
+&#9;&#9;return 1;<br>
+&#9;}<br>
 <br>
-&#32;&#32;&#32;&#32;int&#32;yes&#32;=&#32;1;<br>
-&#32;&#32;&#32;&#32;::setsockopt(server_fd,&#32;SOL_SOCKET,&#32;SO_REUSEADDR,&#32;&amp;yes,&#32;sizeof(yes));<br>
+&#9;int yes = 1;<br>
+&#9;::setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &amp;yes, sizeof(yes));<br>
 <br>
-&#32;&#32;&#32;&#32;sockaddr_in&#32;addr{};<br>
-&#32;&#32;&#32;&#32;addr.sin_family&#32;=&#32;AF_INET;<br>
-&#32;&#32;&#32;&#32;addr.sin_addr.s_addr&#32;=&#32;htonl(INADDR_ANY);<br>
-&#32;&#32;&#32;&#32;addr.sin_port&#32;=&#32;htons(static_cast&lt;uint16_t&gt;(opt.server_port));<br>
+&#9;sockaddr_in addr{};<br>
+&#9;addr.sin_family = AF_INET;<br>
+&#9;addr.sin_addr.s_addr = htonl(INADDR_ANY);<br>
+&#9;addr.sin_port = htons(static_cast&lt;uint16_t&gt;(opt.server_port));<br>
 <br>
-&#32;&#32;&#32;&#32;if&#32;(::bind(server_fd,&#32;reinterpret_cast&lt;sockaddr&#32;*&gt;(&amp;addr),&#32;sizeof(addr))&#32;&lt;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;0)<br>
-&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;perror(&quot;bind&quot;);<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;::close(server_fd);<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;return&#32;1;<br>
-&#32;&#32;&#32;&#32;}<br>
+&#9;if (::bind(server_fd, reinterpret_cast&lt;sockaddr *&gt;(&amp;addr), sizeof(addr)) &lt;<br>
+&#9;&#9;0)<br>
+&#9;{<br>
+&#9;&#9;perror(&quot;bind&quot;);<br>
+&#9;&#9;::close(server_fd);<br>
+&#9;&#9;return 1;<br>
+&#9;}<br>
 <br>
-&#32;&#32;&#32;&#32;if&#32;(::listen(server_fd,&#32;16)&#32;&lt;&#32;0)<br>
-&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;perror(&quot;listen&quot;);<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;::close(server_fd);<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;return&#32;1;<br>
-&#32;&#32;&#32;&#32;}<br>
+&#9;if (::listen(server_fd, 16) &lt; 0)<br>
+&#9;{<br>
+&#9;&#9;perror(&quot;listen&quot;);<br>
+&#9;&#9;::close(server_fd);<br>
+&#9;&#9;return 1;<br>
+&#9;}<br>
 <br>
-&#32;&#32;&#32;&#32;std::cout&#32;&lt;&lt;&#32;&quot;Serving&#32;&quot;&#32;&lt;&lt;&#32;file_map.size()<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&lt;&lt;&#32;&quot;&#32;files&#32;on&#32;http://127.0.0.1:&quot;&#32;&lt;&lt;&#32;opt.server_port&#32;&lt;&lt;&#32;&quot;\n&quot;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&lt;&lt;&#32;&quot;Endpoints:\n&quot;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&lt;&lt;&#32;&quot;&#32;&#32;/index.json\n&quot;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&lt;&lt;&#32;&quot;&#32;&#32;/&lt;path&gt;\n&quot;;<br>
+&#9;std::cout &lt;&lt; &quot;Serving &quot; &lt;&lt; file_map.size()<br>
+&#9;&#9;&#9;&lt;&lt; &quot; files on http://127.0.0.1:&quot; &lt;&lt; opt.server_port &lt;&lt; &quot;\n&quot;<br>
+&#9;&#9;&#9;&lt;&lt; &quot;Endpoints:\n&quot;<br>
+&#9;&#9;&#9;&lt;&lt; &quot;  /index.json\n&quot;<br>
+&#9;&#9;&#9;&lt;&lt; &quot;  /&lt;path&gt;\n&quot;;<br>
 <br>
-&#32;&#32;&#32;&#32;for&#32;(;;)<br>
-&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;int&#32;client&#32;=&#32;::accept(server_fd,&#32;nullptr,&#32;nullptr);<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(client&#32;&lt;&#32;0)<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;perror(&quot;accept&quot;);<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;continue;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}<br>
+&#9;for (;;)<br>
+&#9;{<br>
+&#9;&#9;int client = ::accept(server_fd, nullptr, nullptr);<br>
+&#9;&#9;if (client &lt; 0)<br>
+&#9;&#9;{<br>
+&#9;&#9;&#9;perror(&quot;accept&quot;);<br>
+&#9;&#9;&#9;continue;<br>
+&#9;&#9;}<br>
 <br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;std::string&#32;request;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;char&#32;buf[4096];<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;ssize_t&#32;n&#32;=&#32;::recv(client,&#32;buf,&#32;sizeof(buf),&#32;0);<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(n&#32;&lt;=&#32;0)<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;::close(client);<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;continue;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;request.append(buf,&#32;static_cast&lt;std::size_t&gt;(n));<br>
+&#9;&#9;std::string request;<br>
+&#9;&#9;char buf[4096];<br>
+&#9;&#9;ssize_t n = ::recv(client, buf, sizeof(buf), 0);<br>
+&#9;&#9;if (n &lt;= 0)<br>
+&#9;&#9;{<br>
+&#9;&#9;&#9;::close(client);<br>
+&#9;&#9;&#9;continue;<br>
+&#9;&#9;}<br>
+&#9;&#9;request.append(buf, static_cast&lt;std::size_t&gt;(n));<br>
 <br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;std::istringstream&#32;req_stream(request);<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;std::string&#32;method,&#32;target,&#32;version;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;req_stream&#32;&gt;&gt;&#32;method&#32;&gt;&gt;&#32;target&#32;&gt;&gt;&#32;version;<br>
+&#9;&#9;std::istringstream req_stream(request);<br>
+&#9;&#9;std::string method, target, version;<br>
+&#9;&#9;req_stream &gt;&gt; method &gt;&gt; target &gt;&gt; version;<br>
 <br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;auto&#32;send_response&#32;=&#32;[&amp;](const&#32;std::string&#32;&amp;status_line,<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;const&#32;std::string&#32;&amp;content_type,<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;const&#32;std::string&#32;&amp;body)<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;std::ostringstream&#32;out;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;out&#32;&lt;&lt;&#32;status_line&#32;&lt;&lt;&#32;&quot;\r\n&quot;;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;out&#32;&lt;&lt;&#32;&quot;Content-Type:&#32;&quot;&#32;&lt;&lt;&#32;content_type&#32;&lt;&lt;&#32;&quot;\r\n&quot;;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;out&#32;&lt;&lt;&#32;&quot;Content-Length:&#32;&quot;&#32;&lt;&lt;&#32;body.size()&#32;&lt;&lt;&#32;&quot;\r\n&quot;;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;out&#32;&lt;&lt;&#32;&quot;Connection:&#32;close\r\n&quot;;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;out&#32;&lt;&lt;&#32;&quot;\r\n&quot;;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;out&#32;&lt;&lt;&#32;body;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;std::string&#32;s&#32;=&#32;out.str();<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;::send(client,&#32;s.data(),&#32;s.size(),&#32;0);<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;};<br>
+&#9;&#9;auto send_response = [&amp;](const std::string &amp;status_line,<br>
+&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;const std::string &amp;content_type,<br>
+&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;const std::string &amp;body)<br>
+&#9;&#9;{<br>
+&#9;&#9;&#9;std::ostringstream out;<br>
+&#9;&#9;&#9;out &lt;&lt; status_line &lt;&lt; &quot;\r\n&quot;;<br>
+&#9;&#9;&#9;out &lt;&lt; &quot;Content-Type: &quot; &lt;&lt; content_type &lt;&lt; &quot;\r\n&quot;;<br>
+&#9;&#9;&#9;out &lt;&lt; &quot;Content-Length: &quot; &lt;&lt; body.size() &lt;&lt; &quot;\r\n&quot;;<br>
+&#9;&#9;&#9;out &lt;&lt; &quot;Connection: close\r\n&quot;;<br>
+&#9;&#9;&#9;out &lt;&lt; &quot;\r\n&quot;;<br>
+&#9;&#9;&#9;out &lt;&lt; body;<br>
+&#9;&#9;&#9;std::string s = out.str();<br>
+&#9;&#9;&#9;::send(client, s.data(), s.size(), 0);<br>
+&#9;&#9;};<br>
 <br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(method&#32;!=&#32;&quot;GET&quot;)<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;send_response(&quot;HTTP/1.0&#32;405&#32;Method&#32;Not&#32;Allowed&quot;,<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&quot;text/plain;&#32;charset=utf-8&quot;,<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&quot;Only&#32;GET&#32;is&#32;supported\n&quot;);<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;::close(client);<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;continue;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}<br>
+&#9;&#9;if (method != &quot;GET&quot;)<br>
+&#9;&#9;{<br>
+&#9;&#9;&#9;send_response(&quot;HTTP/1.0 405 Method Not Allowed&quot;,<br>
+&#9;&#9;&#9;&#9;&#9;&#9;&quot;text/plain; charset=utf-8&quot;,<br>
+&#9;&#9;&#9;&#9;&#9;&#9;&quot;Only GET is supported\n&quot;);<br>
+&#9;&#9;&#9;::close(client);<br>
+&#9;&#9;&#9;continue;<br>
+&#9;&#9;}<br>
 <br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(target.empty())<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;target&#32;=&#32;&quot;/&quot;;<br>
+&#9;&#9;if (target.empty())<br>
+&#9;&#9;&#9;target = &quot;/&quot;;<br>
 <br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;Корневая&#32;страница&#32;с&#32;краткой&#32;подсказкой<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(target&#32;==&#32;&quot;/&quot;)<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;std::ostringstream&#32;body;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;body&#32;&lt;&lt;&#32;&quot;&lt;!DOCTYPE&#32;html&gt;\n&quot;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&lt;&lt;&#32;&quot;&lt;html&gt;&lt;head&gt;&lt;meta&#32;charset=\&quot;utf-8\&quot;&gt;&quot;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&lt;&lt;&#32;&quot;&lt;title&gt;scat&#32;server&lt;/title&gt;&lt;/head&gt;&lt;body&gt;\n&quot;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&lt;&lt;&#32;&quot;&lt;h1&gt;scat&#32;server&lt;/h1&gt;\n&quot;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&lt;&lt;&#32;&quot;&lt;p&gt;This&#32;is&#32;a&#32;read-only&#32;file&#32;server&#32;started&#32;by&#32;&quot;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&lt;&lt;&#32;&quot;&lt;code&gt;scat&#32;--server&#32;PORT&lt;/code&gt;.&lt;/p&gt;\n&quot;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&lt;&lt;&#32;&quot;&lt;ul&gt;\n&quot;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&lt;&lt;&#32;&quot;&#32;&#32;&lt;li&gt;&lt;code&gt;/index.json&lt;/code&gt;&#32;–&#32;list&#32;of&#32;files&#32;as&#32;&quot;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&quot;JSON.&lt;/li&gt;\n&quot;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&lt;&lt;&#32;&quot;&#32;&#32;&lt;li&gt;&lt;code&gt;/{relative-path}&lt;/code&gt;&#32;–&#32;raw&#32;file&#32;contents.&#32;&quot;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&lt;&lt;&#32;&quot;Path&#32;must&#32;match&#32;an&#32;entry&#32;from&#32;&quot;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&quot;&lt;code&gt;index.json&lt;/code&gt;.&lt;/li&gt;\n&quot;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&lt;&lt;&#32;&quot;&lt;/ul&gt;\n&quot;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&lt;&lt;&#32;&quot;&lt;/body&gt;&lt;/html&gt;\n&quot;;<br>
+&#9;&#9;// Корневая страница с краткой подсказкой<br>
+&#9;&#9;if (target == &quot;/&quot;)<br>
+&#9;&#9;{<br>
+&#9;&#9;&#9;std::ostringstream body;<br>
+&#9;&#9;&#9;body &lt;&lt; &quot;&lt;!DOCTYPE html&gt;\n&quot;<br>
+&#9;&#9;&#9;&#9;&lt;&lt; &quot;&lt;html&gt;&lt;head&gt;&lt;meta charset=\&quot;utf-8\&quot;&gt;&quot;<br>
+&#9;&#9;&#9;&#9;&lt;&lt; &quot;&lt;title&gt;scat server&lt;/title&gt;&lt;/head&gt;&lt;body&gt;\n&quot;<br>
+&#9;&#9;&#9;&#9;&lt;&lt; &quot;&lt;h1&gt;scat server&lt;/h1&gt;\n&quot;<br>
+&#9;&#9;&#9;&#9;&lt;&lt; &quot;&lt;p&gt;This is a read-only file server started by &quot;<br>
+&#9;&#9;&#9;&#9;&lt;&lt; &quot;&lt;code&gt;scat --server PORT&lt;/code&gt;.&lt;/p&gt;\n&quot;<br>
+&#9;&#9;&#9;&#9;&lt;&lt; &quot;&lt;ul&gt;\n&quot;<br>
+&#9;&#9;&#9;&#9;&lt;&lt; &quot;  &lt;li&gt;&lt;code&gt;/index.json&lt;/code&gt; – list of files as &quot;<br>
+&#9;&#9;&#9;&#9;&#9;&quot;JSON.&lt;/li&gt;\n&quot;<br>
+&#9;&#9;&#9;&#9;&lt;&lt; &quot;  &lt;li&gt;&lt;code&gt;/{relative-path}&lt;/code&gt; – raw file contents. &quot;<br>
+&#9;&#9;&#9;&#9;&lt;&lt; &quot;Path must match an entry from &quot;<br>
+&#9;&#9;&#9;&#9;&#9;&quot;&lt;code&gt;index.json&lt;/code&gt;.&lt;/li&gt;\n&quot;<br>
+&#9;&#9;&#9;&#9;&lt;&lt; &quot;&lt;/ul&gt;\n&quot;<br>
+&#9;&#9;&#9;&#9;&lt;&lt; &quot;&lt;/body&gt;&lt;/html&gt;\n&quot;;<br>
 <br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;send_response(<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&quot;HTTP/1.0&#32;200&#32;OK&quot;,&#32;&quot;text/html;&#32;charset=utf-8&quot;,&#32;body.str());<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;::close(client);<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;continue;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}<br>
+&#9;&#9;&#9;send_response(<br>
+&#9;&#9;&#9;&#9;&quot;HTTP/1.0 200 OK&quot;, &quot;text/html; charset=utf-8&quot;, body.str());<br>
+&#9;&#9;&#9;::close(client);<br>
+&#9;&#9;&#9;continue;<br>
+&#9;&#9;}<br>
 <br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(target&#32;==&#32;&quot;/index.json&quot;)<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;std::ostringstream&#32;body;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;body&#32;&lt;&lt;&#32;&quot;{\n&#32;&#32;\&quot;files\&quot;:&#32;[\n&quot;;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;bool&#32;first&#32;=&#32;true;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;for&#32;(const&#32;auto&#32;&amp;[name,&#32;_]&#32;:&#32;file_map)<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(!first)<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;body&#32;&lt;&lt;&#32;&quot;,\n&quot;;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;first&#32;=&#32;false;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;body&#32;&lt;&lt;&#32;&quot;&#32;&#32;&#32;&#32;\&quot;&quot;&#32;&lt;&lt;&#32;json_escape(name)&#32;&lt;&lt;&#32;&quot;\&quot;&quot;;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;body&#32;&lt;&lt;&#32;&quot;\n&#32;&#32;]\n}\n&quot;;<br>
+&#9;&#9;if (target == &quot;/index.json&quot;)<br>
+&#9;&#9;{<br>
+&#9;&#9;&#9;std::ostringstream body;<br>
+&#9;&#9;&#9;body &lt;&lt; &quot;{\n  \&quot;files\&quot;: [\n&quot;;<br>
+&#9;&#9;&#9;bool first = true;<br>
+&#9;&#9;&#9;for (const auto &amp;[name, _] : file_map)<br>
+&#9;&#9;&#9;{<br>
+&#9;&#9;&#9;&#9;if (!first)<br>
+&#9;&#9;&#9;&#9;&#9;body &lt;&lt; &quot;,\n&quot;;<br>
+&#9;&#9;&#9;&#9;first = false;<br>
+&#9;&#9;&#9;&#9;body &lt;&lt; &quot;    \&quot;&quot; &lt;&lt; json_escape(name) &lt;&lt; &quot;\&quot;&quot;;<br>
+&#9;&#9;&#9;}<br>
+&#9;&#9;&#9;body &lt;&lt; &quot;\n  ]\n}\n&quot;;<br>
 <br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;send_response(&quot;HTTP/1.0&#32;200&#32;OK&quot;,<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&quot;application/json;&#32;charset=utf-8&quot;,<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;body.str());<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;::close(client);<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;continue;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}<br>
+&#9;&#9;&#9;send_response(&quot;HTTP/1.0 200 OK&quot;,<br>
+&#9;&#9;&#9;&#9;&#9;&#9;&quot;application/json; charset=utf-8&quot;,<br>
+&#9;&#9;&#9;&#9;&#9;&#9;body.str());<br>
+&#9;&#9;&#9;::close(client);<br>
+&#9;&#9;&#9;continue;<br>
+&#9;&#9;}<br>
 <br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(!target.empty()&#32;&amp;&amp;&#32;target[0]&#32;==&#32;'/')<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;target.erase(0,&#32;1);<br>
+&#9;&#9;if (!target.empty() &amp;&amp; target[0] == '/')<br>
+&#9;&#9;&#9;target.erase(0, 1);<br>
 <br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;auto&#32;it&#32;=&#32;file_map.find(target);<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(it&#32;==&#32;file_map.end())<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;send_response(&quot;HTTP/1.0&#32;404&#32;Not&#32;Found&quot;,<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&quot;text/plain;&#32;charset=utf-8&quot;,<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&quot;Not&#32;found\n&quot;);<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;::close(client);<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;continue;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}<br>
+&#9;&#9;auto it = file_map.find(target);<br>
+&#9;&#9;if (it == file_map.end())<br>
+&#9;&#9;{<br>
+&#9;&#9;&#9;send_response(&quot;HTTP/1.0 404 Not Found&quot;,<br>
+&#9;&#9;&#9;&#9;&#9;&#9;&quot;text/plain; charset=utf-8&quot;,<br>
+&#9;&#9;&#9;&#9;&#9;&#9;&quot;Not found\n&quot;);<br>
+&#9;&#9;&#9;::close(client);<br>
+&#9;&#9;&#9;continue;<br>
+&#9;&#9;}<br>
 <br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;std::ifstream&#32;in(it-&gt;second,&#32;std::ios::binary);<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(!in)<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;send_response(&quot;HTTP/1.0&#32;500&#32;Internal&#32;Server&#32;Error&quot;,<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&quot;text/plain;&#32;charset=utf-8&quot;,<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&quot;Cannot&#32;open&#32;file\n&quot;);<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;::close(client);<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;continue;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}<br>
+&#9;&#9;std::ifstream in(it-&gt;second, std::ios::binary);<br>
+&#9;&#9;if (!in)<br>
+&#9;&#9;{<br>
+&#9;&#9;&#9;send_response(&quot;HTTP/1.0 500 Internal Server Error&quot;,<br>
+&#9;&#9;&#9;&#9;&#9;&#9;&quot;text/plain; charset=utf-8&quot;,<br>
+&#9;&#9;&#9;&#9;&#9;&#9;&quot;Cannot open file\n&quot;);<br>
+&#9;&#9;&#9;::close(client);<br>
+&#9;&#9;&#9;continue;<br>
+&#9;&#9;}<br>
 <br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;std::ostringstream&#32;body;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;body&#32;&lt;&lt;&#32;in.rdbuf();<br>
+&#9;&#9;std::ostringstream body;<br>
+&#9;&#9;body &lt;&lt; in.rdbuf();<br>
 <br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;send_response(<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&quot;HTTP/1.0&#32;200&#32;OK&quot;,&#32;&quot;text/plain;&#32;charset=utf-8&quot;,&#32;body.str());<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;::close(client);<br>
-&#32;&#32;&#32;&#32;}<br>
+&#9;&#9;send_response(<br>
+&#9;&#9;&#9;&quot;HTTP/1.0 200 OK&quot;, &quot;text/plain; charset=utf-8&quot;, body.str());<br>
+&#9;&#9;::close(client);<br>
+&#9;}<br>
 <br>
-&#32;&#32;&#32;&#32;//&#32;теоретически&#32;недостижимо<br>
-&#32;&#32;&#32;&#32;::close(server_fd);<br>
-&#32;&#32;&#32;&#32;return&#32;0;<br>
+&#9;// теоретически недостижимо<br>
+&#9;::close(server_fd);<br>
+&#9;return 0;<br>
 #endif<br>
 }<br>
 <!-- END SCAT CODE -->

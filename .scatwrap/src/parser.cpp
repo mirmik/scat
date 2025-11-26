@@ -6,81 +6,81 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#include&#32;&quot;parser.h&quot;<br>
-#include&#32;&quot;rules.h&quot;<br>
-#include&#32;&lt;cctype&gt;<br>
-#include&#32;&lt;fstream&gt;<br>
-#include&#32;&lt;stdexcept&gt;<br>
+#include &quot;parser.h&quot;<br>
+#include &quot;rules.h&quot;<br>
+#include &lt;cctype&gt;<br>
+#include &lt;fstream&gt;<br>
+#include &lt;stdexcept&gt;<br>
 <br>
-namespace&#32;fs&#32;=&#32;std::filesystem;<br>
+namespace fs = std::filesystem;<br>
 <br>
-static&#32;inline&#32;void&#32;trim(std::string&#32;&amp;s)<br>
+static inline void trim(std::string &amp;s)<br>
 {<br>
-&#32;&#32;&#32;&#32;size_t&#32;b&#32;=&#32;s.find_first_not_of(&quot;&#32;\t\r\n&quot;);<br>
-&#32;&#32;&#32;&#32;if&#32;(b&#32;==&#32;std::string::npos)<br>
-&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;s.clear();<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;return;<br>
-&#32;&#32;&#32;&#32;}<br>
-&#32;&#32;&#32;&#32;size_t&#32;e&#32;=&#32;s.find_last_not_of(&quot;&#32;\t\r\n&quot;);<br>
-&#32;&#32;&#32;&#32;s&#32;=&#32;s.substr(b,&#32;e&#32;-&#32;b&#32;+&#32;1);<br>
+&#9;size_t b = s.find_first_not_of(&quot; \t\r\n&quot;);<br>
+&#9;if (b == std::string::npos)<br>
+&#9;{<br>
+&#9;&#9;s.clear();<br>
+&#9;&#9;return;<br>
+&#9;}<br>
+&#9;size_t e = s.find_last_not_of(&quot; \t\r\n&quot;);<br>
+&#9;s = s.substr(b, e - b + 1);<br>
 }<br>
 <br>
-Config&#32;parse_config(const&#32;fs::path&#32;&amp;path)<br>
+Config parse_config(const fs::path &amp;path)<br>
 {<br>
-&#32;&#32;&#32;&#32;Config&#32;cfg;<br>
-&#32;&#32;&#32;&#32;enum&#32;Section<br>
-&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;TEXT_RULES,<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;TREE_RULES,<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;MAPFORMAT_TEXT<br>
-&#32;&#32;&#32;&#32;};<br>
-&#32;&#32;&#32;&#32;Section&#32;current&#32;=&#32;TEXT_RULES;<br>
+&#9;Config cfg;<br>
+&#9;enum Section<br>
+&#9;{<br>
+&#9;&#9;TEXT_RULES,<br>
+&#9;&#9;TREE_RULES,<br>
+&#9;&#9;MAPFORMAT_TEXT<br>
+&#9;};<br>
+&#9;Section current = TEXT_RULES;<br>
 <br>
-&#32;&#32;&#32;&#32;std::ifstream&#32;in(path);<br>
-&#32;&#32;&#32;&#32;if&#32;(!in.is_open())<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;throw&#32;std::runtime_error(&quot;Failed&#32;to&#32;open&#32;config&#32;file:&#32;&quot;&#32;+<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;path.string());<br>
+&#9;std::ifstream in(path);<br>
+&#9;if (!in.is_open())<br>
+&#9;&#9;throw std::runtime_error(&quot;Failed to open config file: &quot; +<br>
+&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;path.string());<br>
 <br>
-&#32;&#32;&#32;&#32;std::string&#32;raw_line;<br>
-&#32;&#32;&#32;&#32;while&#32;(std::getline(in,&#32;raw_line))<br>
-&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;std::string&#32;line&#32;=&#32;raw_line;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;trim(line);<br>
+&#9;std::string raw_line;<br>
+&#9;while (std::getline(in, raw_line))<br>
+&#9;{<br>
+&#9;&#9;std::string line = raw_line;<br>
+&#9;&#9;trim(line);<br>
 <br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(current&#32;==&#32;MAPFORMAT_TEXT)<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;Всё,&#32;что&#32;после&#32;[MAPFORMAT],&#32;идёт&#32;как&#32;есть&#32;(с&#32;сохранением&#32;пустых<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;строк&#32;и&#32;#)&#32;до&#32;конца&#32;файла&#32;(пока&#32;новых&#32;секций&#32;у&#32;нас&#32;нет).<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;cfg.map_format&#32;+=&#32;raw_line;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;cfg.map_format&#32;+=&#32;&quot;\n&quot;;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;continue;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}<br>
+&#9;&#9;if (current == MAPFORMAT_TEXT)<br>
+&#9;&#9;{<br>
+&#9;&#9;&#9;// Всё, что после [MAPFORMAT], идёт как есть (с сохранением пустых<br>
+&#9;&#9;&#9;// строк и #) до конца файла (пока новых секций у нас нет).<br>
+&#9;&#9;&#9;cfg.map_format += raw_line;<br>
+&#9;&#9;&#9;cfg.map_format += &quot;\n&quot;;<br>
+&#9;&#9;&#9;continue;<br>
+&#9;&#9;}<br>
 <br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;вне&#32;MAPFORMAT&#32;—&#32;старая&#32;логика<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(line.empty()&#32;||&#32;line[0]&#32;==&#32;'#')<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;continue;<br>
+&#9;&#9;// вне MAPFORMAT — старая логика<br>
+&#9;&#9;if (line.empty() || line[0] == '#')<br>
+&#9;&#9;&#9;continue;<br>
 <br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(line&#32;==&#32;&quot;[TREE]&quot;)<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;current&#32;=&#32;TREE_RULES;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;continue;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(line&#32;==&#32;&quot;[MAPFORMAT]&quot;)<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;current&#32;=&#32;MAPFORMAT_TEXT;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;continue;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}<br>
+&#9;&#9;if (line == &quot;[TREE]&quot;)<br>
+&#9;&#9;{<br>
+&#9;&#9;&#9;current = TREE_RULES;<br>
+&#9;&#9;&#9;continue;<br>
+&#9;&#9;}<br>
+&#9;&#9;if (line == &quot;[MAPFORMAT]&quot;)<br>
+&#9;&#9;{<br>
+&#9;&#9;&#9;current = MAPFORMAT_TEXT;<br>
+&#9;&#9;&#9;continue;<br>
+&#9;&#9;}<br>
 <br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Rule&#32;r&#32;=&#32;Rule::from_string(line);<br>
+&#9;&#9;Rule r = Rule::from_string(line);<br>
 <br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(current&#32;==&#32;TEXT_RULES)<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;cfg.text_rules.push_back(r);<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;else<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;cfg.tree_rules.push_back(r);<br>
-&#32;&#32;&#32;&#32;}<br>
+&#9;&#9;if (current == TEXT_RULES)<br>
+&#9;&#9;&#9;cfg.text_rules.push_back(r);<br>
+&#9;&#9;else<br>
+&#9;&#9;&#9;cfg.tree_rules.push_back(r);<br>
+&#9;}<br>
 <br>
-&#32;&#32;&#32;&#32;return&#32;cfg;<br>
+&#9;return cfg;<br>
 }<br>
 <!-- END SCAT CODE -->
 </body>

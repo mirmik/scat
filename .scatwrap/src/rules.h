@@ -6,29 +6,29 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#pragma&#32;once<br>
-#include&#32;&lt;string&gt;<br>
+#pragma once<br>
+#include &lt;string&gt;<br>
 <br>
-struct&#32;Rule<br>
+struct Rule<br>
 {<br>
-&#32;&#32;&#32;&#32;std::string&#32;pattern;<br>
-&#32;&#32;&#32;&#32;bool&#32;exclude&#32;=&#32;false;<br>
+&#9;std::string pattern;<br>
+&#9;bool exclude = false;<br>
 <br>
-&#32;&#32;&#32;&#32;static&#32;Rule&#32;from_string(const&#32;std::string&#32;&amp;line)<br>
-&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;Rule&#32;r;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;if&#32;(!line.empty()&#32;&amp;&amp;&#32;line[0]&#32;==&#32;'!')<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;r.exclude&#32;=&#32;true;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;r.pattern&#32;=&#32;line.substr(1);<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;else<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;r.exclude&#32;=&#32;false;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;r.pattern&#32;=&#32;line;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;}<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;return&#32;r;<br>
-&#32;&#32;&#32;&#32;}<br>
+&#9;static Rule from_string(const std::string &amp;line)<br>
+&#9;{<br>
+&#9;&#9;Rule r;<br>
+&#9;&#9;if (!line.empty() &amp;&amp; line[0] == '!')<br>
+&#9;&#9;{<br>
+&#9;&#9;&#9;r.exclude = true;<br>
+&#9;&#9;&#9;r.pattern = line.substr(1);<br>
+&#9;&#9;}<br>
+&#9;&#9;else<br>
+&#9;&#9;{<br>
+&#9;&#9;&#9;r.exclude = false;<br>
+&#9;&#9;&#9;r.pattern = line;<br>
+&#9;&#9;}<br>
+&#9;&#9;return r;<br>
+&#9;}<br>
 };<br>
 <!-- END SCAT CODE -->
 </body>

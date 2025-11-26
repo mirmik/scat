@@ -6,146 +6,146 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#include&#32;&quot;glob.h&quot;<br>
-#include&#32;&quot;doctest/doctest.h&quot;<br>
-#include&#32;&lt;algorithm&gt;<br>
-#include&#32;&lt;filesystem&gt;<br>
-#include&#32;&lt;fstream&gt;<br>
-#include&#32;&lt;vector&gt;<br>
+#include &quot;glob.h&quot;<br>
+#include &quot;doctest/doctest.h&quot;<br>
+#include &lt;algorithm&gt;<br>
+#include &lt;filesystem&gt;<br>
+#include &lt;fstream&gt;<br>
+#include &lt;vector&gt;<br>
 <br>
-namespace&#32;fs&#32;=&#32;std::filesystem;<br>
+namespace fs = std::filesystem;<br>
 <br>
-static&#32;void&#32;write_file(const&#32;fs::path&#32;&amp;p,&#32;const&#32;std::string&#32;&amp;text)<br>
+static void write_file(const fs::path &amp;p, const std::string &amp;text)<br>
 {<br>
-&#32;&#32;&#32;&#32;fs::create_directories(p.parent_path());<br>
-&#32;&#32;&#32;&#32;std::ofstream&#32;out(p);<br>
-&#32;&#32;&#32;&#32;out&#32;&lt;&lt;&#32;text;<br>
+&#9;fs::create_directories(p.parent_path());<br>
+&#9;std::ofstream out(p);<br>
+&#9;out &lt;&lt; text;<br>
 }<br>
 <br>
-static&#32;std::vector&lt;std::string&gt;&#32;to_rel(const&#32;std::vector&lt;fs::path&gt;&#32;&amp;v,<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;const&#32;fs::path&#32;&amp;root)<br>
+static std::vector&lt;std::string&gt; to_rel(const std::vector&lt;fs::path&gt; &amp;v,<br>
+&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;const fs::path &amp;root)<br>
 {<br>
-&#32;&#32;&#32;&#32;std::vector&lt;std::string&gt;&#32;out;<br>
-&#32;&#32;&#32;&#32;for&#32;(auto&#32;&amp;p&#32;:&#32;v)<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;out.push_back(fs::relative(p,&#32;root).generic_string());<br>
-&#32;&#32;&#32;&#32;std::sort(out.begin(),&#32;out.end());<br>
-&#32;&#32;&#32;&#32;return&#32;out;<br>
+&#9;std::vector&lt;std::string&gt; out;<br>
+&#9;for (auto &amp;p : v)<br>
+&#9;&#9;out.push_back(fs::relative(p, root).generic_string());<br>
+&#9;std::sort(out.begin(), out.end());<br>
+&#9;return out;<br>
 }<br>
 <br>
-static&#32;void&#32;check_paths(const&#32;std::vector&lt;std::string&gt;&#32;&amp;actual,<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;std::initializer_list&lt;const&#32;char&#32;*&gt;&#32;expected)<br>
+static void check_paths(const std::vector&lt;std::string&gt; &amp;actual,<br>
+&#9;&#9;&#9;&#9;&#9;&#9;std::initializer_list&lt;const char *&gt; expected)<br>
 {<br>
-&#32;&#32;&#32;&#32;CHECK(actual.size()&#32;==&#32;expected.size());<br>
+&#9;CHECK(actual.size() == expected.size());<br>
 <br>
-&#32;&#32;&#32;&#32;size_t&#32;i&#32;=&#32;0;<br>
-&#32;&#32;&#32;&#32;for&#32;(auto&#32;*e&#32;:&#32;expected)<br>
-&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;CHECK(actual[i]&#32;==&#32;e);<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;++i;<br>
-&#32;&#32;&#32;&#32;}<br>
+&#9;size_t i = 0;<br>
+&#9;for (auto *e : expected)<br>
+&#9;{<br>
+&#9;&#9;CHECK(actual[i] == e);<br>
+&#9;&#9;++i;<br>
+&#9;}<br>
 }<br>
 <br>
-TEST_CASE(&quot;glob:&#32;basic&#32;*&quot;)<br>
+TEST_CASE(&quot;glob: basic *&quot;)<br>
 {<br>
-&#32;&#32;&#32;&#32;fs::path&#32;tmp&#32;=&#32;fs::temp_directory_path()&#32;/&#32;&quot;glob_test_a&quot;;<br>
-&#32;&#32;&#32;&#32;fs::remove_all(tmp);<br>
+&#9;fs::path tmp = fs::temp_directory_path() / &quot;glob_test_a&quot;;<br>
+&#9;fs::remove_all(tmp);<br>
 <br>
-&#32;&#32;&#32;&#32;write_file(tmp&#32;/&#32;&quot;a.txt&quot;,&#32;&quot;A&quot;);<br>
-&#32;&#32;&#32;&#32;write_file(tmp&#32;/&#32;&quot;b.cpp&quot;,&#32;&quot;B&quot;);<br>
-&#32;&#32;&#32;&#32;write_file(tmp&#32;/&#32;&quot;c.txt&quot;,&#32;&quot;C&quot;);<br>
+&#9;write_file(tmp / &quot;a.txt&quot;, &quot;A&quot;);<br>
+&#9;write_file(tmp / &quot;b.cpp&quot;, &quot;B&quot;);<br>
+&#9;write_file(tmp / &quot;c.txt&quot;, &quot;C&quot;);<br>
 <br>
-&#32;&#32;&#32;&#32;auto&#32;out&#32;=&#32;expand_glob((tmp&#32;/&#32;&quot;*.txt&quot;).generic_string());<br>
-&#32;&#32;&#32;&#32;auto&#32;rel&#32;=&#32;to_rel(out,&#32;tmp);<br>
+&#9;auto out = expand_glob((tmp / &quot;*.txt&quot;).generic_string());<br>
+&#9;auto rel = to_rel(out, tmp);<br>
 <br>
-&#32;&#32;&#32;&#32;check_paths(rel,&#32;{&quot;a.txt&quot;,&#32;&quot;c.txt&quot;});<br>
+&#9;check_paths(rel, {&quot;a.txt&quot;, &quot;c.txt&quot;});<br>
 }<br>
 <br>
-TEST_CASE(&quot;glob:&#32;recursive&#32;**&quot;)<br>
+TEST_CASE(&quot;glob: recursive **&quot;)<br>
 {<br>
-&#32;&#32;&#32;&#32;fs::path&#32;tmp&#32;=&#32;fs::temp_directory_path()&#32;/&#32;&quot;glob_test_b&quot;;<br>
-&#32;&#32;&#32;&#32;fs::remove_all(tmp);<br>
+&#9;fs::path tmp = fs::temp_directory_path() / &quot;glob_test_b&quot;;<br>
+&#9;fs::remove_all(tmp);<br>
 <br>
-&#32;&#32;&#32;&#32;write_file(tmp&#32;/&#32;&quot;1.txt&quot;,&#32;&quot;A&quot;);<br>
-&#32;&#32;&#32;&#32;write_file(tmp&#32;/&#32;&quot;x/2.txt&quot;,&#32;&quot;B&quot;);<br>
-&#32;&#32;&#32;&#32;write_file(tmp&#32;/&#32;&quot;x/y/3.txt&quot;,&#32;&quot;C&quot;);<br>
+&#9;write_file(tmp / &quot;1.txt&quot;, &quot;A&quot;);<br>
+&#9;write_file(tmp / &quot;x/2.txt&quot;, &quot;B&quot;);<br>
+&#9;write_file(tmp / &quot;x/y/3.txt&quot;, &quot;C&quot;);<br>
 <br>
-&#32;&#32;&#32;&#32;auto&#32;out&#32;=&#32;expand_glob((tmp&#32;/&#32;&quot;**&quot;).generic_string());<br>
-&#32;&#32;&#32;&#32;auto&#32;rel&#32;=&#32;to_rel(out,&#32;tmp);<br>
+&#9;auto out = expand_glob((tmp / &quot;**&quot;).generic_string());<br>
+&#9;auto rel = to_rel(out, tmp);<br>
 <br>
-&#32;&#32;&#32;&#32;check_paths(rel,&#32;{&quot;1.txt&quot;,&#32;&quot;x/2.txt&quot;,&#32;&quot;x/y/3.txt&quot;});<br>
+&#9;check_paths(rel, {&quot;1.txt&quot;, &quot;x/2.txt&quot;, &quot;x/y/3.txt&quot;});<br>
 }<br>
 <br>
-TEST_CASE(&quot;glob:&#32;**/*.cpp&quot;)<br>
+TEST_CASE(&quot;glob: **/*.cpp&quot;)<br>
 {<br>
-&#32;&#32;&#32;&#32;fs::path&#32;tmp&#32;=&#32;fs::temp_directory_path()&#32;/&#32;&quot;glob_test_c&quot;;<br>
-&#32;&#32;&#32;&#32;fs::remove_all(tmp);<br>
+&#9;fs::path tmp = fs::temp_directory_path() / &quot;glob_test_c&quot;;<br>
+&#9;fs::remove_all(tmp);<br>
 <br>
-&#32;&#32;&#32;&#32;write_file(tmp&#32;/&#32;&quot;a.cpp&quot;,&#32;&quot;A&quot;);<br>
-&#32;&#32;&#32;&#32;write_file(tmp&#32;/&#32;&quot;b.h&quot;,&#32;&quot;B&quot;);<br>
-&#32;&#32;&#32;&#32;write_file(tmp&#32;/&#32;&quot;x/c.cpp&quot;,&#32;&quot;C&quot;);<br>
-&#32;&#32;&#32;&#32;write_file(tmp&#32;/&#32;&quot;x/y/z.cpp&quot;,&#32;&quot;Z&quot;);<br>
+&#9;write_file(tmp / &quot;a.cpp&quot;, &quot;A&quot;);<br>
+&#9;write_file(tmp / &quot;b.h&quot;, &quot;B&quot;);<br>
+&#9;write_file(tmp / &quot;x/c.cpp&quot;, &quot;C&quot;);<br>
+&#9;write_file(tmp / &quot;x/y/z.cpp&quot;, &quot;Z&quot;);<br>
 <br>
-&#32;&#32;&#32;&#32;auto&#32;out&#32;=&#32;expand_glob((tmp&#32;/&#32;&quot;**/*.cpp&quot;).generic_string());<br>
-&#32;&#32;&#32;&#32;auto&#32;rel&#32;=&#32;to_rel(out,&#32;tmp);<br>
+&#9;auto out = expand_glob((tmp / &quot;**/*.cpp&quot;).generic_string());<br>
+&#9;auto rel = to_rel(out, tmp);<br>
 <br>
-&#32;&#32;&#32;&#32;check_paths(rel,&#32;{&quot;a.cpp&quot;,&#32;&quot;x/c.cpp&quot;,&#32;&quot;x/y/z.cpp&quot;});<br>
+&#9;check_paths(rel, {&quot;a.cpp&quot;, &quot;x/c.cpp&quot;, &quot;x/y/z.cpp&quot;});<br>
 }<br>
 <br>
-TEST_CASE(&quot;glob:&#32;foo/*/bar/**/*.txt&quot;)<br>
+TEST_CASE(&quot;glob: foo/*/bar/**/*.txt&quot;)<br>
 {<br>
-&#32;&#32;&#32;&#32;fs::path&#32;tmp&#32;=&#32;fs::temp_directory_path()&#32;/&#32;&quot;glob_test_d&quot;;<br>
-&#32;&#32;&#32;&#32;fs::remove_all(tmp);<br>
+&#9;fs::path tmp = fs::temp_directory_path() / &quot;glob_test_d&quot;;<br>
+&#9;fs::remove_all(tmp);<br>
 <br>
-&#32;&#32;&#32;&#32;write_file(tmp&#32;/&#32;&quot;foo/K/bar/a.txt&quot;,&#32;&quot;A&quot;);<br>
-&#32;&#32;&#32;&#32;write_file(tmp&#32;/&#32;&quot;foo/K/bar/x/b.txt&quot;,&#32;&quot;B&quot;);<br>
-&#32;&#32;&#32;&#32;write_file(tmp&#32;/&#32;&quot;foo/X/bar/c.bin&quot;,&#32;&quot;C&quot;);<br>
-&#32;&#32;&#32;&#32;write_file(tmp&#32;/&#32;&quot;foo/Z/bar/y/z.txt&quot;,&#32;&quot;Z&quot;);<br>
+&#9;write_file(tmp / &quot;foo/K/bar/a.txt&quot;, &quot;A&quot;);<br>
+&#9;write_file(tmp / &quot;foo/K/bar/x/b.txt&quot;, &quot;B&quot;);<br>
+&#9;write_file(tmp / &quot;foo/X/bar/c.bin&quot;, &quot;C&quot;);<br>
+&#9;write_file(tmp / &quot;foo/Z/bar/y/z.txt&quot;, &quot;Z&quot;);<br>
 <br>
-&#32;&#32;&#32;&#32;auto&#32;pat&#32;=&#32;(tmp&#32;/&#32;&quot;foo/*/bar/**/*.txt&quot;).generic_string();<br>
-&#32;&#32;&#32;&#32;auto&#32;out&#32;=&#32;expand_glob(pat);<br>
-&#32;&#32;&#32;&#32;auto&#32;rel&#32;=&#32;to_rel(out,&#32;tmp);<br>
+&#9;auto pat = (tmp / &quot;foo/*/bar/**/*.txt&quot;).generic_string();<br>
+&#9;auto out = expand_glob(pat);<br>
+&#9;auto rel = to_rel(out, tmp);<br>
 <br>
-&#32;&#32;&#32;&#32;check_paths(rel,<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;{&quot;foo/K/bar/a.txt&quot;,&#32;&quot;foo/K/bar/x/b.txt&quot;,&#32;&quot;foo/Z/bar/y/z.txt&quot;});<br>
+&#9;check_paths(rel,<br>
+&#9;&#9;&#9;&#9;{&quot;foo/K/bar/a.txt&quot;, &quot;foo/K/bar/x/b.txt&quot;, &quot;foo/Z/bar/y/z.txt&quot;});<br>
 }<br>
 <br>
-TEST_CASE(&quot;glob:&#32;no&#32;matches&#32;returns&#32;empty&quot;)<br>
+TEST_CASE(&quot;glob: no matches returns empty&quot;)<br>
 {<br>
-&#32;&#32;&#32;&#32;fs::path&#32;tmp&#32;=&#32;fs::temp_directory_path()&#32;/&#32;&quot;glob_test_e&quot;;<br>
-&#32;&#32;&#32;&#32;fs::remove_all(tmp);<br>
+&#9;fs::path tmp = fs::temp_directory_path() / &quot;glob_test_e&quot;;<br>
+&#9;fs::remove_all(tmp);<br>
 <br>
-&#32;&#32;&#32;&#32;write_file(tmp&#32;/&#32;&quot;file.cpp&quot;,&#32;&quot;A&quot;);<br>
+&#9;write_file(tmp / &quot;file.cpp&quot;, &quot;A&quot;);<br>
 <br>
-&#32;&#32;&#32;&#32;auto&#32;out&#32;=&#32;expand_glob((tmp&#32;/&#32;&quot;**/*.txt&quot;).generic_string());<br>
-&#32;&#32;&#32;&#32;CHECK(out.empty());<br>
+&#9;auto out = expand_glob((tmp / &quot;**/*.txt&quot;).generic_string());<br>
+&#9;CHECK(out.empty());<br>
 }<br>
 <br>
-TEST_CASE(&quot;glob:&#32;duplicates&#32;removed&quot;)<br>
+TEST_CASE(&quot;glob: duplicates removed&quot;)<br>
 {<br>
-&#32;&#32;&#32;&#32;fs::path&#32;tmp&#32;=&#32;fs::temp_directory_path()&#32;/&#32;&quot;glob_test_f&quot;;<br>
-&#32;&#32;&#32;&#32;fs::remove_all(tmp);<br>
+&#9;fs::path tmp = fs::temp_directory_path() / &quot;glob_test_f&quot;;<br>
+&#9;fs::remove_all(tmp);<br>
 <br>
-&#32;&#32;&#32;&#32;write_file(tmp&#32;/&#32;&quot;a.txt&quot;,&#32;&quot;A&quot;);<br>
-&#32;&#32;&#32;&#32;write_file(tmp&#32;/&#32;&quot;d/a.txt&quot;,&#32;&quot;A2&quot;);<br>
+&#9;write_file(tmp / &quot;a.txt&quot;, &quot;A&quot;);<br>
+&#9;write_file(tmp / &quot;d/a.txt&quot;, &quot;A2&quot;);<br>
 <br>
-&#32;&#32;&#32;&#32;//&#32;отработает&#32;и&#32;*&#32;и&#32;**<br>
-&#32;&#32;&#32;&#32;auto&#32;pat1&#32;=&#32;(tmp&#32;/&#32;&quot;*.txt&quot;).generic_string();<br>
-&#32;&#32;&#32;&#32;auto&#32;pat2&#32;=&#32;(tmp&#32;/&#32;&quot;**/*.txt&quot;).generic_string();<br>
+&#9;// отработает и * и **<br>
+&#9;auto pat1 = (tmp / &quot;*.txt&quot;).generic_string();<br>
+&#9;auto pat2 = (tmp / &quot;**/*.txt&quot;).generic_string();<br>
 <br>
-&#32;&#32;&#32;&#32;auto&#32;out1&#32;=&#32;expand_glob(pat1);<br>
-&#32;&#32;&#32;&#32;auto&#32;out2&#32;=&#32;expand_glob(pat2);<br>
+&#9;auto out1 = expand_glob(pat1);<br>
+&#9;auto out2 = expand_glob(pat2);<br>
 <br>
-&#32;&#32;&#32;&#32;std::vector&lt;fs::path&gt;&#32;combined;<br>
-&#32;&#32;&#32;&#32;combined.insert(combined.end(),&#32;out1.begin(),&#32;out1.end());<br>
-&#32;&#32;&#32;&#32;combined.insert(combined.end(),&#32;out2.begin(),&#32;out2.end());<br>
+&#9;std::vector&lt;fs::path&gt; combined;<br>
+&#9;combined.insert(combined.end(), out1.begin(), out1.end());<br>
+&#9;combined.insert(combined.end(), out2.begin(), out2.end());<br>
 <br>
-&#32;&#32;&#32;&#32;//&#32;удаляем&#32;дубликаты&#32;вручную,&#32;как&#32;collector&#32;делает<br>
-&#32;&#32;&#32;&#32;std::sort(combined.begin(),&#32;combined.end());<br>
-&#32;&#32;&#32;&#32;combined.erase(std::unique(combined.begin(),&#32;combined.end()),<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;combined.end());<br>
+&#9;// удаляем дубликаты вручную, как collector делает<br>
+&#9;std::sort(combined.begin(), combined.end());<br>
+&#9;combined.erase(std::unique(combined.begin(), combined.end()),<br>
+&#9;&#9;&#9;&#9;combined.end());<br>
 <br>
-&#32;&#32;&#32;&#32;auto&#32;rel&#32;=&#32;to_rel(combined,&#32;tmp);<br>
-&#32;&#32;&#32;&#32;check_paths(rel,&#32;{&quot;a.txt&quot;,&#32;&quot;d/a.txt&quot;});<br>
+&#9;auto rel = to_rel(combined, tmp);<br>
+&#9;check_paths(rel, {&quot;a.txt&quot;, &quot;d/a.txt&quot;});<br>
 }<br>
 <!-- END SCAT CODE -->
 </body>

@@ -6,66 +6,66 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-Окей,&#32;делаем&#32;компактную&#32;версию,&#32;но&#32;с&#32;описанием&#32;нового&#32;symbol&#32;API.&#32;Вот&#32;целиком&#32;новый&#32;`README.md`&#32;(без&#32;chunk_v2-патча,&#32;просто&#32;файл):<br>
+Окей, делаем компактную версию, но с описанием нового symbol API. Вот целиком новый `README.md` (без chunk_v2-патча, просто файл):<br>
 <br>
 ````markdown<br>
-#&#32;scat<br>
+# scat<br>
 <br>
-`scat`&#32;is&#32;a&#32;small&#32;cross-platform&#32;utility&#32;for:<br>
+`scat` is a small cross-platform utility for:<br>
 <br>
-*&#32;printing&#32;multiple&#32;files&#32;with&#32;clear&#32;headers&#32;(for&#32;copy-paste&#32;into&#32;chats),<br>
-*&#32;listing&#32;files&#32;with&#32;sizes,<br>
-*&#32;applying&#32;structured&#32;patches&#32;(chunk_v2),<br>
-*&#32;replacing&#32;C++&#32;/&#32;Python&#32;classes&#32;and&#32;methods&#32;by&#32;name&#32;(symbol&#32;API).<br>
+* printing multiple files with clear headers (for copy-paste into chats),<br>
+* listing files with sizes,<br>
+* applying structured patches (chunk_v2),<br>
+* replacing C++ / Python classes and methods by name (symbol API).<br>
 <br>
 ---<br>
 <br>
-##&#32;Basic&#32;usage<br>
+## Basic usage<br>
 <br>
-Print&#32;files:<br>
+Print files:<br>
 <br>
 ```bash<br>
-scat&#32;file1.cpp&#32;dir/file2.h<br>
-scat&#32;src&#32;-r&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;#&#32;recursive<br>
-scat&#32;src&#32;-r&#32;--abs&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;#&#32;absolute&#32;paths<br>
-scat&#32;src&#32;-r&#32;-l&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;#&#32;list&#32;with&#32;sizes<br>
-scat&#32;src&#32;-r&#32;-l&#32;--sorted&#32;&#32;#&#32;list,&#32;sorted&#32;by&#32;size&#32;(descending)<br>
+scat file1.cpp dir/file2.h<br>
+scat src -r              # recursive<br>
+scat src -r --abs        # absolute paths<br>
+scat src -r -l           # list with sizes<br>
+scat src -r -l --sorted  # list, sorted by size (descending)<br>
 ````<br>
 <br>
-Output&#32;looks&#32;like:<br>
+Output looks like:<br>
 <br>
 ```text<br>
-=====&#32;path/to/file.cpp&#32;=====<br>
-&lt;file&#32;content&gt;<br>
+===== path/to/file.cpp =====<br>
+&lt;file content&gt;<br>
 ```<br>
 <br>
-You&#32;can&#32;pipe&#32;into&#32;clipboard&#32;tools:<br>
+You can pipe into clipboard tools:<br>
 <br>
 ```bash<br>
-scat&#32;src&#32;-r&#32;|&#32;clip.exe&#32;&#32;&#32;#&#32;Windows&#32;/&#32;WSL<br>
-scat&#32;src&#32;-r&#32;|&#32;wl-copy&#32;&#32;&#32;&#32;#&#32;Linux&#32;/&#32;WSL<br>
+scat src -r | clip.exe   # Windows / WSL<br>
+scat src -r | wl-copy    # Linux / WSL<br>
 ```<br>
 <br>
 ---<br>
 <br>
-##&#32;Config&#32;file&#32;mode&#32;(`scat.txt`&#32;/&#32;`--config`)<br>
+## Config file mode (`scat.txt` / `--config`)<br>
 <br>
-If&#32;you&#32;run&#32;`scat`&#32;**without&#32;positional&#32;arguments**,&#32;it&#32;reads&#32;rules&#32;from&#32;`scat.txt`&#32;in&#32;the&#32;current&#32;directory:<br>
+If you run `scat` **without positional arguments**, it reads rules from `scat.txt` in the current directory:<br>
 <br>
 ```bash<br>
-scat&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;#&#32;uses&#32;scat.txt<br>
-scat&#32;--config&#32;myrules.txt<br>
+scat          # uses scat.txt<br>
+scat --config myrules.txt<br>
 ```<br>
 <br>
-Each&#32;non-empty&#32;line&#32;is&#32;a&#32;rule:<br>
+Each non-empty line is a rule:<br>
 <br>
-*&#32;include:&#32;`src/*`,&#32;`tests/**`,&#32;`CMakeLists.txt`<br>
-*&#32;exclude:&#32;starts&#32;with&#32;`!`,&#32;e.g.&#32;`!tests/doctest/**`<br>
+* include: `src/*`, `tests/**`, `CMakeLists.txt`<br>
+* exclude: starts with `!`, e.g. `!tests/doctest/**`<br>
 <br>
 Patterns:<br>
 <br>
-*&#32;`*`&#32;—&#32;match&#32;inside&#32;one&#32;directory<br>
-*&#32;`**`&#32;—&#32;recursive&#32;directory&#32;traversal<br>
+* `*` — match inside one directory<br>
+* `**` — recursive directory traversal<br>
 <br>
 Example:<br>
 <br>
@@ -77,9 +77,9 @@ CMakeLists.txt<br>
 scat.txt<br>
 ```<br>
 <br>
-###&#32;Project&#32;tree&#32;(`[TREE]`&#32;section)<br>
+### Project tree (`[TREE]` section)<br>
 <br>
-Optional&#32;second&#32;rule&#32;set&#32;used&#32;only&#32;for&#32;a&#32;tree&#32;view&#32;at&#32;the&#32;end:<br>
+Optional second rule set used only for a tree view at the end:<br>
 <br>
 ```text<br>
 src/*<br>
@@ -89,188 +89,188 @@ src/**<br>
 tests/**<br>
 ```<br>
 <br>
-Running&#32;`scat`&#32;will&#32;print&#32;files&#32;first,&#32;then:<br>
+Running `scat` will print files first, then:<br>
 <br>
 ```text<br>
-=====&#32;PROJECT&#32;TREE&#32;=====<br>
-├──&#32;src/...<br>
-└──&#32;tests/...<br>
+===== PROJECT TREE =====<br>
+├── src/...<br>
+└── tests/...<br>
 ========================<br>
 ```<br>
 <br>
 ---<br>
 <br>
-##&#32;Patch&#32;mode&#32;(chunk_v2)<br>
+## Patch mode (chunk_v2)<br>
 <br>
-`scat`&#32;can&#32;apply&#32;patches&#32;in&#32;the&#32;chunk_v2&#32;format.<br>
+`scat` can apply patches in the chunk_v2 format.<br>
 <br>
 ```bash<br>
-scat&#32;--apply&#32;patch.txt&#32;&#32;&#32;&#32;&#32;&#32;#&#32;apply&#32;from&#32;file<br>
-wl-paste&#32;|&#32;scat&#32;--apply-stdin&#32;&#32;#&#32;apply&#32;from&#32;stdin<br>
+scat --apply patch.txt      # apply from file<br>
+wl-paste | scat --apply-stdin  # apply from stdin<br>
 ```<br>
 <br>
-Patch&#32;structure:<br>
+Patch structure:<br>
 <br>
 ```text<br>
-===&#32;file:&#32;path/to/file.cpp&#32;===<br>
----&#32;&lt;command&gt;&#32;[args...]<br>
-&lt;payload&#32;lines...&gt;<br>
+=== file: path/to/file.cpp ===<br>
+--- &lt;command&gt; [args...]<br>
+&lt;payload lines...&gt;<br>
 =END=<br>
 ```<br>
 <br>
 Commands:<br>
 <br>
-*&#32;text-based:<br>
+* text-based:<br>
 <br>
-&#32;&#32;*&#32;`insert-after-text`<br>
-&#32;&#32;*&#32;`insert-before-text`<br>
-&#32;&#32;*&#32;`replace-text`<br>
-&#32;&#32;*&#32;`delete-text`<br>
-*&#32;file-level:<br>
+* `insert-after-text`<br>
+* `insert-before-text`<br>
+* `replace-text`<br>
+* `delete-text`<br>
+* file-level:<br>
 <br>
-&#32;&#32;*&#32;`create-file`<br>
-&#32;&#32;*&#32;`delete-file`<br>
-*&#32;symbol-based:<br>
+* `create-file`<br>
+* `delete-file`<br>
+* symbol-based:<br>
 <br>
-&#32;&#32;*&#32;`replace-cpp-class`<br>
-&#32;&#32;*&#32;`replace-cpp-method`<br>
-&#32;&#32;*&#32;`replace-py-class`<br>
-&#32;&#32;*&#32;`replace-py-method`<br>
+* `replace-cpp-class`<br>
+* `replace-cpp-method`<br>
+* `replace-py-class`<br>
+* `replace-py-method`<br>
 <br>
-Text&#32;commands&#32;support:<br>
+Text commands support:<br>
 <br>
-*&#32;legacy&#32;format:&#32;`marker`&#32;then&#32;`---`&#32;then&#32;payload<br>
-*&#32;YAML-style&#32;context&#32;with&#32;`BEFORE:`,&#32;`MARKER:`,&#32;`AFTER:`&#32;blocks&#32;(strict&#32;match&#32;by&#32;trimmed&#32;lines)<br>
+* legacy format: `marker` then `---` then payload<br>
+* YAML-style context with `BEFORE:`, `MARKER:`, `AFTER:` blocks (strict match by trimmed lines)<br>
 <br>
-Patch&#32;application&#32;is&#32;transactional:&#32;if&#32;any&#32;section&#32;fails&#32;(marker&#32;not&#32;found,&#32;ambiguous,&#32;symbol&#32;not&#32;found,&#32;I/O&#32;error),&#32;all&#32;touched&#32;files&#32;are&#32;rolled&#32;back.<br>
+Patch application is transactional: if any section fails (marker not found, ambiguous, symbol not found, I/O error), all touched files are rolled back.<br>
 <br>
 ---<br>
 <br>
-##&#32;Symbol&#32;API&#32;(C++&#32;/&#32;Python)<br>
+## Symbol API (C++ / Python)<br>
 <br>
-Symbol&#32;commands&#32;work&#32;**without**&#32;raw&#32;text&#32;markers:&#32;they&#32;parse&#32;the&#32;file&#32;and&#32;locate&#32;classes&#32;/&#32;methods.<br>
+Symbol commands work **without** raw text markers: they parse the file and locate classes / methods.<br>
 <br>
-Available&#32;commands:<br>
+Available commands:<br>
 <br>
 ```text<br>
-replace-cpp-class&#32;&#32;&lt;ClassName&gt;<br>
-replace-cpp-method&#32;&lt;ClassName&gt;&#32;&lt;methodName&gt;<br>
-replace-cpp-method&#32;&lt;ClassName::methodName&gt;<br>
+replace-cpp-class  &lt;ClassName&gt;<br>
+replace-cpp-method &lt;ClassName&gt; &lt;methodName&gt;<br>
+replace-cpp-method &lt;ClassName::methodName&gt;<br>
 <br>
-replace-py-class&#32;&#32;&#32;&lt;ClassName&gt;<br>
-replace-py-method&#32;&#32;&lt;ClassName&gt;&#32;&lt;methodName&gt;<br>
-replace-py-method&#32;&#32;&lt;ClassName.methodName&gt;<br>
+replace-py-class   &lt;ClassName&gt;<br>
+replace-py-method  &lt;ClassName&gt; &lt;methodName&gt;<br>
+replace-py-method  &lt;ClassName.methodName&gt;<br>
 ```<br>
 <br>
-###&#32;C++&#32;examples<br>
+### C++ examples<br>
 <br>
-Replace&#32;a&#32;whole&#32;class:<br>
+Replace a whole class:<br>
 <br>
 ```text<br>
-===&#32;file:&#32;src/TEST.h&#32;===<br>
----&#32;replace-cpp-class&#32;TargetClass<br>
-class&#32;TargetClass<br>
+=== file: src/TEST.h ===<br>
+--- replace-cpp-class TargetClass<br>
+class TargetClass<br>
 {<br>
-&#32;&#32;public:<br>
-&#32;&#32;&#32;&#32;TargetClass()&#32;=&#32;default;<br>
-&#32;&#32;&#32;&#32;~TargetClass()&#32;=&#32;default;<br>
+public:<br>
+&#9;TargetClass() = default;<br>
+&#9;~TargetClass() = default;<br>
 <br>
-&#32;&#32;&#32;&#32;int&#32;value()&#32;const&#32;{&#32;return&#32;member_variable_;&#32;}<br>
-&#32;&#32;&#32;&#32;void&#32;set_value(int&#32;v)&#32;{&#32;member_variable_&#32;=&#32;v;&#32;}<br>
+&#9;int value() const { return member_variable_; }<br>
+&#9;void set_value(int v) { member_variable_ = v; }<br>
 <br>
-&#32;&#32;private:<br>
-&#32;&#32;&#32;&#32;int&#32;member_variable_&#32;=&#32;0;<br>
+private:<br>
+&#9;int member_variable_ = 0;<br>
 };<br>
 =END=<br>
 ```<br>
 <br>
-Replace&#32;a&#32;method&#32;inside&#32;a&#32;class:<br>
+Replace a method inside a class:<br>
 <br>
 ```text<br>
-===&#32;file:&#32;src/TEST.h&#32;===<br>
----&#32;replace-cpp-method&#32;ClassWithTargetMethod::TargetMethod<br>
-&#32;&#32;&#32;&#32;void&#32;TargetMethod()<br>
-&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;//&#32;Updated&#32;implementation<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;member_variable_&#32;+=&#32;1;<br>
-&#32;&#32;&#32;&#32;}<br>
+=== file: src/TEST.h ===<br>
+--- replace-cpp-method ClassWithTargetMethod::TargetMethod<br>
+&#9;void TargetMethod()<br>
+&#9;{<br>
+&#9;&#9;// Updated implementation<br>
+&#9;&#9;member_variable_ += 1;<br>
+&#9;}<br>
 =END=<br>
 ```<br>
 <br>
-The&#32;C++&#32;finder:<br>
+The C++ finder:<br>
 <br>
-*&#32;skips&#32;comments,&#32;string&#32;/&#32;char&#32;literals&#32;and&#32;preprocessor&#32;lines,<br>
-*&#32;ignores&#32;forward&#32;declarations&#32;(`class&#32;Foo;`),<br>
-*&#32;replaces&#32;exactly&#32;the&#32;region&#32;of&#32;the&#32;target&#32;class&#32;/&#32;method.<br>
+* skips comments, string / char literals and preprocessor lines,<br>
+* ignores forward declarations (`class Foo;`),<br>
+* replaces exactly the region of the target class / method.<br>
 <br>
-###&#32;Python&#32;examples<br>
+### Python examples<br>
 <br>
-Replace&#32;a&#32;whole&#32;class:<br>
+Replace a whole class:<br>
 <br>
 ```text<br>
-===&#32;file:&#32;src/foo.py&#32;===<br>
----&#32;replace-py-class&#32;Foo<br>
-class&#32;Foo:<br>
-&#32;&#32;&#32;&#32;def&#32;__init__(self):<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;self.x&#32;=&#32;2<br>
+=== file: src/foo.py ===<br>
+--- replace-py-class Foo<br>
+class Foo:<br>
+&#9;def __init__(self):<br>
+&#9;&#9;self.x = 2<br>
 <br>
-&#32;&#32;&#32;&#32;def&#32;answer(self):<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;return&#32;42<br>
+&#9;def answer(self):<br>
+&#9;&#9;return 42<br>
 =END=<br>
 ```<br>
 <br>
-Replace&#32;a&#32;method&#32;(sync&#32;or&#32;async)&#32;inside&#32;a&#32;class:<br>
+Replace a method (sync or async) inside a class:<br>
 <br>
 ```text<br>
-===&#32;file:&#32;src/weird.py&#32;===<br>
----&#32;replace-py-method&#32;Weird&#32;run<br>
-&#32;&#32;&#32;&#32;def&#32;run(self):<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;return&#32;100<br>
+=== file: src/weird.py ===<br>
+--- replace-py-method Weird run<br>
+&#9;def run(self):<br>
+&#9;&#9;return 100<br>
 =END=<br>
 ```<br>
 <br>
 ```text<br>
-===&#32;file:&#32;src/async_foo.py&#32;===<br>
----&#32;replace-py-method&#32;Foo.bar<br>
-&#32;&#32;&#32;&#32;async&#32;def&#32;bar(self):<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;return&#32;2<br>
+=== file: src/async_foo.py ===<br>
+--- replace-py-method Foo.bar<br>
+&#9;async def bar(self):<br>
+&#9;&#9;return 2<br>
 =END=<br>
 ```<br>
 <br>
-The&#32;Python&#32;finder:<br>
+The Python finder:<br>
 <br>
-*&#32;uses&#32;indentation&#32;to&#32;determine&#32;class&#32;/&#32;method&#32;bodies,<br>
-*&#32;includes&#32;decorators&#32;(`@something`)&#32;above&#32;the&#32;method,<br>
-*&#32;replaces&#32;the&#32;whole&#32;method&#32;body&#32;region.<br>
+* uses indentation to determine class / method bodies,<br>
+* includes decorators (`@something`) above the method,<br>
+* replaces the whole method body region.<br>
 <br>
 ---<br>
 <br>
-##&#32;Build<br>
+## Build<br>
 <br>
-Linux&#32;/&#32;macOS:<br>
+Linux / macOS:<br>
 <br>
 ```bash<br>
-mkdir&#32;build&#32;&amp;&amp;&#32;cd&#32;build<br>
-cmake&#32;-DCMAKE_BUILD_TYPE=Release&#32;..<br>
-cmake&#32;--build&#32;.<br>
-cmake&#32;--install&#32;.<br>
+mkdir build &amp;&amp; cd build<br>
+cmake -DCMAKE_BUILD_TYPE=Release ..<br>
+cmake --build .<br>
+cmake --install .<br>
 ```<br>
 <br>
-Windows&#32;(Visual&#32;Studio&#32;generator):<br>
+Windows (Visual Studio generator):<br>
 <br>
 ```powershell<br>
-mkdir&#32;build<br>
-cd&#32;build<br>
-cmake&#32;..<br>
-cmake&#32;--build&#32;.&#32;--config&#32;Release<br>
-cmake&#32;--install&#32;.&#32;--config&#32;Release<br>
+mkdir build<br>
+cd build<br>
+cmake ..<br>
+cmake --build . --config Release<br>
+cmake --install . --config Release<br>
 ```<br>
 <br>
 ---<br>
 <br>
-##&#32;License<br>
+## License<br>
 <br>
-Do&#32;whatever&#32;you&#32;want&#32;with&#32;it.<br>
+Do whatever you want with it.<br>
 <!-- END SCAT CODE -->
 </body>
 </html>

@@ -6,149 +6,149 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#include&#32;&quot;git_info.h&quot;<br>
+#include &quot;git_info.h&quot;<br>
 <br>
-#include&#32;&lt;cstdio&gt;<br>
-#include&#32;&lt;string&gt;<br>
+#include &lt;cstdio&gt;<br>
+#include &lt;string&gt;<br>
 <br>
-//&#32;Runs&#32;a&#32;shell&#32;command&#32;and&#32;captures&#32;its&#32;stdout.<br>
-//&#32;Returns&#32;empty&#32;string&#32;on&#32;error&#32;or&#32;if&#32;nothing&#32;was&#32;printed.<br>
-static&#32;std::string&#32;run_command_capture(const&#32;char&#32;*cmd)<br>
+// Runs a shell command and captures its stdout.<br>
+// Returns empty string on error or if nothing was printed.<br>
+static std::string run_command_capture(const char *cmd)<br>
 {<br>
-#ifdef&#32;_WIN32<br>
-&#32;&#32;&#32;&#32;FILE&#32;*pipe&#32;=&#32;_popen(cmd,&#32;&quot;r&quot;);<br>
+#ifdef _WIN32<br>
+&#9;FILE *pipe = _popen(cmd, &quot;r&quot;);<br>
 #else<br>
-&#32;&#32;&#32;&#32;FILE&#32;*pipe&#32;=&#32;popen(cmd,&#32;&quot;r&quot;);<br>
+&#9;FILE *pipe = popen(cmd, &quot;r&quot;);<br>
 #endif<br>
-&#32;&#32;&#32;&#32;if&#32;(!pipe)<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;return&#32;{};<br>
+&#9;if (!pipe)<br>
+&#9;&#9;return {};<br>
 <br>
-&#32;&#32;&#32;&#32;std::string&#32;result;<br>
-&#32;&#32;&#32;&#32;char&#32;buffer[256];<br>
+&#9;std::string result;<br>
+&#9;char buffer[256];<br>
 <br>
-&#32;&#32;&#32;&#32;while&#32;(fgets(buffer,&#32;sizeof(buffer),&#32;pipe))<br>
-&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;result&#32;+=&#32;buffer;<br>
-&#32;&#32;&#32;&#32;}<br>
+&#9;while (fgets(buffer, sizeof(buffer), pipe))<br>
+&#9;{<br>
+&#9;&#9;result += buffer;<br>
+&#9;}<br>
 <br>
-#ifdef&#32;_WIN32<br>
-&#32;&#32;&#32;&#32;_pclose(pipe);<br>
+#ifdef _WIN32<br>
+&#9;_pclose(pipe);<br>
 #else<br>
-&#32;&#32;&#32;&#32;pclose(pipe);<br>
-#endif<br>
-<br>
-&#32;&#32;&#32;&#32;//&#32;strip&#32;trailing&#32;newlines<br>
-&#32;&#32;&#32;&#32;while&#32;(!result.empty()&#32;&amp;&amp;&#32;(result.back()&#32;==&#32;'\n'&#32;||&#32;result.back()&#32;==&#32;'\r'))<br>
-&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;result.pop_back();<br>
-&#32;&#32;&#32;&#32;}<br>
-<br>
-&#32;&#32;&#32;&#32;return&#32;result;<br>
-}<br>
-<br>
-GitInfo&#32;detect_git_info()<br>
-{<br>
-&#32;&#32;&#32;&#32;GitInfo&#32;info;<br>
-<br>
-#ifdef&#32;_WIN32<br>
-&#32;&#32;&#32;&#32;std::string&#32;commit&#32;=&#32;run_command_capture(&quot;git&#32;rev-parse&#32;HEAD&#32;2&gt;nul&quot;);<br>
-&#32;&#32;&#32;&#32;std::string&#32;remote&#32;=<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;run_command_capture(&quot;git&#32;config&#32;--get&#32;remote.origin.url&#32;2&gt;nul&quot;);<br>
-#else<br>
-&#32;&#32;&#32;&#32;std::string&#32;commit&#32;=&#32;run_command_capture(&quot;git&#32;rev-parse&#32;HEAD&#32;2&gt;/dev/null&quot;);<br>
-&#32;&#32;&#32;&#32;std::string&#32;remote&#32;=<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;run_command_capture(&quot;git&#32;config&#32;--get&#32;remote.origin.url&#32;2&gt;/dev/null&quot;);<br>
+&#9;pclose(pipe);<br>
 #endif<br>
 <br>
-&#32;&#32;&#32;&#32;if&#32;(!commit.empty())<br>
-&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;info.commit&#32;=&#32;commit;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;info.has_commit&#32;=&#32;true;<br>
-&#32;&#32;&#32;&#32;}<br>
+&#9;// strip trailing newlines<br>
+&#9;while (!result.empty() &amp;&amp; (result.back() == '\n' || result.back() == '\r'))<br>
+&#9;{<br>
+&#9;&#9;result.pop_back();<br>
+&#9;}<br>
 <br>
-&#32;&#32;&#32;&#32;if&#32;(!remote.empty())<br>
-&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;info.remote&#32;=&#32;remote;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;info.has_remote&#32;=&#32;true;<br>
-&#32;&#32;&#32;&#32;}<br>
-<br>
-&#32;&#32;&#32;&#32;return&#32;info;<br>
+&#9;return result;<br>
 }<br>
 <br>
-//&#32;Разбор&#32;remote&#32;вроде&#32;git@github.com:user/repo.git&#32;или<br>
-//&#32;https://github.com/user/repo(.git)<br>
-bool&#32;parse_github_remote(const&#32;std::string&#32;&amp;remote,<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;std::string&#32;&amp;user,<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;std::string&#32;&amp;repo)<br>
+GitInfo detect_git_info()<br>
 {<br>
-&#32;&#32;&#32;&#32;const&#32;std::string&#32;host&#32;=&#32;&quot;github.com&quot;;<br>
-&#32;&#32;&#32;&#32;auto&#32;pos&#32;=&#32;remote.find(host);<br>
-&#32;&#32;&#32;&#32;if&#32;(pos&#32;==&#32;std::string::npos)<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;return&#32;false;<br>
+&#9;GitInfo info;<br>
 <br>
-&#32;&#32;&#32;&#32;pos&#32;+=&#32;host.size();<br>
-<br>
-&#32;&#32;&#32;&#32;//&#32;пропускаем&#32;':'&#32;или&#32;'/'&#32;после&#32;github.com<br>
-&#32;&#32;&#32;&#32;while&#32;(pos&#32;&lt;&#32;remote.size()&#32;&amp;&amp;&#32;(remote[pos]&#32;==&#32;':'&#32;||&#32;remote[pos]&#32;==&#32;'/'))<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;++pos;<br>
-<br>
-&#32;&#32;&#32;&#32;if&#32;(pos&#32;&gt;=&#32;remote.size())<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;return&#32;false;<br>
-<br>
-&#32;&#32;&#32;&#32;//&#32;user&#32;/&#32;repo[.git]&#32;/&#32;...<br>
-&#32;&#32;&#32;&#32;auto&#32;slash1&#32;=&#32;remote.find('/',&#32;pos);<br>
-&#32;&#32;&#32;&#32;if&#32;(slash1&#32;==&#32;std::string::npos)<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;return&#32;false;<br>
-<br>
-&#32;&#32;&#32;&#32;user&#32;=&#32;remote.substr(pos,&#32;slash1&#32;-&#32;pos);<br>
-<br>
-&#32;&#32;&#32;&#32;auto&#32;start_repo&#32;=&#32;slash1&#32;+&#32;1;<br>
-&#32;&#32;&#32;&#32;if&#32;(start_repo&#32;&gt;=&#32;remote.size())<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;return&#32;false;<br>
-<br>
-&#32;&#32;&#32;&#32;auto&#32;slash2&#32;=&#32;remote.find('/',&#32;start_repo);<br>
-&#32;&#32;&#32;&#32;std::string&#32;repo_part&#32;=<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;(slash2&#32;==&#32;std::string::npos)<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;?&#32;remote.substr(start_repo)<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;:&#32;remote.substr(start_repo,&#32;slash2&#32;-&#32;start_repo);<br>
-<br>
-&#32;&#32;&#32;&#32;//&#32;обрежем&#32;.git&#32;в&#32;конце,&#32;если&#32;есть<br>
-&#32;&#32;&#32;&#32;const&#32;std::string&#32;dot_git&#32;=&#32;&quot;.git&quot;;<br>
-&#32;&#32;&#32;&#32;if&#32;(repo_part.size()&#32;&gt;&#32;dot_git.size()&#32;&amp;&amp;<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;repo_part.compare(<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;repo_part.size()&#32;-&#32;dot_git.size(),&#32;dot_git.size(),&#32;dot_git)&#32;==&#32;0)<br>
-&#32;&#32;&#32;&#32;{<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;repo_part.resize(repo_part.size()&#32;-&#32;dot_git.size());<br>
-&#32;&#32;&#32;&#32;}<br>
-<br>
-&#32;&#32;&#32;&#32;if&#32;(user.empty()&#32;||&#32;repo_part.empty())<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;return&#32;false;<br>
-<br>
-&#32;&#32;&#32;&#32;repo&#32;=&#32;repo_part;<br>
-&#32;&#32;&#32;&#32;return&#32;true;<br>
-}<br>
-<br>
-GitHubInfo&#32;detect_github_info()<br>
-{<br>
-&#32;&#32;&#32;&#32;GitInfo&#32;gi&#32;=&#32;detect_git_info();<br>
-&#32;&#32;&#32;&#32;GitHubInfo&#32;out;<br>
-&#32;&#32;&#32;&#32;if&#32;(!gi.has_commit&#32;||&#32;!gi.has_remote)<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;return&#32;out;<br>
-<br>
-&#32;&#32;&#32;&#32;if&#32;(!parse_github_remote(gi.remote,&#32;out.user,&#32;out.repo))<br>
-&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;return&#32;out;<br>
-<br>
-&#32;&#32;&#32;&#32;out.commit&#32;=&#32;gi.commit;<br>
-&#32;&#32;&#32;&#32;out.ok&#32;=&#32;true;<br>
-&#32;&#32;&#32;&#32;return&#32;out;<br>
-}<br>
-<br>
-std::string&#32;detect_git_dir()<br>
-{<br>
-#ifdef&#32;_WIN32<br>
-&#32;&#32;&#32;&#32;return&#32;run_command_capture(&quot;git&#32;rev-parse&#32;--git-dir&#32;2&gt;nul&quot;);<br>
+#ifdef _WIN32<br>
+&#9;std::string commit = run_command_capture(&quot;git rev-parse HEAD 2&gt;nul&quot;);<br>
+&#9;std::string remote =<br>
+&#9;&#9;run_command_capture(&quot;git config --get remote.origin.url 2&gt;nul&quot;);<br>
 #else<br>
-&#32;&#32;&#32;&#32;return&#32;run_command_capture(&quot;git&#32;rev-parse&#32;--git-dir&#32;2&gt;/dev/null&quot;);<br>
+&#9;std::string commit = run_command_capture(&quot;git rev-parse HEAD 2&gt;/dev/null&quot;);<br>
+&#9;std::string remote =<br>
+&#9;&#9;run_command_capture(&quot;git config --get remote.origin.url 2&gt;/dev/null&quot;);<br>
+#endif<br>
+<br>
+&#9;if (!commit.empty())<br>
+&#9;{<br>
+&#9;&#9;info.commit = commit;<br>
+&#9;&#9;info.has_commit = true;<br>
+&#9;}<br>
+<br>
+&#9;if (!remote.empty())<br>
+&#9;{<br>
+&#9;&#9;info.remote = remote;<br>
+&#9;&#9;info.has_remote = true;<br>
+&#9;}<br>
+<br>
+&#9;return info;<br>
+}<br>
+<br>
+// Разбор remote вроде git@github.com:user/repo.git или<br>
+// https://github.com/user/repo(.git)<br>
+bool parse_github_remote(const std::string &amp;remote,<br>
+&#9;&#9;&#9;&#9;&#9;&#9;std::string &amp;user,<br>
+&#9;&#9;&#9;&#9;&#9;&#9;std::string &amp;repo)<br>
+{<br>
+&#9;const std::string host = &quot;github.com&quot;;<br>
+&#9;auto pos = remote.find(host);<br>
+&#9;if (pos == std::string::npos)<br>
+&#9;&#9;return false;<br>
+<br>
+&#9;pos += host.size();<br>
+<br>
+&#9;// пропускаем ':' или '/' после github.com<br>
+&#9;while (pos &lt; remote.size() &amp;&amp; (remote[pos] == ':' || remote[pos] == '/'))<br>
+&#9;&#9;++pos;<br>
+<br>
+&#9;if (pos &gt;= remote.size())<br>
+&#9;&#9;return false;<br>
+<br>
+&#9;// user / repo[.git] / ...<br>
+&#9;auto slash1 = remote.find('/', pos);<br>
+&#9;if (slash1 == std::string::npos)<br>
+&#9;&#9;return false;<br>
+<br>
+&#9;user = remote.substr(pos, slash1 - pos);<br>
+<br>
+&#9;auto start_repo = slash1 + 1;<br>
+&#9;if (start_repo &gt;= remote.size())<br>
+&#9;&#9;return false;<br>
+<br>
+&#9;auto slash2 = remote.find('/', start_repo);<br>
+&#9;std::string repo_part =<br>
+&#9;&#9;(slash2 == std::string::npos)<br>
+&#9;&#9;&#9;? remote.substr(start_repo)<br>
+&#9;&#9;&#9;: remote.substr(start_repo, slash2 - start_repo);<br>
+<br>
+&#9;// обрежем .git в конце, если есть<br>
+&#9;const std::string dot_git = &quot;.git&quot;;<br>
+&#9;if (repo_part.size() &gt; dot_git.size() &amp;&amp;<br>
+&#9;&#9;repo_part.compare(<br>
+&#9;&#9;&#9;repo_part.size() - dot_git.size(), dot_git.size(), dot_git) == 0)<br>
+&#9;{<br>
+&#9;&#9;repo_part.resize(repo_part.size() - dot_git.size());<br>
+&#9;}<br>
+<br>
+&#9;if (user.empty() || repo_part.empty())<br>
+&#9;&#9;return false;<br>
+<br>
+&#9;repo = repo_part;<br>
+&#9;return true;<br>
+}<br>
+<br>
+GitHubInfo detect_github_info()<br>
+{<br>
+&#9;GitInfo gi = detect_git_info();<br>
+&#9;GitHubInfo out;<br>
+&#9;if (!gi.has_commit || !gi.has_remote)<br>
+&#9;&#9;return out;<br>
+<br>
+&#9;if (!parse_github_remote(gi.remote, out.user, out.repo))<br>
+&#9;&#9;return out;<br>
+<br>
+&#9;out.commit = gi.commit;<br>
+&#9;out.ok = true;<br>
+&#9;return out;<br>
+}<br>
+<br>
+std::string detect_git_dir()<br>
+{<br>
+#ifdef _WIN32<br>
+&#9;return run_command_capture(&quot;git rev-parse --git-dir 2&gt;nul&quot;);<br>
+#else<br>
+&#9;return run_command_capture(&quot;git rev-parse --git-dir 2&gt;/dev/null&quot;);<br>
 #endif<br>
 }<br>
 <!-- END SCAT CODE -->
