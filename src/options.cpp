@@ -9,7 +9,8 @@ static void print_help()
                  "Options:\n"
                  "  -r           Recursive directory processing\n"
                  "  -l           List files only\n"
-                    "  -n           Show line numbers\n"
+                 "  --sorted     Sort list (-l) by size (desc)\n"
+                 "  -n           Show line numbers\n"
                  "  --abs        Show absolute paths\n"
                  "  --config F   Read patterns from file F\n"
                  "  --apply F    Apply patch from file F\n"
@@ -34,6 +35,8 @@ Options parse_options(int argc, char** argv)
             opt.line_numbers = true;
         else if (a == "--abs")
             opt.abs_paths = true;
+        else if (a == "--sorted")
+            opt.sorted = true;
         else if (a == "--chunk-help")
             opt.chunk_help = true;
         else if (a == "-c" || a == "--chunk")

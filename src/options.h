@@ -9,10 +9,11 @@ struct Options
     bool list_only = false;
     bool abs_paths = false;
     bool line_numbers = false;
-    std::string apply_file;   // empty = no apply mode
+    bool sorted = false;           // --sorted: sort list (-l) by size
+    std::string apply_file;        // empty = no apply mode
     bool apply_stdin = false;
-    std::string config_file;        // empty = no config mode
-bool chunk_help = false;
+    std::string config_file;       // empty = no config mode
+    bool chunk_help = false;
     std::vector<std::string> paths; // positional paths
 };
 

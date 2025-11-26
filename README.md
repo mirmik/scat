@@ -13,7 +13,7 @@ Useful for sharing code or project trees with AI tools.
 * Collects files from arguments
 * Optional recursive scan (`-r`)
 * Relative paths by default, absolute with `--abs`
-* List files only (`-l`)
+* List files only (`-l`, prints file sizes; add `--sorted` to sort by size)
 * Supports configuration files (`scat.txt` or `--config F`)
 * Main source file: `src/main.cpp`
 

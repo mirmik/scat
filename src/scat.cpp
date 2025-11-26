@@ -321,13 +321,39 @@ int scat_main(int argc, char** argv)
         // LIST ONLY в config-режиме: только пути и размеры
         if (opt.list_only)
         {
+            struct Item
+            {
+                fs::path path;
+                std::uintmax_t size;
+            };
+
+            std::vector<Item> items;
+            items.reserve(text_files.size());
+
             std::uintmax_t total = 0;
             for (auto& f : text_files)
             {
                 auto sz = get_file_size(f);
                 total += sz;
-                std::cout << make_display_path(f)
-                          << " (" << sz << " bytes)\n";
+                items.push_back(Item{f, sz});
+            }
+
+            if (opt.sorted)
+            {
+                std::sort(items.begin(), items.end(),
+                          [](const Item& a, const Item& b)
+                          {
+                              if (a.size != b.size)
+                                  return a.size > b.size; // по убыванию
+                              return make_display_path(a.path) <
+                                     make_display_path(b.path);
+                          });
+            }
+
+            for (const auto& it : items)
+            {
+                std::cout << make_display_path(it.path)
+                          << " (" << it.size << " bytes)\n";
             }
 
             std::cout << "Total size: " << total << " bytes\n";
@@ -382,13 +408,39 @@ int scat_main(int argc, char** argv)
     // LIST ONLY
     if (opt.list_only)
     {
+        struct Item
+        {
+            fs::path path;
+            std::uintmax_t size;
+        };
+
+        std::vector<Item> items;
+        items.reserve(files.size());
+
         std::uintmax_t total = 0;
         for (auto& f : files)
         {
             auto sz = get_file_size(f);
             total += sz;
-            std::cout << make_display_path(f)
-                      << " (" << sz << " bytes)\n";
+            items.push_back(Item{f, sz});
+        }
+
+        if (opt.sorted)
+        {
+            std::sort(items.begin(), items.end(),
+                      [](const Item& a, const Item& b)
+                      {
+                          if (a.size != b.size)
+                              return a.size > b.size; // по убыванию
+                          return make_display_path(a.path) <
+                                 make_display_path(b.path);
+                      });
+        }
+
+        for (const auto& it : items)
+        {
+            std::cout << make_display_path(it.path)
+                      << " (" << it.size << " bytes)\n";
         }
 
         std::cout << "Total size: " << total << " bytes\n";
