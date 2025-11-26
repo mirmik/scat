@@ -5,31 +5,31 @@
   <title>src/rules.h</title>
 </head>
 <body>
-<pre><code>
-#pragma once
-#include &lt;string&gt;
-
-struct Rule
-{
-    std::string pattern;
-    bool exclude = false;
-
-    static Rule from_string(const std::string &amp;line)
-    {
-        Rule r;
-        if (!line.empty() &amp;&amp; line[0] == '!')
-        {
-            r.exclude = true;
-            r.pattern = line.substr(1);
-        }
-        else
-        {
-            r.exclude = false;
-            r.pattern = line;
-        }
-        return r;
-    }
-};
-</code></pre>
+<!-- BEGIN SCAT CODE -->
+#pragma once<br>
+#include &lt;string&gt;<br>
+<br>
+struct Rule<br>
+{<br>
+    std::string pattern;<br>
+    bool exclude = false;<br>
+<br>
+    static Rule from_string(const std::string &amp;line)<br>
+    {<br>
+        Rule r;<br>
+        if (!line.empty() &amp;&amp; line[0] == '!')<br>
+        {<br>
+            r.exclude = true;<br>
+            r.pattern = line.substr(1);<br>
+        }<br>
+        else<br>
+        {<br>
+            r.exclude = false;<br>
+            r.pattern = line;<br>
+        }<br>
+        return r;<br>
+    }<br>
+};<br>
+<!-- END SCAT CODE -->
 </body>
 </html>

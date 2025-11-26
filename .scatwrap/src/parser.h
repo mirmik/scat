@@ -5,22 +5,21 @@
   <title>src/parser.h</title>
 </head>
 <body>
-<pre><code>
-#pragma once
-#include &quot;rules.h&quot;
-#include &lt;filesystem&gt;
-#include &lt;string&gt;
-#include &lt;vector&gt;
-
-struct Config
-{
-    std::vector&lt;Rule&gt; text_rules;
-    std::vector&lt;Rule&gt; tree_rules;
-    std::string map_format; // новый блок [MAPFORMAT], может быть пустым
-};
-
-Config parse_config(const std::filesystem::path &amp;path);
-
-</code></pre>
+<!-- BEGIN SCAT CODE -->
+#pragma once<br>
+#include &quot;rules.h&quot;<br>
+#include &lt;filesystem&gt;<br>
+#include &lt;string&gt;<br>
+#include &lt;vector&gt;<br>
+<br>
+struct Config<br>
+{<br>
+    std::vector&lt;Rule&gt; text_rules;<br>
+    std::vector&lt;Rule&gt; tree_rules;<br>
+    std::string map_format; // новый блок [MAPFORMAT], может быть пустым<br>
+};<br>
+<br>
+Config parse_config(const std::filesystem::path &amp;path);<br>
+<!-- END SCAT CODE -->
 </body>
 </html>

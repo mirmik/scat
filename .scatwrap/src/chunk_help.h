@@ -5,10 +5,10 @@
   <title>src/chunk_help.h</title>
 </head>
 <body>
-<pre><code>
-#pragma once
-
-void print_chunk_help();
-</code></pre>
+<!-- BEGIN SCAT CODE -->
+#pragma once<br>
+<br>
+void print_chunk_help();<br>
+<!-- END SCAT CODE -->
 </body>
 </html>

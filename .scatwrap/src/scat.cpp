@@ -5,666 +5,665 @@
   <title>src/scat.cpp</title>
 </head>
 <body>
-<pre><code>
-#include &quot;scat.h&quot;
-#include &quot;clipboard.h&quot;
-#include &quot;collector.h&quot;
-#include &quot;git_info.h&quot;
-#include &quot;options.h&quot;
-#include &quot;parser.h&quot;
-#include &quot;rules.h&quot;
-#include &quot;util.h&quot;
-#include &lt;cstdio&gt;
-#include &lt;exception&gt;
-#include &lt;filesystem&gt;
-#include &lt;fstream&gt;
-#include &lt;functional&gt;
-#include &lt;iostream&gt;
-#include &lt;map&gt;
-#include &lt;set&gt;
-#include &lt;sstream&gt;
-
-#ifndef _WIN32
-#include &lt;sys/stat.h&gt;
-#include &lt;sys/types.h&gt;
-#endif
-
-int wrap_files_to_html(const std::vector&lt;std::filesystem::path&gt; &amp;files,
-                       const Options &amp;opt);
-
-namespace fs = std::filesystem;
-
-bool g_use_absolute_paths = false;
-
-int apply_chunk_main(int argc, char **argv);
-
-void print_tree(const std::vector&lt;std::filesystem::path&gt; &amp;files)
-{
-    // Собираем относительные пути
-    std::vector&lt;std::string&gt; rels;
-    rels.reserve(files.size());
-    for (auto &amp;p : files)
-        rels.push_back(make_display_path(p));
-
-    std::sort(rels.begin(), rels.end());
-
-    struct Node
-    {
-        std::map&lt;std::string, Node *&gt; children;
-        bool is_file = false;
-    };
-
-    Node root;
-
-    // ----------------------------
-    //  Построение дерева
-    // ----------------------------
-    for (auto &amp;r : rels)
-    {
-        fs::path p = r;
-        Node *cur = &amp;root;
-
-        // вытаскиваем компоненты p в список
-        std::vector&lt;std::string&gt; parts;
-        for (auto &amp;part : p)
-            parts.push_back(part.string());
-
-        int total = (int)parts.size();
-
-        for (int i = 0; i &lt; total; ++i)
-        {
-            const std::string &amp;name = parts[i];
-            bool last = (i == total - 1);
-
-            if (!cur-&gt;children.count(name))
-                cur-&gt;children[name] = new Node();
-
-            cur = cur-&gt;children[name];
-            if (last)
-                cur-&gt;is_file = true;
-        }
-    }
-
-    // ----------------------------
-    //  Рекурсивная печать
-    // ----------------------------
-    std::function&lt;void(Node *, const std::string &amp;, bool, const std::string &amp;)&gt;
-        go;
-
-    go = [&amp;](Node *node,
-             const std::string &amp;name,
-             bool last,
-             const std::string &amp;prefix)
-    {
-        if (!name.empty())
-        {
-            std::cout &lt;&lt; prefix &lt;&lt; (last ? &quot;└── &quot; : &quot;├── &quot;) &lt;&lt; name;
-
-            if (!node-&gt;is_file)
-                std::cout &lt;&lt; &quot;/&quot;;
-
-            std::cout &lt;&lt; &quot;\n&quot;;
-        }
-
-        // сортируем детей по имени
-        std::vector&lt;std::string&gt; keys;
-        keys.reserve(node-&gt;children.size());
-        for (auto &amp;[k, _] : node-&gt;children)
-            keys.push_back(k);
-        std::sort(keys.begin(), keys.end());
-
-        for (size_t i = 0; i &lt; keys.size(); ++i)
-        {
-            bool is_last = (i + 1 == keys.size());
-            Node *child = node-&gt;children[keys[i]];
-
-            go(child,
-               keys[i],
-               is_last,
-               prefix + (name.empty() ? &quot;&quot; : (last ? &quot;    &quot; : &quot;│   &quot;)));
-        }
-    };
-
-    std::cout &lt;&lt; &quot;===== PROJECT TREE =====\n&quot;;
-    go(&amp;root, &quot;&quot;, true, &quot;&quot;);
-    std::cout &lt;&lt; &quot;========================\n\n&quot;;
-}
-
-static void
-print_list_with_sizes_to(const std::vector&lt;std::filesystem::path&gt; &amp;files,
-                         const Options &amp;opt,
-                         std::ostream &amp;os)
-{
-    namespace fs = std::filesystem;
-
-    struct Item
-    {
-        fs::path path;
-        std::string display;
-        std::uintmax_t size;
-    };
-
-    std::vector&lt;Item&gt; items;
-    items.reserve(files.size());
-    std::uintmax_t total = 0;
-    std::size_t max_len = 0;
-
-    for (auto &amp;f : files)
-    {
-        auto disp = make_display_path(f);
-        auto sz = get_file_size(f);
-
-        total += sz;
-
-        std::size_t shown_len = opt.path_prefix.size() + disp.size();
-        if (shown_len &gt; max_len)
-            max_len = shown_len;
-
-        items.push_back(Item{f, std::move(disp), sz});
-    }
-
-    if (opt.sorted)
-    {
-        std::sort(items.begin(),
-                  items.end(),
-                  [](const Item &amp;a, const Item &amp;b)
-                  {
-                      if (a.size != b.size)
-                          return a.size &gt; b.size; // по убыванию
-                      return a.display &lt; b.display;
-                  });
-    }
-
-    const bool show_size = opt.show_size;
-    for (const auto &amp;it : items)
-    {
-        std::string shown = opt.path_prefix + it.display;
-        os &lt;&lt; shown;
-
-        if (show_size)
-        {
-            if (max_len &gt; shown.size())
-            {
-                std::size_t pad = max_len - shown.size();
-                for (std::size_t i = 0; i &lt; pad; ++i)
-                    os &lt;&lt; ' ';
-            }
-            os &lt;&lt; &quot; (&quot; &lt;&lt; it.size &lt;&lt; &quot; bytes)&quot;;
-        }
-
-        os &lt;&lt; &quot;\n&quot;;
-    }
-
-    if (show_size)
-    {
-        os &lt;&lt; &quot;Total size: &quot; &lt;&lt; total &lt;&lt; &quot; bytes\n&quot;;
-    }
-}
-
-// старая функция теперь просто обёртка вокруг новой
-static void
-print_list_with_sizes(const std::vector&lt;std::filesystem::path&gt; &amp;files,
-                      const Options &amp;opt)
-{
-    print_list_with_sizes_to(files, opt, std::cout);
-}
-
-// Вывод всех файлов и подсчёт суммарного размера
-static std::uintmax_t
-dump_files_and_total(const std::vector&lt;std::filesystem::path&gt; &amp;files,
-                     const Options &amp;opt)
-{
-    std::uintmax_t total = 0;
-    bool first = true;
-
-    for (auto &amp;f : files)
-    {
-        dump_file(f, first, opt);
-        first = false;
-        total += get_file_size(f);
-    }
-
-    return total;
-}
-
-int run_server(const Options &amp;opt);
-
-// общий каркас обработки списка файлов
-static int process_files(const std::vector&lt;std::filesystem::path&gt; &amp;files,
-                         const Options &amp;opt,
-                         const std::function&lt;void(std::uintmax_t)&gt; &amp;after_dump)
-{
-    if (files.empty())
-    {
-        std::cerr &lt;&lt; &quot;No files collected.\n&quot;;
-        return 0;
-    }
-
-    if (!opt.wrap_root.empty())
-        return wrap_files_to_html(files, opt);
-
-    if (opt.list_only)
-    {
-        print_list_with_sizes(files, opt);
-        return 0;
-    }
-
-    std::uintmax_t total = dump_files_and_total(files, opt);
-
-    if (after_dump)
-        after_dump(total);
-
-    return 0;
-}
-
-// =========================
-// CONFIG MODE
-// =========================
-
-static int run_config_mode(const Options &amp;opt)
-{
-    Config cfg;
-    try
-    {
-        cfg = parse_config(opt.config_file);
-    }
-    catch (const std::exception &amp;e)
-    {
-        std::cerr &lt;&lt; e.what() &lt;&lt; &quot;\n&quot;;
-        return 1;
-    }
-
-    auto text_files = collect_from_rules(cfg.text_rules, opt);
-
-    auto after_dump = [&amp;](std::uintmax_t total)
-    {
-        // TREE rules (если есть)
-        if (!cfg.tree_rules.empty())
-        {
-            auto tree_files = collect_from_rules(cfg.tree_rules, opt);
-            if (!tree_files.empty())
-            {
-                std::cout &lt;&lt; &quot;\n&quot;;
-                print_tree(tree_files);
-            }
-        }
-
-        if (opt.chunk_trailer)
-        {
-            std::cout &lt;&lt; &quot;\n===== CHUNK FORMAT HELP =====\n\n&quot;;
-            print_chunk_help();
-        }
-
-        std::cout &lt;&lt; &quot;\nTotal size: &quot; &lt;&lt; total &lt;&lt; &quot; bytes\n&quot;;
-    };
-
-    return process_files(text_files, opt, after_dump);
-}
-
-// =========================
-// NORMAL MODE
-// =========================
-
-static int run_normal_mode(const Options &amp;opt)
-{
-    std::vector&lt;std::filesystem::path&gt; files =
-        collect_from_paths(opt.paths, opt);
-
-    auto after_dump = [&amp;](std::uintmax_t total)
-    {
-        // В обычном режиме дерево не печатаем
-        if (opt.chunk_trailer)
-        {
-            std::cout &lt;&lt; &quot;\n===== CHUNK FORMAT HELP =====\n\n&quot;;
-            print_chunk_help();
-        }
-
-        std::cout &lt;&lt; &quot;\nTotal size: &quot; &lt;&lt; total &lt;&lt; &quot; bytes\n&quot;;
-    };
-
-    return process_files(files, opt, after_dump);
-}
-
-static std::string substitute_rawmap(const std::string &amp;tmpl,
-                                     const std::string &amp;rawmap)
-{
-    const std::string token = &quot;{RAWMAP}&quot;;
-    if (tmpl.empty())
-        return rawmap;
-
-    std::string out;
-    out.reserve(tmpl.size() + rawmap.size() + 16);
-
-    std::size_t pos = 0;
-    while (true)
-    {
-        std::size_t p = tmpl.find(token, pos);
-        if (p == std::string::npos)
-        {
-            out.append(tmpl, pos, std::string::npos);
-            break;
-        }
-        out.append(tmpl, pos, p - pos);
-        out.append(rawmap);
-        pos = p + token.size();
-    }
-    return out;
-}
-
-static int install_pre_commit_hook()
-{
-    // Узнаём .git-директорию через git
-    std::string git_dir = detect_git_dir();
-    if (git_dir.empty())
-    {
-        std::cerr
-            &lt;&lt; &quot;--hook-install: not a git repository or git not available\n&quot;;
-        return 1;
-    }
-
-    fs::path git_path = fs::path(git_dir);
-    fs::path hooks_dir = git_path / &quot;hooks&quot;;
-    std::error_code ec;
-    fs::create_directories(hooks_dir, ec);
-
-    fs::path hook_path = hooks_dir / &quot;pre-commit&quot;;
-
-    std::cout &lt;&lt; &quot;===== .git/hooks/pre-commit =====\n&quot;;
-
-    std::string existing;
-    if (fs::exists(hook_path))
-    {
-        std::ifstream in(hook_path);
-        if (in)
-        {
-            std::ostringstream ss;
-            ss &lt;&lt; in.rdbuf();
-            existing = ss.str();
-        }
-    }
-
-    const std::string marker = &quot;# pre-commit hook for scat wrapping&quot;;
-
-    // Если наш хук уже есть — ничего не делаем
-    if (!existing.empty() &amp;&amp; existing.find(marker) != std::string::npos)
-    {
-        std::cout &lt;&lt; &quot;scat: pre-commit hook already contains scat wrapper\n&quot;;
-        return 0;
-    }
-
-    if (existing.empty())
-    {
-        // Создаём новый pre-commit с твоим скриптом
-        std::ofstream out(hook_path, std::ios::trunc);
-        if (!out)
-        {
-            std::cerr &lt;&lt; &quot;scat: cannot write hook file: &quot; &lt;&lt; hook_path &lt;&lt; &quot;\n&quot;;
-            return 1;
-        }
-
-        out &lt;&lt; &quot;#!/bin/sh\n&quot;
-               &quot;# pre-commit hook for scat wrapping\n&quot;
-               &quot;\n&quot;
-               &quot;set -e  # если любая команда упадёт — прерываем коммит\n&quot;
-               &quot;\n&quot;
-               &quot;# Опционально: не мешаемся, если scat не установлен\n&quot;
-               &quot;if ! command -v scat &gt;/dev/null 2&gt;&amp;1; then\n&quot;
-               &quot;    echo \&quot;pre-commit: 'scat' not found in PATH, skipping &quot;
-               &quot;wrap\&quot;\n&quot;
-               &quot;    exit 0\n&quot;
-               &quot;fi\n&quot;
-               &quot;\n&quot;
-               &quot;echo \&quot;pre-commit: running 'scat --wrap wrapped'...\&quot;\n&quot;
-               &quot;\n&quot;
-               &quot;# Рабочая директория хуков по умолчанию — корень репозитория,\n&quot;
-               &quot;# так что можно просто дернуть scat.\n&quot;
-               &quot;scat --wrap .scatwrap\n&quot;
-               &quot;\n&quot;
-               &quot;# Добавляем всё из wrapped в индекс (новые, изменённые, &quot;
-               &quot;удалённые)\n&quot;
-               &quot;git add -A .scatwrap\n&quot;
-               &quot;\n&quot;
-               &quot;echo \&quot;pre-commit: wrapped/ updated and added to commit\&quot;\n&quot;
-               &quot;\n&quot;
-               &quot;exit 0\n&quot;;
-    }
-    else
-    {
-        // Уже есть какой-то хук — аккуратно добавляем наш блок в конец
-        std::ofstream out(hook_path, std::ios::app);
-        if (!out)
-        {
-            std::cerr &lt;&lt; &quot;scat: cannot append to hook file: &quot; &lt;&lt; hook_path
-                      &lt;&lt; &quot;\n&quot;;
-            return 1;
-        }
-
-        if (!existing.empty() &amp;&amp; existing.back() != '\n')
-            out &lt;&lt; &quot;\n&quot;;
-
-        out &lt;&lt; &quot;\n# ----- added by scat --hook-install -----\n&quot;
-               &quot;if command -v scat &gt;/dev/null 2&gt;&amp;1; then\n&quot;
-               &quot;    echo \&quot;pre-commit: running 'scat --wrap wrapped'...\&quot;\n&quot;
-               &quot;    scat --wrap .scatwrap\n&quot;
-               &quot;    git add -A .scatwrap\n&quot;
-               &quot;    echo \&quot;pre-commit: wrapped/ updated and added to commit\&quot;\n&quot;
-               &quot;fi\n&quot;
-               &quot;# ----- end scat hook -----\n&quot;;
-    }
-
-#ifndef _WIN32
-    // chmod +x на Unix-подобных
-    std::string hp = hook_path.string();
-    struct stat st;
-    if (::stat(hp.c_str(), &amp;st) == 0)
-    {
-        mode_t mode = st.st_mode | S_IXUSR | S_IXGRP | S_IXOTH;
-        ::chmod(hp.c_str(), mode);
-    }
-#endif
-
-    return 0;
-}
-
-int scat_main(int argc, char **argv)
-{
-    Options opt = parse_options(argc, argv);
-    g_use_absolute_paths = opt.abs_paths;
-    CopyGuard copy_guard(opt.copy_out);
-
-    // Установка git pre-commit hook'а и выход
-    if (opt.hook_install)
-    {
-        return install_pre_commit_hook();
-    }
-
-    // Git info mode: print repository metadata and exit
-    if (opt.git_info)
-    {
-        GitInfo info = detect_git_info();
-
-        if (!info.has_commit &amp;&amp; !info.has_remote)
-        {
-            std::cout &lt;&lt; &quot;Git: not a repository or git is not available\n&quot;;
-        }
-        else
-        {
-            if (info.has_commit)
-                std::cout &lt;&lt; &quot;Git commit: &quot; &lt;&lt; info.commit &lt;&lt; &quot;\n&quot;;
-            if (info.has_remote)
-                std::cout &lt;&lt; &quot;Git remote: &quot; &lt;&lt; info.remote &lt;&lt; &quot;\n&quot;;
-        }
-
-        return 0;
-    }
-
-    // GH map mode: построить prefix = raw.githubusercontent/... и дальше
-    // работать как -l --prefix
-    if (opt.gh_map)
-    {
-        GitHubInfo gh = detect_github_info();
-        if (!gh.ok)
-        {
-            std::cerr &lt;&lt; &quot;--ghmap: unable to detect GitHub remote/commit\n&quot;;
-            return 1;
-        }
-
-        std::string prefix = &quot;https://raw.githubusercontent.com/&quot; + gh.user +
-                             &quot;/&quot; + gh.repo + &quot;/&quot; + gh.commit + &quot;/.scatwrap/&quot;;
-
-            if (!opt.config_file.empty())
-    {
-        Config cfg;
-        try {
-            cfg = parse_config(opt.config_file);
-        } catch (const std::exception&amp; e) {
-            std::cerr &lt;&lt; e.what() &lt;&lt; &quot;\n&quot;;
-            return 1;
-        }
-
-        auto text_files = collect_from_rules(cfg.text_rules, opt);
-        if (text_files.empty())
-        {
-            std::cerr &lt;&lt; &quot;No files collected.\n&quot;;
-            return 0;
-        }
-
-        // Собираем &quot;сырой&quot; список ссылок в строку — это и есть {RAWMAP}
-        Options list_opt = opt;
-        list_opt.path_prefix = prefix;
-
-        std::ostringstream oss;
-        print_list_with_sizes_to(text_files, list_opt, oss);
-        std::string rawmap = oss.str();
-
-        std::string output;
-        if (!cfg.map_format.empty())
-            output = substitute_rawmap(cfg.map_format, rawmap);
-        else
-            output = rawmap;
-
-        std::cout &lt;&lt; output;
-        return 0;
-    }
-        else
-        {
-            opt.list_only = true;
-            opt.wrap_root.clear();
-            opt.path_prefix = prefix;
-        }
-    }
-
-    // HTTP server mode
-    if (opt.server_port != 0)
-        return run_server(opt);
-
-    // ------------------------------------------------------------
-    // Chunk help
-    // ------------------------------------------------------------
-    if (opt.chunk_help)
-    {
-        print_chunk_help();
-        return 0;
-    }
-
-    // ------------------------------------------------------------
-    // Apply patch mode
-    // ------------------------------------------------------------
-    if (!opt.apply_file.empty() || opt.apply_stdin)
-    {
-        if (opt.apply_stdin)
-        {
-            namespace fs = std::filesystem;
-
-            std::stringstream ss;
-            ss &lt;&lt; std::cin.rdbuf();
-            fs::path tmp = fs::temp_directory_path() / &quot;scat_stdin_patch.txt&quot;;
-            {
-                std::ofstream out(tmp);
-                out &lt;&lt; ss.str();
-            }
-
-            std::string tmp_str = tmp.string();
-            const char *args[] = {&quot;apply&quot;, tmp_str.c_str()};
-            int r = apply_chunk_main(2, const_cast&lt;char **&gt;(args));
-            fs::remove(tmp);
-            return r;
-        }
-        else
-        {
-            std::string file = opt.apply_file;
-            const char *args[] = {&quot;apply&quot;, file.c_str()};
-            return apply_chunk_main(2, const_cast&lt;char **&gt;(args));
-        }
-    }
-
-    // ------------------------------------------------------------
-    // CONFIG MODE — uses scat.txt or --config F
-    // ------------------------------------------------------------
-    if (!opt.config_file.empty())
-        return run_config_mode(opt);
-
-    // ------------------------------------------------------------
-    // NORMAL MODE — user provided paths
-    // ------------------------------------------------------------
-    return run_normal_mode(opt);
-}
-
-int wrap_files_to_html(const std::vector&lt;std::filesystem::path&gt; &amp;files,
-                       const Options &amp;opt)
-{
-    namespace fs = std::filesystem;
-
-    if (opt.wrap_root.empty())
-    {
-        return 0;
-    }
-
-    fs::path root = opt.wrap_root;
-
-    std::error_code ec;
-    fs::create_directories(root, ec);
-
-    for (const auto &amp;f : files)
-    {
-        // считаем относительный путь относительно текущего каталога
-        std::error_code rec;
-        fs::path rel = fs::relative(f, fs::current_path(), rec);
-        if (rec)
-        {
-            // если не получилось — хотя бы имя файла
-            rel = f.filename();
-        }
-
-        fs::path dst = root / rel;
-        fs::create_directories(dst.parent_path(), ec);
-
-        std::ifstream in(f, std::ios::binary);
-        if (!in)
-        {
-            std::cerr &lt;&lt; &quot;Cannot open for wrap: &quot; &lt;&lt; f &lt;&lt; &quot;\n&quot;;
-            continue;
-        }
-
-        std::ostringstream ss;
-        ss &lt;&lt; in.rdbuf();
-
-        std::string title = rel.generic_string();
-        std::string html = wrap_cpp_as_html(ss.str(), title);
-
-        std::ofstream out(dst, std::ios::binary);
-        if (!out)
-        {
-            std::cerr &lt;&lt; &quot;Cannot write wrapped file: &quot; &lt;&lt; dst &lt;&lt; &quot;\n&quot;;
-            continue;
-        }
-
-        out &lt;&lt; html;
-    }
-
-    return 0;
-}
-
-</code></pre>
+<!-- BEGIN SCAT CODE -->
+#include &quot;scat.h&quot;<br>
+#include &quot;clipboard.h&quot;<br>
+#include &quot;collector.h&quot;<br>
+#include &quot;git_info.h&quot;<br>
+#include &quot;options.h&quot;<br>
+#include &quot;parser.h&quot;<br>
+#include &quot;rules.h&quot;<br>
+#include &quot;util.h&quot;<br>
+#include &lt;cstdio&gt;<br>
+#include &lt;exception&gt;<br>
+#include &lt;filesystem&gt;<br>
+#include &lt;fstream&gt;<br>
+#include &lt;functional&gt;<br>
+#include &lt;iostream&gt;<br>
+#include &lt;map&gt;<br>
+#include &lt;set&gt;<br>
+#include &lt;sstream&gt;<br>
+<br>
+#ifndef _WIN32<br>
+#include &lt;sys/stat.h&gt;<br>
+#include &lt;sys/types.h&gt;<br>
+#endif<br>
+<br>
+int wrap_files_to_html(const std::vector&lt;std::filesystem::path&gt; &amp;files,<br>
+                       const Options &amp;opt);<br>
+<br>
+namespace fs = std::filesystem;<br>
+<br>
+bool g_use_absolute_paths = false;<br>
+<br>
+int apply_chunk_main(int argc, char **argv);<br>
+<br>
+void print_tree(const std::vector&lt;std::filesystem::path&gt; &amp;files)<br>
+{<br>
+    // Собираем относительные пути<br>
+    std::vector&lt;std::string&gt; rels;<br>
+    rels.reserve(files.size());<br>
+    for (auto &amp;p : files)<br>
+        rels.push_back(make_display_path(p));<br>
+<br>
+    std::sort(rels.begin(), rels.end());<br>
+<br>
+    struct Node<br>
+    {<br>
+        std::map&lt;std::string, Node *&gt; children;<br>
+        bool is_file = false;<br>
+    };<br>
+<br>
+    Node root;<br>
+<br>
+    // ----------------------------<br>
+    //  Построение дерева<br>
+    // ----------------------------<br>
+    for (auto &amp;r : rels)<br>
+    {<br>
+        fs::path p = r;<br>
+        Node *cur = &amp;root;<br>
+<br>
+        // вытаскиваем компоненты p в список<br>
+        std::vector&lt;std::string&gt; parts;<br>
+        for (auto &amp;part : p)<br>
+            parts.push_back(part.string());<br>
+<br>
+        int total = (int)parts.size();<br>
+<br>
+        for (int i = 0; i &lt; total; ++i)<br>
+        {<br>
+            const std::string &amp;name = parts[i];<br>
+            bool last = (i == total - 1);<br>
+<br>
+            if (!cur-&gt;children.count(name))<br>
+                cur-&gt;children[name] = new Node();<br>
+<br>
+            cur = cur-&gt;children[name];<br>
+            if (last)<br>
+                cur-&gt;is_file = true;<br>
+        }<br>
+    }<br>
+<br>
+    // ----------------------------<br>
+    //  Рекурсивная печать<br>
+    // ----------------------------<br>
+    std::function&lt;void(Node *, const std::string &amp;, bool, const std::string &amp;)&gt;<br>
+        go;<br>
+<br>
+    go = [&amp;](Node *node,<br>
+             const std::string &amp;name,<br>
+             bool last,<br>
+             const std::string &amp;prefix)<br>
+    {<br>
+        if (!name.empty())<br>
+        {<br>
+            std::cout &lt;&lt; prefix &lt;&lt; (last ? &quot;└── &quot; : &quot;├── &quot;) &lt;&lt; name;<br>
+<br>
+            if (!node-&gt;is_file)<br>
+                std::cout &lt;&lt; &quot;/&quot;;<br>
+<br>
+            std::cout &lt;&lt; &quot;\n&quot;;<br>
+        }<br>
+<br>
+        // сортируем детей по имени<br>
+        std::vector&lt;std::string&gt; keys;<br>
+        keys.reserve(node-&gt;children.size());<br>
+        for (auto &amp;[k, _] : node-&gt;children)<br>
+            keys.push_back(k);<br>
+        std::sort(keys.begin(), keys.end());<br>
+<br>
+        for (size_t i = 0; i &lt; keys.size(); ++i)<br>
+        {<br>
+            bool is_last = (i + 1 == keys.size());<br>
+            Node *child = node-&gt;children[keys[i]];<br>
+<br>
+            go(child,<br>
+               keys[i],<br>
+               is_last,<br>
+               prefix + (name.empty() ? &quot;&quot; : (last ? &quot;    &quot; : &quot;│   &quot;)));<br>
+        }<br>
+    };<br>
+<br>
+    std::cout &lt;&lt; &quot;===== PROJECT TREE =====\n&quot;;<br>
+    go(&amp;root, &quot;&quot;, true, &quot;&quot;);<br>
+    std::cout &lt;&lt; &quot;========================\n\n&quot;;<br>
+}<br>
+<br>
+static void<br>
+print_list_with_sizes_to(const std::vector&lt;std::filesystem::path&gt; &amp;files,<br>
+                         const Options &amp;opt,<br>
+                         std::ostream &amp;os)<br>
+{<br>
+    namespace fs = std::filesystem;<br>
+<br>
+    struct Item<br>
+    {<br>
+        fs::path path;<br>
+        std::string display;<br>
+        std::uintmax_t size;<br>
+    };<br>
+<br>
+    std::vector&lt;Item&gt; items;<br>
+    items.reserve(files.size());<br>
+    std::uintmax_t total = 0;<br>
+    std::size_t max_len = 0;<br>
+<br>
+    for (auto &amp;f : files)<br>
+    {<br>
+        auto disp = make_display_path(f);<br>
+        auto sz = get_file_size(f);<br>
+<br>
+        total += sz;<br>
+<br>
+        std::size_t shown_len = opt.path_prefix.size() + disp.size();<br>
+        if (shown_len &gt; max_len)<br>
+            max_len = shown_len;<br>
+<br>
+        items.push_back(Item{f, std::move(disp), sz});<br>
+    }<br>
+<br>
+    if (opt.sorted)<br>
+    {<br>
+        std::sort(items.begin(),<br>
+                  items.end(),<br>
+                  [](const Item &amp;a, const Item &amp;b)<br>
+                  {<br>
+                      if (a.size != b.size)<br>
+                          return a.size &gt; b.size; // по убыванию<br>
+                      return a.display &lt; b.display;<br>
+                  });<br>
+    }<br>
+<br>
+    const bool show_size = opt.show_size;<br>
+    for (const auto &amp;it : items)<br>
+    {<br>
+        std::string shown = opt.path_prefix + it.display;<br>
+        os &lt;&lt; shown;<br>
+<br>
+        if (show_size)<br>
+        {<br>
+            if (max_len &gt; shown.size())<br>
+            {<br>
+                std::size_t pad = max_len - shown.size();<br>
+                for (std::size_t i = 0; i &lt; pad; ++i)<br>
+                    os &lt;&lt; ' ';<br>
+            }<br>
+            os &lt;&lt; &quot; (&quot; &lt;&lt; it.size &lt;&lt; &quot; bytes)&quot;;<br>
+        }<br>
+<br>
+        os &lt;&lt; &quot;\n&quot;;<br>
+    }<br>
+<br>
+    if (show_size)<br>
+    {<br>
+        os &lt;&lt; &quot;Total size: &quot; &lt;&lt; total &lt;&lt; &quot; bytes\n&quot;;<br>
+    }<br>
+}<br>
+<br>
+// старая функция теперь просто обёртка вокруг новой<br>
+static void<br>
+print_list_with_sizes(const std::vector&lt;std::filesystem::path&gt; &amp;files,<br>
+                      const Options &amp;opt)<br>
+{<br>
+    print_list_with_sizes_to(files, opt, std::cout);<br>
+}<br>
+<br>
+// Вывод всех файлов и подсчёт суммарного размера<br>
+static std::uintmax_t<br>
+dump_files_and_total(const std::vector&lt;std::filesystem::path&gt; &amp;files,<br>
+                     const Options &amp;opt)<br>
+{<br>
+    std::uintmax_t total = 0;<br>
+    bool first = true;<br>
+<br>
+    for (auto &amp;f : files)<br>
+    {<br>
+        dump_file(f, first, opt);<br>
+        first = false;<br>
+        total += get_file_size(f);<br>
+    }<br>
+<br>
+    return total;<br>
+}<br>
+<br>
+int run_server(const Options &amp;opt);<br>
+<br>
+// общий каркас обработки списка файлов<br>
+static int process_files(const std::vector&lt;std::filesystem::path&gt; &amp;files,<br>
+                         const Options &amp;opt,<br>
+                         const std::function&lt;void(std::uintmax_t)&gt; &amp;after_dump)<br>
+{<br>
+    if (files.empty())<br>
+    {<br>
+        std::cerr &lt;&lt; &quot;No files collected.\n&quot;;<br>
+        return 0;<br>
+    }<br>
+<br>
+    if (!opt.wrap_root.empty())<br>
+        return wrap_files_to_html(files, opt);<br>
+<br>
+    if (opt.list_only)<br>
+    {<br>
+        print_list_with_sizes(files, opt);<br>
+        return 0;<br>
+    }<br>
+<br>
+    std::uintmax_t total = dump_files_and_total(files, opt);<br>
+<br>
+    if (after_dump)<br>
+        after_dump(total);<br>
+<br>
+    return 0;<br>
+}<br>
+<br>
+// =========================<br>
+// CONFIG MODE<br>
+// =========================<br>
+<br>
+static int run_config_mode(const Options &amp;opt)<br>
+{<br>
+    Config cfg;<br>
+    try<br>
+    {<br>
+        cfg = parse_config(opt.config_file);<br>
+    }<br>
+    catch (const std::exception &amp;e)<br>
+    {<br>
+        std::cerr &lt;&lt; e.what() &lt;&lt; &quot;\n&quot;;<br>
+        return 1;<br>
+    }<br>
+<br>
+    auto text_files = collect_from_rules(cfg.text_rules, opt);<br>
+<br>
+    auto after_dump = [&amp;](std::uintmax_t total)<br>
+    {<br>
+        // TREE rules (если есть)<br>
+        if (!cfg.tree_rules.empty())<br>
+        {<br>
+            auto tree_files = collect_from_rules(cfg.tree_rules, opt);<br>
+            if (!tree_files.empty())<br>
+            {<br>
+                std::cout &lt;&lt; &quot;\n&quot;;<br>
+                print_tree(tree_files);<br>
+            }<br>
+        }<br>
+<br>
+        if (opt.chunk_trailer)<br>
+        {<br>
+            std::cout &lt;&lt; &quot;\n===== CHUNK FORMAT HELP =====\n\n&quot;;<br>
+            print_chunk_help();<br>
+        }<br>
+<br>
+        std::cout &lt;&lt; &quot;\nTotal size: &quot; &lt;&lt; total &lt;&lt; &quot; bytes\n&quot;;<br>
+    };<br>
+<br>
+    return process_files(text_files, opt, after_dump);<br>
+}<br>
+<br>
+// =========================<br>
+// NORMAL MODE<br>
+// =========================<br>
+<br>
+static int run_normal_mode(const Options &amp;opt)<br>
+{<br>
+    std::vector&lt;std::filesystem::path&gt; files =<br>
+        collect_from_paths(opt.paths, opt);<br>
+<br>
+    auto after_dump = [&amp;](std::uintmax_t total)<br>
+    {<br>
+        // В обычном режиме дерево не печатаем<br>
+        if (opt.chunk_trailer)<br>
+        {<br>
+            std::cout &lt;&lt; &quot;\n===== CHUNK FORMAT HELP =====\n\n&quot;;<br>
+            print_chunk_help();<br>
+        }<br>
+<br>
+        std::cout &lt;&lt; &quot;\nTotal size: &quot; &lt;&lt; total &lt;&lt; &quot; bytes\n&quot;;<br>
+    };<br>
+<br>
+    return process_files(files, opt, after_dump);<br>
+}<br>
+<br>
+static std::string substitute_rawmap(const std::string &amp;tmpl,<br>
+                                     const std::string &amp;rawmap)<br>
+{<br>
+    const std::string token = &quot;{RAWMAP}&quot;;<br>
+    if (tmpl.empty())<br>
+        return rawmap;<br>
+<br>
+    std::string out;<br>
+    out.reserve(tmpl.size() + rawmap.size() + 16);<br>
+<br>
+    std::size_t pos = 0;<br>
+    while (true)<br>
+    {<br>
+        std::size_t p = tmpl.find(token, pos);<br>
+        if (p == std::string::npos)<br>
+        {<br>
+            out.append(tmpl, pos, std::string::npos);<br>
+            break;<br>
+        }<br>
+        out.append(tmpl, pos, p - pos);<br>
+        out.append(rawmap);<br>
+        pos = p + token.size();<br>
+    }<br>
+    return out;<br>
+}<br>
+<br>
+static int install_pre_commit_hook()<br>
+{<br>
+    // Узнаём .git-директорию через git<br>
+    std::string git_dir = detect_git_dir();<br>
+    if (git_dir.empty())<br>
+    {<br>
+        std::cerr<br>
+            &lt;&lt; &quot;--hook-install: not a git repository or git not available\n&quot;;<br>
+        return 1;<br>
+    }<br>
+<br>
+    fs::path git_path = fs::path(git_dir);<br>
+    fs::path hooks_dir = git_path / &quot;hooks&quot;;<br>
+    std::error_code ec;<br>
+    fs::create_directories(hooks_dir, ec);<br>
+<br>
+    fs::path hook_path = hooks_dir / &quot;pre-commit&quot;;<br>
+<br>
+    std::cout &lt;&lt; &quot;===== .git/hooks/pre-commit =====\n&quot;;<br>
+<br>
+    std::string existing;<br>
+    if (fs::exists(hook_path))<br>
+    {<br>
+        std::ifstream in(hook_path);<br>
+        if (in)<br>
+        {<br>
+            std::ostringstream ss;<br>
+            ss &lt;&lt; in.rdbuf();<br>
+            existing = ss.str();<br>
+        }<br>
+    }<br>
+<br>
+    const std::string marker = &quot;# pre-commit hook for scat wrapping&quot;;<br>
+<br>
+    // Если наш хук уже есть — ничего не делаем<br>
+    if (!existing.empty() &amp;&amp; existing.find(marker) != std::string::npos)<br>
+    {<br>
+        std::cout &lt;&lt; &quot;scat: pre-commit hook already contains scat wrapper\n&quot;;<br>
+        return 0;<br>
+    }<br>
+<br>
+    if (existing.empty())<br>
+    {<br>
+        // Создаём новый pre-commit с твоим скриптом<br>
+        std::ofstream out(hook_path, std::ios::trunc);<br>
+        if (!out)<br>
+        {<br>
+            std::cerr &lt;&lt; &quot;scat: cannot write hook file: &quot; &lt;&lt; hook_path &lt;&lt; &quot;\n&quot;;<br>
+            return 1;<br>
+        }<br>
+<br>
+        out &lt;&lt; &quot;#!/bin/sh\n&quot;<br>
+               &quot;# pre-commit hook for scat wrapping\n&quot;<br>
+               &quot;\n&quot;<br>
+               &quot;set -e  # если любая команда упадёт — прерываем коммит\n&quot;<br>
+               &quot;\n&quot;<br>
+               &quot;# Опционально: не мешаемся, если scat не установлен\n&quot;<br>
+               &quot;if ! command -v scat &gt;/dev/null 2&gt;&amp;1; then\n&quot;<br>
+               &quot;    echo \&quot;pre-commit: 'scat' not found in PATH, skipping &quot;<br>
+               &quot;wrap\&quot;\n&quot;<br>
+               &quot;    exit 0\n&quot;<br>
+               &quot;fi\n&quot;<br>
+               &quot;\n&quot;<br>
+               &quot;echo \&quot;pre-commit: running 'scat --wrap wrapped'...\&quot;\n&quot;<br>
+               &quot;\n&quot;<br>
+               &quot;# Рабочая директория хуков по умолчанию — корень репозитория,\n&quot;<br>
+               &quot;# так что можно просто дернуть scat.\n&quot;<br>
+               &quot;scat --wrap .scatwrap\n&quot;<br>
+               &quot;\n&quot;<br>
+               &quot;# Добавляем всё из wrapped в индекс (новые, изменённые, &quot;<br>
+               &quot;удалённые)\n&quot;<br>
+               &quot;git add -A .scatwrap\n&quot;<br>
+               &quot;\n&quot;<br>
+               &quot;echo \&quot;pre-commit: wrapped/ updated and added to commit\&quot;\n&quot;<br>
+               &quot;\n&quot;<br>
+               &quot;exit 0\n&quot;;<br>
+    }<br>
+    else<br>
+    {<br>
+        // Уже есть какой-то хук — аккуратно добавляем наш блок в конец<br>
+        std::ofstream out(hook_path, std::ios::app);<br>
+        if (!out)<br>
+        {<br>
+            std::cerr &lt;&lt; &quot;scat: cannot append to hook file: &quot; &lt;&lt; hook_path<br>
+                      &lt;&lt; &quot;\n&quot;;<br>
+            return 1;<br>
+        }<br>
+<br>
+        if (!existing.empty() &amp;&amp; existing.back() != '\n')<br>
+            out &lt;&lt; &quot;\n&quot;;<br>
+<br>
+        out &lt;&lt; &quot;\n# ----- added by scat --hook-install -----\n&quot;<br>
+               &quot;if command -v scat &gt;/dev/null 2&gt;&amp;1; then\n&quot;<br>
+               &quot;    echo \&quot;pre-commit: running 'scat --wrap wrapped'...\&quot;\n&quot;<br>
+               &quot;    scat --wrap .scatwrap\n&quot;<br>
+               &quot;    git add -A .scatwrap\n&quot;<br>
+               &quot;    echo \&quot;pre-commit: wrapped/ updated and added to commit\&quot;\n&quot;<br>
+               &quot;fi\n&quot;<br>
+               &quot;# ----- end scat hook -----\n&quot;;<br>
+    }<br>
+<br>
+#ifndef _WIN32<br>
+    // chmod +x на Unix-подобных<br>
+    std::string hp = hook_path.string();<br>
+    struct stat st;<br>
+    if (::stat(hp.c_str(), &amp;st) == 0)<br>
+    {<br>
+        mode_t mode = st.st_mode | S_IXUSR | S_IXGRP | S_IXOTH;<br>
+        ::chmod(hp.c_str(), mode);<br>
+    }<br>
+#endif<br>
+<br>
+    return 0;<br>
+}<br>
+<br>
+int scat_main(int argc, char **argv)<br>
+{<br>
+    Options opt = parse_options(argc, argv);<br>
+    g_use_absolute_paths = opt.abs_paths;<br>
+    CopyGuard copy_guard(opt.copy_out);<br>
+<br>
+    // Установка git pre-commit hook'а и выход<br>
+    if (opt.hook_install)<br>
+    {<br>
+        return install_pre_commit_hook();<br>
+    }<br>
+<br>
+    // Git info mode: print repository metadata and exit<br>
+    if (opt.git_info)<br>
+    {<br>
+        GitInfo info = detect_git_info();<br>
+<br>
+        if (!info.has_commit &amp;&amp; !info.has_remote)<br>
+        {<br>
+            std::cout &lt;&lt; &quot;Git: not a repository or git is not available\n&quot;;<br>
+        }<br>
+        else<br>
+        {<br>
+            if (info.has_commit)<br>
+                std::cout &lt;&lt; &quot;Git commit: &quot; &lt;&lt; info.commit &lt;&lt; &quot;\n&quot;;<br>
+            if (info.has_remote)<br>
+                std::cout &lt;&lt; &quot;Git remote: &quot; &lt;&lt; info.remote &lt;&lt; &quot;\n&quot;;<br>
+        }<br>
+<br>
+        return 0;<br>
+    }<br>
+<br>
+    // GH map mode: построить prefix = raw.githubusercontent/... и дальше<br>
+    // работать как -l --prefix<br>
+    if (opt.gh_map)<br>
+    {<br>
+        GitHubInfo gh = detect_github_info();<br>
+        if (!gh.ok)<br>
+        {<br>
+            std::cerr &lt;&lt; &quot;--ghmap: unable to detect GitHub remote/commit\n&quot;;<br>
+            return 1;<br>
+        }<br>
+<br>
+        std::string prefix = &quot;https://raw.githubusercontent.com/&quot; + gh.user +<br>
+                             &quot;/&quot; + gh.repo + &quot;/&quot; + gh.commit + &quot;/.scatwrap/&quot;;<br>
+<br>
+            if (!opt.config_file.empty())<br>
+    {<br>
+        Config cfg;<br>
+        try {<br>
+            cfg = parse_config(opt.config_file);<br>
+        } catch (const std::exception&amp; e) {<br>
+            std::cerr &lt;&lt; e.what() &lt;&lt; &quot;\n&quot;;<br>
+            return 1;<br>
+        }<br>
+<br>
+        auto text_files = collect_from_rules(cfg.text_rules, opt);<br>
+        if (text_files.empty())<br>
+        {<br>
+            std::cerr &lt;&lt; &quot;No files collected.\n&quot;;<br>
+            return 0;<br>
+        }<br>
+<br>
+        // Собираем &quot;сырой&quot; список ссылок в строку — это и есть {RAWMAP}<br>
+        Options list_opt = opt;<br>
+        list_opt.path_prefix = prefix;<br>
+<br>
+        std::ostringstream oss;<br>
+        print_list_with_sizes_to(text_files, list_opt, oss);<br>
+        std::string rawmap = oss.str();<br>
+<br>
+        std::string output;<br>
+        if (!cfg.map_format.empty())<br>
+            output = substitute_rawmap(cfg.map_format, rawmap);<br>
+        else<br>
+            output = rawmap;<br>
+<br>
+        std::cout &lt;&lt; output;<br>
+        return 0;<br>
+    }<br>
+        else<br>
+        {<br>
+            opt.list_only = true;<br>
+            opt.wrap_root.clear();<br>
+            opt.path_prefix = prefix;<br>
+        }<br>
+    }<br>
+<br>
+    // HTTP server mode<br>
+    if (opt.server_port != 0)<br>
+        return run_server(opt);<br>
+<br>
+    // ------------------------------------------------------------<br>
+    // Chunk help<br>
+    // ------------------------------------------------------------<br>
+    if (opt.chunk_help)<br>
+    {<br>
+        print_chunk_help();<br>
+        return 0;<br>
+    }<br>
+<br>
+    // ------------------------------------------------------------<br>
+    // Apply patch mode<br>
+    // ------------------------------------------------------------<br>
+    if (!opt.apply_file.empty() || opt.apply_stdin)<br>
+    {<br>
+        if (opt.apply_stdin)<br>
+        {<br>
+            namespace fs = std::filesystem;<br>
+<br>
+            std::stringstream ss;<br>
+            ss &lt;&lt; std::cin.rdbuf();<br>
+            fs::path tmp = fs::temp_directory_path() / &quot;scat_stdin_patch.txt&quot;;<br>
+            {<br>
+                std::ofstream out(tmp);<br>
+                out &lt;&lt; ss.str();<br>
+            }<br>
+<br>
+            std::string tmp_str = tmp.string();<br>
+            const char *args[] = {&quot;apply&quot;, tmp_str.c_str()};<br>
+            int r = apply_chunk_main(2, const_cast&lt;char **&gt;(args));<br>
+            fs::remove(tmp);<br>
+            return r;<br>
+        }<br>
+        else<br>
+        {<br>
+            std::string file = opt.apply_file;<br>
+            const char *args[] = {&quot;apply&quot;, file.c_str()};<br>
+            return apply_chunk_main(2, const_cast&lt;char **&gt;(args));<br>
+        }<br>
+    }<br>
+<br>
+    // ------------------------------------------------------------<br>
+    // CONFIG MODE — uses scat.txt or --config F<br>
+    // ------------------------------------------------------------<br>
+    if (!opt.config_file.empty())<br>
+        return run_config_mode(opt);<br>
+<br>
+    // ------------------------------------------------------------<br>
+    // NORMAL MODE — user provided paths<br>
+    // ------------------------------------------------------------<br>
+    return run_normal_mode(opt);<br>
+}<br>
+<br>
+int wrap_files_to_html(const std::vector&lt;std::filesystem::path&gt; &amp;files,<br>
+                       const Options &amp;opt)<br>
+{<br>
+    namespace fs = std::filesystem;<br>
+<br>
+    if (opt.wrap_root.empty())<br>
+    {<br>
+        return 0;<br>
+    }<br>
+<br>
+    fs::path root = opt.wrap_root;<br>
+<br>
+    std::error_code ec;<br>
+    fs::create_directories(root, ec);<br>
+<br>
+    for (const auto &amp;f : files)<br>
+    {<br>
+        // считаем относительный путь относительно текущего каталога<br>
+        std::error_code rec;<br>
+        fs::path rel = fs::relative(f, fs::current_path(), rec);<br>
+        if (rec)<br>
+        {<br>
+            // если не получилось — хотя бы имя файла<br>
+            rel = f.filename();<br>
+        }<br>
+<br>
+        fs::path dst = root / rel;<br>
+        fs::create_directories(dst.parent_path(), ec);<br>
+<br>
+        std::ifstream in(f, std::ios::binary);<br>
+        if (!in)<br>
+        {<br>
+            std::cerr &lt;&lt; &quot;Cannot open for wrap: &quot; &lt;&lt; f &lt;&lt; &quot;\n&quot;;<br>
+            continue;<br>
+        }<br>
+<br>
+        std::ostringstream ss;<br>
+        ss &lt;&lt; in.rdbuf();<br>
+<br>
+        std::string title = rel.generic_string();<br>
+        std::string html = wrap_cpp_as_html(ss.str(), title);<br>
+<br>
+        std::ofstream out(dst, std::ios::binary);<br>
+        if (!out)<br>
+        {<br>
+            std::cerr &lt;&lt; &quot;Cannot write wrapped file: &quot; &lt;&lt; dst &lt;&lt; &quot;\n&quot;;<br>
+            continue;<br>
+        }<br>
+<br>
+        out &lt;&lt; html;<br>
+    }<br>
+<br>
+    return 0;<br>
+}<br>
+<!-- END SCAT CODE -->
 </body>
 </html>

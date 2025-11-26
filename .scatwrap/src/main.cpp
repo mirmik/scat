@@ -5,14 +5,13 @@
   <title>src/main.cpp</title>
 </head>
 <body>
-<pre><code>
-#include &quot;scat.h&quot;
-
-int main(int argc, char **argv)
-{
-    return scat_main(argc, argv);
-}
-
-</code></pre>
+<!-- BEGIN SCAT CODE -->
+#include &quot;scat.h&quot;<br>
+<br>
+int main(int argc, char **argv)<br>
+{<br>
+    return scat_main(argc, argv);<br>
+}<br>
+<!-- END SCAT CODE -->
 </body>
 </html>

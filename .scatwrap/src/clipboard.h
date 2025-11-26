@@ -5,26 +5,25 @@
   <title>src/clipboard.h</title>
 </head>
 <body>
-<pre><code>
-#pragma once
-#include &lt;iostream&gt;
-#include &lt;sstream&gt;
-#include &lt;string&gt;
-
-void copy_to_clipboard(const std::string &amp;text);
-
-class CopyGuard
-{
-public:
-    explicit CopyGuard(bool enabled);
-    ~CopyGuard();
-
-private:
-    bool enabled_;
-    std::ostringstream buffer_;
-    std::streambuf *old_buf_;
-};
-
-</code></pre>
+<!-- BEGIN SCAT CODE -->
+#pragma once<br>
+#include &lt;iostream&gt;<br>
+#include &lt;sstream&gt;<br>
+#include &lt;string&gt;<br>
+<br>
+void copy_to_clipboard(const std::string &amp;text);<br>
+<br>
+class CopyGuard<br>
+{<br>
+public:<br>
+    explicit CopyGuard(bool enabled);<br>
+    ~CopyGuard();<br>
+<br>
+private:<br>
+    bool enabled_;<br>
+    std::ostringstream buffer_;<br>
+    std::streambuf *old_buf_;<br>
+};<br>
+<!-- END SCAT CODE -->
 </body>
 </html>

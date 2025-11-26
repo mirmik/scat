@@ -5,26 +5,26 @@
   <title>scat.txt</title>
 </head>
 <body>
-<pre><code>
-src/*
-tests/*
-!tests/doctest/**
-CMakeLists.txt
-scat.txt
-README.md
-
-[TREE]
-**
-!CMakeFiles/**
-!.github/**
-!.git/**
-
-
-[MAPFORMAT]
-------------------------------
-Актуальная версия репозитория:
-{RAWMAP}
-------------------------------
-</code></pre>
+<!-- BEGIN SCAT CODE -->
+src/*<br>
+tests/*<br>
+!tests/doctest/**<br>
+CMakeLists.txt<br>
+scat.txt<br>
+README.md<br>
+<br>
+[TREE]<br>
+**<br>
+!CMakeFiles/**<br>
+!.github/**<br>
+!.git/**<br>
+<br>
+<br>
+[MAPFORMAT]<br>
+------------------------------<br>
+Актуальная версия репозитория:<br>
+{RAWMAP}<br>
+------------------------------<br>
+<!-- END SCAT CODE -->
 </body>
 </html>
