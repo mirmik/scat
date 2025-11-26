@@ -405,9 +405,9 @@ void print_tree(const std::vector&lt;std::filesystem::path&gt;&amp; files)
     std::cout &lt;&lt; &quot;========================\n\n&quot;;
 }
 
-// Печать списка файлов (с размерами — опционально)
-static void print_list_with_sizes(const std::vector&lt;std::filesystem::path&gt;&amp; files,
-                                  const Options&amp; opt)
+static void print_list_with_sizes_to(const std::vector&lt;std::filesystem::path&gt;&amp; files,
+                                     const Options&amp; opt,
+                                     std::ostream&amp; os)
 {
     namespace fs = std::filesystem;
 
@@ -419,7 +419,6 @@ static void print_list_with_sizes(const std::vector&lt;std::filesystem::path&gt;
 
     std::vector&lt;Item&gt; items;
     items.reserve(files.size());
-
     std::uintmax_t total   = 0;
     std::size_t    max_len = 0;
 
@@ -446,27 +445,34 @@ static void print_list_with_sizes(const std::vector&lt;std::filesystem::path&gt;
     }
 
     const bool show_size = opt.show_size;
-
     for (const auto&amp; it : items) {
         std::string shown = opt.path_prefix + it.display;
-        std::cout &lt;&lt; shown;
+        os &lt;&lt; shown;
 
         if (show_size) {
             if (max_len &gt; shown.size()) {
                 std::size_t pad = max_len - shown.size();
                 for (std::size_t i = 0; i &lt; pad; ++i)
-                    std::cout &lt;&lt; ' ';
+                    os &lt;&lt; ' ';
             }
-            std::cout &lt;&lt; &quot; (&quot; &lt;&lt; it.size &lt;&lt; &quot; bytes)&quot;;
+            os &lt;&lt; &quot; (&quot; &lt;&lt; it.size &lt;&lt; &quot; bytes)&quot;;
         }
 
-        std::cout &lt;&lt; &quot;\n&quot;;
+        os &lt;&lt; &quot;\n&quot;;
     }
 
     if (show_size) {
-        std::cout &lt;&lt; &quot;Total size: &quot; &lt;&lt; total &lt;&lt; &quot; bytes\n&quot;;
+        os &lt;&lt; &quot;Total size: &quot; &lt;&lt; total &lt;&lt; &quot; bytes\n&quot;;
     }
 }
+
+// старая функция теперь просто обёртка вокруг новой
+static void print_list_with_sizes(const std::vector&lt;std::filesystem::path&gt;&amp; files,
+                                  const Options&amp; opt)
+{
+    print_list_with_sizes_to(files, opt, std::cout);
+}
+
 
 
 // Вывод всех файлов и подсчёт суммарного размера
@@ -584,6 +590,32 @@ static int run_normal_mode(const Options&amp; opt)
 }
 
 
+static std::string substitute_rawmap(const std::string&amp; tmpl,
+                                     const std::string&amp; rawmap)
+{
+    const std::string token = &quot;{RAWMAP}&quot;;
+    if (tmpl.empty())
+        return rawmap;
+
+    std::string out;
+    out.reserve(tmpl.size() + rawmap.size() + 16);
+
+    std::size_t pos = 0;
+    while (true) {
+        std::size_t p = tmpl.find(token, pos);
+        if (p == std::string::npos) {
+            out.append(tmpl, pos, std::string::npos);
+            break;
+        }
+        out.append(tmpl, pos, p - pos);
+        out.append(rawmap);
+        pos = p + token.size();
+    }
+    return out;
+}
+
+
+
 int scat_main(int argc, char** argv)
 {
     Options opt = parse_options(argc, argv);
@@ -610,39 +642,72 @@ int scat_main(int argc, char** argv)
 
         // GH map mode: построить prefix = raw.githubusercontent/... и дальше работать как -l --prefix
     if (opt.gh_map)
+{
+    GitInfo info = detect_git_info();
+    if (!info.has_commit || !info.has_remote)
     {
-        GitInfo info = detect_git_info();
-        if (!info.has_commit || !info.has_remote)
-        {
-            std::cerr &lt;&lt; &quot;--ghmap: unable to detect git commit or remote origin\n&quot;;
-            return 1;
-        }
-
-        std::string user;
-        std::string repo;
-        if (!parse_github_remote(info.remote, user, repo))
-        {
-            std::cerr &lt;&lt; &quot;--ghmap: remote is not a supported GitHub URL: &quot;
-                      &lt;&lt; info.remote &lt;&lt; &quot;\n&quot;;
-            return 1;
-        }
-
-        // по спецификации: https://raw.githubusercontent.com/GHUSER/scat/COMMITHASH/.scatwrap/
-        // здесь можно использовать repo, но в твоём кейсе это всё равно &quot;scat&quot;
-        std::string prefix = &quot;https://raw.githubusercontent.com/&quot;;
-        prefix += user;
-        prefix += &quot;/&quot;;
-        prefix += repo;          // == &quot;scat&quot; в твоём репозитории
-        prefix += &quot;/&quot;;
-        prefix += info.commit;
-        prefix += &quot;/.scatwrap/&quot;;
-
-        // Эквивалент -l --prefix PREFIX, без обёртки --wrap
-        opt.list_only = true;
-        opt.wrap_root.clear();
-        opt.path_prefix = prefix;
-        // show_size оставляем как есть: хочешь размеры — добавишь --size
+        std::cerr &lt;&lt; &quot;--ghmap: unable to detect git commit or remote origin\n&quot;;
+        return 1;
     }
+
+    std::string user;
+    std::string repo;
+    if (!parse_github_remote(info.remote, user, repo))
+    {
+        std::cerr &lt;&lt; &quot;--ghmap: remote is not a supported GitHub URL: &quot;
+                  &lt;&lt; info.remote &lt;&lt; &quot;\n&quot;;
+        return 1;
+    }
+
+    std::string prefix = &quot;https://raw.githubusercontent.com/&quot;;
+    prefix += user;
+    prefix += &quot;/&quot;;
+    prefix += repo;
+    prefix += &quot;/&quot;;
+    prefix += info.commit;
+    prefix += &quot;/.scatwrap/&quot;;
+
+    // Если есть конфиг — используем его, включая [MAPFORMAT]
+    if (!opt.config_file.empty())
+    {
+        Config cfg;
+        try {
+            cfg = parse_config(opt.config_file);
+        } catch (const std::exception&amp; e) {
+            std::cerr &lt;&lt; e.what() &lt;&lt; &quot;\n&quot;;
+            return 1;
+        }
+
+        auto text_files = collect_from_rules(cfg.text_rules, opt);
+        if (text_files.empty())
+        {
+            std::cerr &lt;&lt; &quot;No files collected.\n&quot;;
+            return 0;
+        }
+
+        // Собираем &quot;сырой&quot; список ссылок в строку — это и есть {RAWMAP}
+        Options list_opt = opt;
+        list_opt.path_prefix = prefix;
+
+        std::ostringstream oss;
+        print_list_with_sizes_to(text_files, list_opt, oss);
+        std::string rawmap = oss.str();
+
+        std::string output;
+        if (!cfg.map_format.empty())
+            output = substitute_rawmap(cfg.map_format, rawmap);
+        else
+            output = rawmap;
+
+        std::cout &lt;&lt; output;
+        return 0;
+    }
+
+    // Без конфига — старое поведение: просто -l --prefix PREFIX
+    opt.list_only = true;
+    opt.wrap_root.clear();
+    opt.path_prefix = prefix;
+}
 
 
     // HTTP server mode

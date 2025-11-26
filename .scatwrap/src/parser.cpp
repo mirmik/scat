@@ -25,25 +25,40 @@ static inline void trim(std::string&amp; s)
 Config parse_config(const fs::path&amp; path)
 {
     Config cfg;
-
-    enum Section { TEXT_RULES, TREE_RULES };
+    enum Section { TEXT_RULES, TREE_RULES, MAPFORMAT_TEXT };
     Section current = TEXT_RULES;
 
     std::ifstream in(path);
     if (!in.is_open())
         throw std::runtime_error(&quot;Failed to open config file: &quot; + path.string());
 
-    std::string line;
-    while (std::getline(in, line))
+    std::string raw_line;
+    while (std::getline(in, raw_line))
     {
+        std::string line = raw_line;
         trim(line);
 
+        if (current == MAPFORMAT_TEXT)
+        {
+            // Всё, что после [MAPFORMAT], идёт как есть (с сохранением пустых строк и #)
+            // до конца файла (пока новых секций у нас нет).
+            cfg.map_format += raw_line;
+            cfg.map_format += &quot;\n&quot;;
+            continue;
+        }
+
+        // вне MAPFORMAT — старая логика
         if (line.empty() || line[0] == '#')
             continue;
 
         if (line == &quot;[TREE]&quot;)
         {
             current = TREE_RULES;
+            continue;
+        }
+        if (line == &quot;[MAPFORMAT]&quot;)
+        {
+            current = MAPFORMAT_TEXT;
             continue;
         }
 
@@ -57,7 +72,6 @@ Config parse_config(const fs::path&amp; path)
 
     return cfg;
 }
-
 </code></pre>
 </body>
 </html>
