@@ -1,6 +1,9 @@
 #include "util.h"
 #include <fstream>
-#include <iostream>
+#include <sstream>
+#include <iostream>      // у тебя уже есть для std::cerr
+#include <filesystem>
+
 
 namespace fs = std::filesystem;
 
@@ -79,4 +82,58 @@ bool match_simple(const fs::path& p, const std::string& pat)
     std::string b = pat.substr(pos + 1);
 
     return starts_with(name, a) && ends_with(name, b);
+}
+
+std::string html_escape(std::string_view src) {
+    std::string out;
+    out.reserve(src.size() * 11 / 10 + 16); // чуть с запасом
+
+    for (char ch : src) {
+        switch (ch) {
+        case '&':
+            out += "&amp;";
+            break;
+        case '<':
+            out += "&lt;";
+            break;
+        case '>':
+            out += "&gt;";
+            break;
+        case '"':
+            out += "&quot;";
+            break;
+        default:
+            out.push_back(ch);
+            break;
+        }
+    }
+
+    return out;
+}
+
+
+
+std::string wrap_cpp_as_html(std::string_view cpp_code,
+                             std::string_view title) {
+    std::string escaped = html_escape(cpp_code);
+
+    std::string html;
+    html.reserve(escaped.size() + 256);
+
+    html += "<!DOCTYPE html>\n";
+    html += "<html lang=\"en\">\n";
+    html += "<head>\n";
+    html += "  <meta charset=\"UTF-8\">\n";
+    html += "  <title>";
+    html += std::string(title);
+    html += "</title>\n";
+    html += "</head>\n";
+    html += "<body>\n";
+    html += "<pre><code>\n";
+    html += escaped;
+    html += "\n</code></pre>\n";
+    html += "</body>\n";
+    html += "</html>\n";
+
+    return html;
 }

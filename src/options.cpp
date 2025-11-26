@@ -2,22 +2,26 @@
 #include <cstdlib>
 #include <iostream>
 
-static void print_help()
-{
-    std::cout << "Usage: scat [options] [paths...]\n"
-                 "\n"
-                 "Options:\n"
-                 "  -r           Recursive directory processing\n"
-                 "  -l           List files only\n"
-                 "  --sorted     Sort list (-l) by size (desc)\n"
-                 "  -n           Show line numbers\n"
-                 "  --abs        Show absolute paths\n"
-                 "  --config F   Read patterns from file F\n"
-                 "  --apply F    Apply patch from file F\n"
-                 "  --server P   Run HTTP server on port P\n"
-                 "  -h, --help   Show this help\n"
-                 "\n"
-                 "If no paths are given, scat reads patterns from scat.txt.\n";
+static void print_help() {
+    std::cout <<
+        "Usage: scat [options] [paths...]\n"
+        "\n"
+        "Options:\n"
+        "  -r          Recursive directory processing\n"
+        "  -l          List files only\n"
+        "  --sorted    Sort list (-l) by size (desc)\n"
+        "  -n          Show line numbers\n"
+        "  --abs       Show absolute paths\n"
+        "  --config F  Read patterns from file F\n"
+        "  --apply F   Apply patch from file F\n"
+        "  --apply-stdin  Apply patch from stdin\n"
+        "  --server P  Run HTTP server on port P\n"
+        "  --chunk     Print chunk trailer after output\n"
+        "  --chunk-help  Show chunk v2 help\n"
+        "  --wrap DIR  Wrap collected files as HTML into DIR\n"
+        "  -h, --help  Show this help\n"
+        "\n"
+        "If no paths are given, scat reads patterns from scat.txt.\n";
 }
 
 Options parse_options(int argc, char** argv)
@@ -29,15 +33,43 @@ Options parse_options(int argc, char** argv)
         std::string a = argv[i];
 
         if (a == "-r")
+        {
             opt.recursive = true;
+        }
         else if (a == "-l")
+        {
             opt.list_only = true;
+        }
         else if (a == "-n")
+        {
             opt.line_numbers = true;
+        }
         else if (a == "--abs")
+        {
             opt.abs_paths = true;
+        }
         else if (a == "--sorted")
+        {
             opt.sorted = true;
+        }
+        else if (a.rfind("--prefix=", 0) == 0)
+        {
+            // --prefix=VALUE
+            opt.path_prefix = a.substr(std::string("--prefix=").size());
+        }
+        else if (a == "--prefix")
+        {
+            // --prefix VALUE
+            if (i + 1 < argc)
+            {
+                opt.path_prefix = argv[++i];
+            }
+            else
+            {
+                std::cerr << "--prefix requires value\n";
+                std::exit(1);
+            }
+        }
         else if (a == "--server")
         {
             if (i + 1 < argc)
@@ -49,9 +81,13 @@ Options parse_options(int argc, char** argv)
             }
         }
         else if (a == "--chunk-help")
+        {
             opt.chunk_help = true;
+        }
         else if (a == "-c" || a == "--chunk")
+        {
             opt.chunk_trailer = true;
+        }
         else if (a == "--apply-stdin")
         {
             opt.apply_stdin = true;
@@ -66,7 +102,6 @@ Options parse_options(int argc, char** argv)
                 std::exit(1);
             }
         }
-        
         else if (a == "--config")
         {
             if (i + 1 < argc)
@@ -82,8 +117,15 @@ Options parse_options(int argc, char** argv)
             print_help();
             std::exit(0);
         }
-        else
-        {
+        else if (a == "--wrap") {
+            if (i + 1 < argc) {
+                opt.wrap_root = argv[++i];
+            } else {
+                std::cerr << "--wrap requires directory name\n";
+                std::exit(1);
+            }
+        }
+        else {
             opt.paths.push_back(a);
         }
     }

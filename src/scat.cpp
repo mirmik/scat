@@ -13,6 +13,10 @@
 #include <sstream>
 #include <exception>
 
+int wrap_files_to_html(const std::vector<std::filesystem::path>& files,
+                              const Options& opt);
+
+
 namespace fs = std::filesystem;
 
 bool g_use_absolute_paths = false;
@@ -327,6 +331,11 @@ int scat_main(int argc, char** argv)
             return 0;
         }
 
+            if (!opt.wrap_root.empty()) {
+        // вместо вывода в stdout просто делаем HTML-копии
+        return wrap_files_to_html(text_files, opt);
+    }
+
         // LIST ONLY в config-режиме: только пути и размеры
         if (opt.list_only)
         {
@@ -349,8 +358,10 @@ int scat_main(int argc, char** argv)
                 auto sz = get_file_size(f);
 
                 total += sz;
-                if (disp.size() > max_name)
-                    max_name = disp.size();
+
+                std::size_t shown_len = opt.path_prefix.size() + disp.size();
+                if (shown_len > max_name)
+                    max_name = shown_len;
 
                 items.push_back(Item{f, disp, sz});
             }
@@ -366,10 +377,12 @@ int scat_main(int argc, char** argv)
 
             for (const auto& it : items)
             {
-                std::cout << it.display;
-                if (max_name > it.display.size())
+                std::string shown = opt.path_prefix + it.display;
+
+                std::cout << shown;
+                if (max_name > shown.size())
                 {
-                    std::size_t pad = max_name - it.display.size();
+                    std::size_t pad = max_name - shown.size();
                     for (std::size_t i = 0; i < pad; ++i)
                         std::cout << ' ';
                 }
@@ -379,6 +392,7 @@ int scat_main(int argc, char** argv)
             std::cout << "Total size: " << total << " bytes\n";
             return 0;
         }
+
 
         // 2) Печать файлов с подсчётом суммарного размера
         bool first = true;
@@ -424,6 +438,10 @@ int scat_main(int argc, char** argv)
         return 0;
     }
 
+    if (!opt.wrap_root.empty()) {
+    return wrap_files_to_html(files, opt);
+}
+
     // LIST ONLY
     if (opt.list_only)
     {
@@ -446,8 +464,10 @@ int scat_main(int argc, char** argv)
             auto sz = get_file_size(f);
 
             total += sz;
-            if (disp.size() > max_name)
-                max_name = disp.size();
+
+            std::size_t shown_len = opt.path_prefix.size() + disp.size();
+            if (shown_len > max_name)
+                max_name = shown_len;
 
             items.push_back(Item{f, disp, sz});
         }
@@ -463,10 +483,12 @@ int scat_main(int argc, char** argv)
 
         for (const auto& it : items)
         {
-            std::cout << it.display;
-            if (max_name > it.display.size())
+            std::string shown = opt.path_prefix + it.display;
+
+            std::cout << shown;
+            if (max_name > shown.size())
             {
-                std::size_t pad = max_name - it.display.size();
+                std::size_t pad = max_name - shown.size();
                 for (std::size_t i = 0; i < pad; ++i)
                     std::cout << ' ';
             }
@@ -476,6 +498,7 @@ int scat_main(int argc, char** argv)
         std::cout << "Total size: " << total << " bytes\n";
         return 0;
     }
+
 
     // Dump all collected files с подсчётом суммарного размера
     std::uintmax_t total = 0;
@@ -500,6 +523,57 @@ int scat_main(int argc, char** argv)
     }
 
     std::cout << "\nTotal size: " << total << " bytes\n";
+
+    return 0;
+}
+
+
+int wrap_files_to_html(const std::vector<std::filesystem::path>& files,
+                              const Options& opt)
+{
+    namespace fs = std::filesystem;
+
+    if (opt.wrap_root.empty()) {
+        return 0;
+    }
+
+    fs::path root = opt.wrap_root;
+
+    std::error_code ec;
+    fs::create_directories(root, ec);
+
+    for (const auto& f : files) {
+        // считаем относительный путь относительно текущего каталога
+        std::error_code rec;
+        fs::path rel = fs::relative(f, fs::current_path(), rec);
+        if (rec) {
+            // если не получилось — хотя бы имя файла
+            rel = f.filename();
+        }
+
+        fs::path dst = root / rel;
+        fs::create_directories(dst.parent_path(), ec);
+
+        std::ifstream in(f, std::ios::binary);
+        if (!in) {
+            std::cerr << "Cannot open for wrap: " << f << "\n";
+            continue;
+        }
+
+        std::ostringstream ss;
+        ss << in.rdbuf();
+
+        std::string title = rel.generic_string();
+        std::string html = wrap_cpp_as_html(ss.str(), title);
+
+        std::ofstream out(dst, std::ios::binary);
+        if (!out) {
+            std::cerr << "Cannot write wrapped file: " << dst << "\n";
+            continue;
+        }
+
+        out << html;
+    }
 
     return 0;
 }
