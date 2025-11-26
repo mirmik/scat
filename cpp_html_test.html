@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>cpp html test</title>
+</head>
+<body>
+<h1>BLOCK 1: raw angle brackets</h1>
+<pre><code>
+// BLOCK 1: raw angle brackets
+#include <vector>
+#include <string>
+#include <filesystem>
+
+template <typename T>
+std::vector<T> filter_non_empty(const std::vector<T>& items) {
+    std::vector<T> result;
+    for (const auto& item : items) {
+        if (!item.empty()) {
+            result.push_back(item);
+        }
+    }
+    return result;
+}
+
+int main() {
+    std::vector<std::string> paths{
+        "foo.txt",
+        "",
+        "bar/baz.cpp"
+    };
+
+    auto filtered = filter_non_empty(paths);
+    if (filtered.size() == 2u) {
+        return 0;
+    }
+    return 1;
+}
+</code></pre>
+
+<h1>BLOCK 2: escaped &lt; and &gt;</h1>
+<pre><code>
+// BLOCK 2: escaped angle brackets
+#include &lt;vector&gt;
+#include &lt;string&gt;
+#include &lt;filesystem&gt;
+
+template &lt;typename T&gt;
+std::vector&lt;T&gt; filter_non_empty(const std::vector&lt;T&gt;&amp; items) {
+    std::vector&lt;T&gt; result;
+    for (const auto&amp; item : items) {
+        if (!item.empty()) {
+            result.push_back(item);
+        }
+    }
+    return result;
+}
+
+int main() {
+    std::vector&lt;std::string&gt; paths{
+        "foo.txt",
+        "",
+        "bar/baz.cpp"
+    };
+
+    auto filtered = filter_non_empty(paths);
+    if (filtered.size() == 2u) {
+        return 0;
+    }
+    return 1;
+}
+</code></pre>
+</body>
+</html>
