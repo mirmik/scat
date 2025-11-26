@@ -178,6 +178,7 @@ std::string wrap_cpp_as_html(std::string_view cpp_code,<br>
 }<br>
 <br>
 <br>
+<br>
 <!-- END SCAT CODE -->
 </body>
 </html>
