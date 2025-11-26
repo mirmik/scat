@@ -9,9 +9,9 @@
 #pragma once
 #include &lt;vector&gt;
 #include &lt;filesystem&gt;
+#include &quot;chunk_help.h&quot;
 
 int scat_main(int argc, char** argv);
-void print_chunk_help();
 void print_tree(const std::vector&lt;std::filesystem::path&gt;&amp; files);
 
 </code></pre>

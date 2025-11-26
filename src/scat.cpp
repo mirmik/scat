@@ -14,6 +14,7 @@
 #include <exception>
 #include <cstdio>
     #include "git_info.h"
+    #include "clipboard.h"
 
 
 
@@ -27,289 +28,8 @@ namespace fs = std::filesystem;
 
 bool g_use_absolute_paths = false;
 
-// Копирование текста в системный буфер обмена.
-// Платформы:
-//   Linux/Unix: wl-copy, xclip, xsel (что найдётся и успешно отработает)
-//   macOS: pbcopy
-//   Windows: clip
-static void copy_to_clipboard(const std::string& text)
-{
-    if (text.empty())
-        return;
-
-#if defined(_WIN32)
-    FILE* pipe = _popen("clip", "w");
-    if (!pipe)
-        return;
-    std::fwrite(text.data(), 1, text.size(), pipe);
-    _pclose(pipe);
-#elif defined(__APPLE__)
-    FILE* pipe = popen("pbcopy", "w");
-    if (!pipe)
-        return;
-    std::fwrite(text.data(), 1, text.size(), pipe);
-    pclose(pipe);
-#else
-    // POSIX: пытаемся по очереди несколько утилит.
-    // stderr каждой уводим в /dev/null, чтобы они не засоряли терминал.
-    const char* commands[] = {
-        "wl-copy 2>/dev/null",
-        "xclip -selection clipboard 2>/dev/null",
-        "xsel --clipboard --input 2>/dev/null",
-    };
-
-    for (const char* cmd : commands)
-    {
-        FILE* pipe = popen(cmd, "w");
-        if (!pipe)
-            continue;
-
-        std::fwrite(text.data(), 1, text.size(), pipe);
-        int rc = pclose(pipe);
-        if (rc == 0)
-            break; // какая-то из утилит успешно отработала
-    }
-#endif
-}
-
-// RAII-обёртка: перенаправляет std::cout в буфер,
-// а при выходе из области видимости:
-//   1) восстанавливает std::cout
-//   2) печатает накопленное в stdout
-//   3) отправляет тот же текст в буфер обмена
-class CopyGuard
-{
-public:
-    explicit CopyGuard(bool enabled)
-        : enabled_(enabled), old_buf_(nullptr)
-    {
-        if (enabled_) {
-            old_buf_ = std::cout.rdbuf(buffer_.rdbuf());
-        }
-    }
-
-    ~CopyGuard()
-    {
-        if (!enabled_)
-            return;
-
-        // вернуть настоящий буфер std::cout
-        std::cout.rdbuf(old_buf_);
-
-        const std::string out = buffer_.str();
-        if (!out.empty()) {
-            // НИЧЕГО не печатаем в консоль!
-            // Просто отправляем весь текст в буфер обмена.
-            copy_to_clipboard(out);
-        }
-    }
-
-private:
-    bool enabled_;
-    std::ostringstream buffer_;
-    std::streambuf* old_buf_;
-};
 
 
-
-// Разбор remote вроде git@github.com:user/repo.git или https://github.com/user/repo(.git)
-static bool parse_github_remote(const std::string& remote,
-                                std::string& user,
-                                std::string& repo)
-{
-    const std::string host = "github.com";
-    auto pos = remote.find(host);
-    if (pos == std::string::npos)
-        return false;
-
-    pos += host.size();
-
-    // пропускаем ':' или '/' после github.com
-    while (pos < remote.size() && (remote[pos] == ':' || remote[pos] == '/'))
-        ++pos;
-
-    if (pos >= remote.size())
-        return false;
-
-    // user / repo[.git] / ...
-    auto slash1 = remote.find('/', pos);
-    if (slash1 == std::string::npos)
-        return false;
-
-    user = remote.substr(pos, slash1 - pos);
-
-    auto start_repo = slash1 + 1;
-    if (start_repo >= remote.size())
-        return false;
-
-    auto slash2 = remote.find('/', start_repo);
-    std::string repo_part =
-        (slash2 == std::string::npos)
-            ? remote.substr(start_repo)
-            : remote.substr(start_repo, slash2 - start_repo);
-
-    // обрежем .git в конце, если есть
-    const std::string dot_git = ".git";
-    if (repo_part.size() > dot_git.size() &&
-        repo_part.compare(repo_part.size() - dot_git.size(), dot_git.size(), dot_git) == 0)
-    {
-        repo_part.resize(repo_part.size() - dot_git.size());
-    }
-
-    if (user.empty() || repo_part.empty())
-        return false;
-
-    repo = repo_part;
-    return true;
-}
-
-
-
-void print_chunk_help()
-{
-    std::cout << "# Chunk v2 — Change Description Format\n"
-                 "\n"
-                 "Chunk v2 is a plain-text format for describing modifications to source files.\n"
-                 "A patch consists of multiple sections, each describing a single operation:\n"
-                 "line-based edits, text-based edits, or file-level operations.\n"
-                 "\n"
-                 "---\n"
-                 "\n"
-                 "## 1. Section structure\n"
-                 "\n"
-                 "=== file: <path> ===\n"
-                 "<command>\n"
-                 "<content...>\n"
-                 "=END=\n"
-                 "\n"
-                 "* <path> — relative file path\n"
-                 "* Empty lines between sections are allowed\n"
-                 "* Exactly one command per section\n"
-                 "* <content> may contain any lines, including empty ones\n"
-                 "\n"
-                 "---\n"
-                 "\n"
-                 "## 3. Commands (text-based)\n"
-                 "\n"
-                 "Two formats are supported for text-based commands:\n"
-                 "\n"
-                 "### 3.1 Legacy format (simple)\n"
-                 "These commands match an exact multi-line marker in the file.\n"
-                 "Everything before the first `---` is the marker; everything after it is content.\n"
-                 "\n"
-                 "### Insert after marker\n"
-                 "--- insert-after-text\n"
-                 "<marker lines...>\n"
-                 "---\n"
-                 "<inserted lines...>\n"
-                 "=END=\n"
-                 "\n"
-                 "### Insert before marker\n"
-                 "--- insert-before-text\n"
-                 "<marker lines...>\n"
-                 "---\n"
-                 "<inserted lines...>\n"
-                 "=END=\n"
-                 "\n"
-                 "### Replace marker\n"
-                 "--- replace-text\n"
-                 "<marker lines...>\n"
-                 "---\n"
-                 "<new lines...>\n"
-                 "=END=\n"
-                 "\n"
-                 "### Delete marker\n"
-                 "--- delete-text\n"
-                 "<marker lines...>\n"
-                 "---\n"
-                 "=END=\n"
-                 "\n"
-                 "---\n"
-                 "\n"
-                 "### 3.2 YAML strict format\n"
-                 "\n"
-                 "In YAML mode you can also specify strict context around the marker:\n"
-                 "\n"
-                 "--- replace-text\n"
-                 "BEFORE:\n"
-                 "  <lines that must appear immediately above the marker>\n"
-                 "MARKER:\n"
-                 "  <marker lines>\n"
-                 "AFTER:\n"
-                 "  <lines that must appear immediately below the marker>\n"
-                 "---\n"
-                 "<payload lines...>\n"
-                 "=END=\n"
-                 "\n"
-                 "Rules:\n"
-                 "* YAML mode is enabled only when the first non-empty line after the command\n"
-                 "  is one of: `BEFORE:`, `MARKER:`, `AFTER:`.\n"
-                 "* Matching is strict: BEFORE lines must be directly above the marker block;\n"
-                 "  AFTER lines must be directly below it.\n"
-                 "* Whitespace differences are ignored (lines are trimmed before comparison).\n"
-                 "* If BEFORE/AFTER are present, there is no fallback to the first occurrence\n"
-                 "  of the marker.\n"
-                 "* If more than one place matches the strict context, the patch fails as\n"
-                 "  ambiguous.\n"
-                 "* If no place matches the strict context, the patch fails with\n"
-                 "  \"strict marker context not found\".\n"
-                 "\n"
-                 "---\n"
-                 "\n"
-                 "## 4. File-level commands\n"
-                 "These operations work on the whole file rather than its contents.\n"
-                 "\n"
-                 "### Create or overwrite file\n"
-                 "--- create-file\n"
-                 "<file content...>\n"
-                 "=END=\n"
-                 "\n"
-                 "### Delete file\n"
-                 "--- delete-file\n"
-                 "=END=\n"
-                 "\n"
-                 "---\n"
-                 "\n"
-                 "## 5. Examples\n"
-                 "\n"
-                 "=== file: src/a.cpp ===\n"
-                 "--- replace 3:4\n"
-                 "int value = 42;\n"
-                 "std::cout << value << \"\\\\n\";\n"
-                 "=END=\n"
-                 "\n"
-                 "=== file: src/b.cpp ===\n"
-                 "--- insert-after 12\n"
-                 "log_debug(\"checkpoint reached\");\n"
-                 "=END=\n"
-                 "\n"
-                 "=== file: src/c.cpp ===\n"
-                 "--- delete 20:25\n"
-                 "=END=\n"
-                 "\n"
-                 "=== file: assets/config.json ===\n"
-                 "--- create-file\n"
-                 "{ \"version\": 1 }\n"
-                 "=END=\n"
-                 "\n"
-                 "=== file: old/temp.txt ===\n"
-                 "--- delete-file\n"
-                 "=END=\n"
-                 "\n"
-                 "---\n"
-                 "\n"
-                 "## Recommended usage\n"
-                 "* Prefer text-based commands (`*-text`) — they are more stable when code moves.\n"
-                 "* Use file-level commands when creating or removing entire files.\n"
-                 "* Group modifications to multiple files into **one patch file**.\n"
-                 "\n"
-                 "*This cheat sheet is in the text for a reason. If you're asked to write a patch,\n"
-                 " use the following format: chunk_v2.\n"
-                 "*Try to strictly follow the rules described in this document, without making any\n"
-                 " syntactic errors.\n"
-                 "*When working with chunks, be careful that commands do not reference the same\n"
-                 " text macros. Macros should never overlap.\n";
-}
 
 int apply_chunk_main(int argc, char** argv);
 
@@ -635,70 +355,22 @@ int scat_main(int argc, char** argv)
         // GH map mode: построить prefix = raw.githubusercontent/... и дальше работать как -l --prefix
     if (opt.gh_map)
 {
-    GitInfo info = detect_git_info();
-    if (!info.has_commit || !info.has_remote)
-    {
-        std::cerr << "--ghmap: unable to detect git commit or remote origin\n";
+    GitHubInfo gh = detect_github_info();
+    if (!gh.ok) {
+        std::cerr << "--ghmap: unable to detect GitHub remote/commit\n";
         return 1;
     }
 
-    std::string user;
-    std::string repo;
-    if (!parse_github_remote(info.remote, user, repo))
-    {
-        std::cerr << "--ghmap: remote is not a supported GitHub URL: "
-                  << info.remote << "\n";
-        return 1;
+    std::string prefix = "https://raw.githubusercontent.com/" +
+                         gh.user + "/" + gh.repo + "/" + gh.commit + "/.scatwrap/";
+
+    if (!opt.config_file.empty()) {
+        // тут уже чисто логика MAPFORMAT + collect_from_rules
+    } else {
+        opt.list_only = true;
+        opt.wrap_root.clear();
+        opt.path_prefix = prefix;
     }
-
-    std::string prefix = "https://raw.githubusercontent.com/";
-    prefix += user;
-    prefix += "/";
-    prefix += repo;
-    prefix += "/";
-    prefix += info.commit;
-    prefix += "/.scatwrap/";
-
-    // Если есть конфиг — используем его, включая [MAPFORMAT]
-    if (!opt.config_file.empty())
-    {
-        Config cfg;
-        try {
-            cfg = parse_config(opt.config_file);
-        } catch (const std::exception& e) {
-            std::cerr << e.what() << "\n";
-            return 1;
-        }
-
-        auto text_files = collect_from_rules(cfg.text_rules, opt);
-        if (text_files.empty())
-        {
-            std::cerr << "No files collected.\n";
-            return 0;
-        }
-
-        // Собираем "сырой" список ссылок в строку — это и есть {RAWMAP}
-        Options list_opt = opt;
-        list_opt.path_prefix = prefix;
-
-        std::ostringstream oss;
-        print_list_with_sizes_to(text_files, list_opt, oss);
-        std::string rawmap = oss.str();
-
-        std::string output;
-        if (!cfg.map_format.empty())
-            output = substitute_rawmap(cfg.map_format, rawmap);
-        else
-            output = rawmap;
-
-        std::cout << output;
-        return 0;
-    }
-
-    // Без конфига — старое поведение: просто -l --prefix PREFIX
-    opt.list_only = true;
-    opt.wrap_root.clear();
-    opt.path_prefix = prefix;
 }
 
 
