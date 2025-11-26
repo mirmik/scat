@@ -1,17 +1,16 @@
-#include "symbols.h"
 #include "doctest/doctest.h"
+#include "symbols.h"
 
 #include <string>
 
 TEST_CASE("PythonSymbolFinder: simple class and methods")
 {
-    std::string src =
-        "class Foo:\\n"                // 0
-        "    def bar(self):\\n"        // 1
-        "        pass\\n"              // 2
-        "\\n"                          // 3
-        "    def baz(self, x):\\n"     // 4
-        "        return x + 1\\n";     // 5
+    std::string src = "class Foo:\n"            // 0
+                      "    def bar(self):\n"    // 1
+                      "        pass\n"          // 2
+                      "\n"                      // 3
+                      "    def baz(self, x):\n" // 4
+                      "        return x + 1\n"; // 5
 
     PythonSymbolFinder finder(src);
     Region r_class;
@@ -33,13 +32,12 @@ TEST_CASE("PythonSymbolFinder: simple class and methods")
 
 TEST_CASE("PythonSymbolFinder: ignores top-level functions")
 {
-    std::string src =
-        "def foo():\\n"                // 0
-        "    pass\\n"                  // 1
-        "\\n"                          // 2
-        "class Foo:\\n"                // 3
-        "    def foo(self):\\n"        // 4
-        "        pass\\n";             // 5
+    std::string src = "def foo():\n"         // 0
+                      "    pass\n"           // 1
+                      "\n"                   // 2
+                      "class Foo:\n"         // 3
+                      "    def foo(self):\n" // 4
+                      "        pass\n";      // 5
 
     PythonSymbolFinder finder(src);
     Region r_class;
@@ -56,29 +54,27 @@ TEST_CASE("PythonSymbolFinder: ignores top-level functions")
 
 TEST_CASE("PythonSymbolFinder: decorated methods")
 {
-    std::string src =
-        "class Foo:\\n"                // 0
-        "    @decorator\\n"            // 1
-        "    def bar(self):\\n"        // 2
-        "        pass\\n";             // 3
+    std::string src = "class Foo:\n"         // 0
+                      "    @decorator\n"     // 1
+                      "    def bar(self):\n" // 2
+                      "        pass\n";      // 3
 
     PythonSymbolFinder finder(src);
     Region r_method;
 
     CHECK(finder.find_method("Foo", "bar", r_method));
-    CHECK(r_method.start_line == 1);   // вместе с декоратором
+    CHECK(r_method.start_line == 1); // вместе с декоратором
     CHECK(r_method.end_line == 3);
 }
 
 TEST_CASE("PythonSymbolFinder: nested class and methods")
 {
-    std::string src =
-        "class Outer:\\n"              // 0
-        "    def a(self):\\n"          // 1
-        "        pass\\n"              // 2
-        "    class Inner:\\n"          // 3
-        "        def b(self):\\n"      // 4
-        "            pass\\n";         // 5
+    std::string src = "class Outer:\n"         // 0
+                      "    def a(self):\n"     // 1
+                      "        pass\n"         // 2
+                      "    class Inner:\n"     // 3
+                      "        def b(self):\n" // 4
+                      "            pass\n";    // 5
 
     PythonSymbolFinder finder(src);
 
@@ -105,10 +101,9 @@ TEST_CASE("PythonSymbolFinder: nested class and methods")
 
 TEST_CASE("PythonSymbolFinder: async methods")
 {
-    std::string src =
-        "class Foo:\\n"                      // 0
-        "    async def bar(self):\\n"        // 1
-        "        await something()\\n";      // 2
+    std::string src = "class Foo:\n"                 // 0
+                      "    async def bar(self):\n"   // 1
+                      "        await something()\n"; // 2
 
     PythonSymbolFinder finder(src);
 
@@ -125,18 +120,17 @@ TEST_CASE("PythonSymbolFinder: async methods")
 
 TEST_CASE("PythonSymbolFinder: whitespace, comments and docstrings")
 {
-    std::string src =
-        "#!/usr/bin/env python3\\n"          // 0
-        "\\n"                                // 1
-        "class   Weird  (  Base  ):\\n"      // 2
-        "    \\\"\\\"\\\"docstring\\\"\\\"\\\"\\n" // 3
-        "    # comment inside class\\n"      // 4
-        "    def   run ( self,  x ):\\n"     // 5
-        "        # inner comment\\n"         // 6
-        "        return x + 1\\n"            // 7
-        "\\n"                                // 8
-        "def run(x):\\n"                     // 9
-        "    return x\\n";                   // 10
+    std::string src = "#!/usr/bin/env python3\n"                // 0
+                      "\n"                                      // 1
+                      "class   Weird  (  Base  ):\n"            // 2
+                      "    \\\"\\\"\\\"docstring\\\"\\\"\\\"\n" // 3
+                      "    # comment inside class\n"            // 4
+                      "    def   run ( self,  x ):\n"           // 5
+                      "        # inner comment\n"               // 6
+                      "        return x + 1\n"                  // 7
+                      "\n"                                      // 8
+                      "def run(x):\n"                           // 9
+                      "    return x\n";                         // 10
 
     PythonSymbolFinder finder(src);
 
