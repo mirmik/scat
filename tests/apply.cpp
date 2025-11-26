@@ -1,17 +1,17 @@
 #include "doctest/doctest.h"
 #include <filesystem>
 #include <fstream>
+#include <iostream>
+#include <scat.h>
+#include <sstream>
 #include <string>
 #include <vector>
-#include <sstream>
-#include <scat.h>
-#include <iostream>
 
-int apply_chunk_main(int argc, char** argv);
+int apply_chunk_main(int argc, char **argv);
 
 namespace fs = std::filesystem;
 
-std::vector<std::string> read_lines(const fs::path& p)
+std::vector<std::string> read_lines(const fs::path &p)
 {
     std::ifstream in(p);
     std::vector<std::string> v;
@@ -21,7 +21,7 @@ std::vector<std::string> read_lines(const fs::path& p)
     return v;
 }
 
-int run_apply(const fs::path& patch)
+int run_apply(const fs::path &patch)
 {
     std::string arg0 = "apply";
     std::string arg1 = patch.string();
@@ -30,15 +30,13 @@ int run_apply(const fs::path& patch)
     std::vector<std::string> args = {arg0, arg1};
 
     // формируем argv как указатели НА ЖИВЫЕ строки
-    std::vector<char*> argv_real;
+    std::vector<char *> argv_real;
     argv_real.reserve(args.size());
-    for (auto& s : args)
+    for (auto &s : args)
         argv_real.push_back(s.data());
 
     return apply_chunk_main((int)argv_real.size(), argv_real.data());
 }
-
-
 
 TEST_CASE("apply_chunk_main: insert-after-text")
 {
@@ -49,23 +47,22 @@ TEST_CASE("apply_chunk_main: insert-after-text")
     fs::path f = tmp / "a.txt";
     {
         std::ofstream out(f);
-        out <<
-            "LINE1\n"
-            "LINE2\n"
-            "LINE3\n";
+        out << "LINE1\n"
+               "LINE2\n"
+               "LINE3\n";
     }
 
     fs::path patch = tmp / "patch.txt";
     {
         std::ofstream out(patch);
-        out <<
-            "=== file: " << f.string() << " ===\n"
-            "--- insert-after-text\n"
-            "LINE2\n"
-            "---\n"
-            "AFTER\n"
-            "TEXT\n"
-            "=END=\n";
+        out << "=== file: " << f.string()
+            << " ===\n"
+               "--- insert-after-text\n"
+               "LINE2\n"
+               "---\n"
+               "AFTER\n"
+               "TEXT\n"
+               "=END=\n";
     }
 
     int r = run_apply(patch);
@@ -89,23 +86,22 @@ TEST_CASE("apply_chunk_main: insert-before-text")
     fs::path f = tmp / "b.txt";
     {
         std::ofstream out(f);
-        out <<
-            "AAA\n"
-            "BBB\n"
-            "CCC\n";
+        out << "AAA\n"
+               "BBB\n"
+               "CCC\n";
     }
 
     fs::path patch = tmp / "patch.txt";
     {
         std::ofstream out(patch);
-        out <<
-            "=== file: " << f.string() << " ===\n"
-            "--- insert-before-text\n"
-            "BBB\n"
-            "---\n"
-            "X\n"
-            "Y\n"
-            "=END=\n";
+        out << "=== file: " << f.string()
+            << " ===\n"
+               "--- insert-before-text\n"
+               "BBB\n"
+               "---\n"
+               "X\n"
+               "Y\n"
+               "=END=\n";
     }
 
     int r = run_apply(patch);
@@ -129,23 +125,22 @@ TEST_CASE("apply_chunk_main: replace-text")
     fs::path f = tmp / "c.txt";
     {
         std::ofstream out(f);
-        out <<
-            "alpha\n"
-            "beta\n"
-            "gamma\n";
+        out << "alpha\n"
+               "beta\n"
+               "gamma\n";
     }
 
     fs::path patch = tmp / "patch.txt";
     {
         std::ofstream out(patch);
-        out <<
-            "=== file: " << f.string() << " ===\n"
-            "--- replace-text\n"
-            "beta\n"
-            "---\n"
-            "BETA1\n"
-            "BETA2\n"
-            "=END=\n";
+        out << "=== file: " << f.string()
+            << " ===\n"
+               "--- replace-text\n"
+               "beta\n"
+               "---\n"
+               "BETA1\n"
+               "BETA2\n"
+               "=END=\n";
     }
 
     int r = run_apply(patch);
@@ -168,23 +163,22 @@ TEST_CASE("apply_chunk_main: delete-text")
     fs::path f = tmp / "d.txt";
     {
         std::ofstream out(f);
-        out <<
-            "one\n"
-            "two\n"
-            "three\n"
-            "four\n";
+        out << "one\n"
+               "two\n"
+               "three\n"
+               "four\n";
     }
 
     fs::path patch = tmp / "patch.txt";
     {
         std::ofstream out(patch);
-        out <<
-            "=== file: " << f.string() << " ===\n"
-            "--- delete-text\n"
-            "two\n"
-            "three\n"
-            "---\n"
-            "=END=\n";
+        out << "=== file: " << f.string()
+            << " ===\n"
+               "--- delete-text\n"
+               "two\n"
+               "three\n"
+               "---\n"
+               "=END=\n";
     }
 
     int r = run_apply(patch);
@@ -210,19 +204,19 @@ TEST_CASE("apply_chunk_main: apply-stdin")
         out << "A\nB\nC\n";
     }
 
-    std::string patch =
-        "=== file: " + f.string() + " ===\n"
-        "--- replace-text\n"
-        "B\n"
-        "---\n"
-        "XXX\n"
-        "=END=\n";
+    std::string patch = "=== file: " + f.string() +
+                        " ===\n"
+                        "--- replace-text\n"
+                        "B\n"
+                        "---\n"
+                        "XXX\n"
+                        "=END=\n";
 
     std::istringstream fake_stdin(patch);
-    auto* old_stdin = std::cin.rdbuf(fake_stdin.rdbuf());
+    auto *old_stdin = std::cin.rdbuf(fake_stdin.rdbuf());
 
-    const char* argv[] = {"scat", "--apply-stdin"};
-    int r = scat_main(2, (char**)argv);
+    const char *argv[] = {"scat", "--apply-stdin"};
+    int r = scat_main(2, (char **)argv);
 
     std::cin.rdbuf(old_stdin);
 
@@ -254,16 +248,18 @@ TEST_CASE("apply_chunk_main: delete-file then create-file")
     fs::path patch = tmp / "patch.txt";
     {
         std::ofstream out(patch);
-        out <<
-            "=== file: " << f.string() << " ===\n"
-            "--- delete-file\n"
-            "=END=\n"
-            "\n"
-            "=== file: " << f.string() << " ===\n"
-            "--- create-file\n"
-            "NEW1\n"
-            "NEW2\n"
-            "=END=\n";
+        out << "=== file: " << f.string()
+            << " ===\n"
+               "--- delete-file\n"
+               "=END=\n"
+               "\n"
+               "=== file: "
+            << f.string()
+            << " ===\n"
+               "--- create-file\n"
+               "NEW1\n"
+               "NEW2\n"
+               "=END=\n";
     }
 
     int r = run_apply(patch);

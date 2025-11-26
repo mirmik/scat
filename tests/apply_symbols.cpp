@@ -4,11 +4,11 @@
 #include <string>
 #include <vector>
 
-int apply_chunk_main(int argc, char** argv);
+int apply_chunk_main(int argc, char **argv);
 
 namespace fs = std::filesystem;
 
-static std::vector<std::string> read_lines(const fs::path& p)
+static std::vector<std::string> read_lines(const fs::path &p)
 {
     std::ifstream in(p);
     std::vector<std::string> v;
@@ -18,15 +18,15 @@ static std::vector<std::string> read_lines(const fs::path& p)
     return v;
 }
 
-static int run_apply(const fs::path& patch)
+static int run_apply(const fs::path &patch)
 {
     std::string a0 = "apply";
     std::string a1 = patch.string();
 
     std::vector<std::string> store = {a0, a1};
-    std::vector<char*> argv;
+    std::vector<char *> argv;
     argv.reserve(store.size());
-    for (auto& s : store)
+    for (auto &s : store)
         argv.push_back(s.data());
 
     return apply_chunk_main((int)argv.size(), argv.data());
@@ -44,31 +44,30 @@ TEST_CASE("symbol API: replace-cpp-class replaces only target class")
     fs::path f = tmp / "foo.cpp";
     {
         std::ofstream out(f);
-        out <<
-"#include <string>\n"
-"\n"
-"class Foo {\n"
-"public:\n"
-"    int x() const;\n"
-"};\n"
-"\n"
-"class Bar {\n"
-"public:\n"
-"    void ping();\n"
-"};\n";
+        out << "#include <string>\n"
+               "\n"
+               "class Foo {\n"
+               "public:\n"
+               "    int x() const;\n"
+               "};\n"
+               "\n"
+               "class Bar {\n"
+               "public:\n"
+               "    void ping();\n"
+               "};\n";
     }
 
     fs::path patch = tmp / "patch_class.txt";
     {
         std::ofstream out(patch);
-        out <<
-"=== file: " << f.string() << " ===\n"
-"--- replace-cpp-class Foo\n"
-"class Foo {\n"
-"public:\n"
-"    int y() const { return 42; }\n"
-"};\n"
-"=END=\n";
+        out << "=== file: " << f.string()
+            << " ===\n"
+               "--- replace-cpp-class Foo\n"
+               "class Foo {\n"
+               "public:\n"
+               "    int y() const { return 42; }\n"
+               "};\n"
+               "=END=\n";
     }
 
     CHECK(run_apply(patch) == 0);
@@ -98,22 +97,21 @@ TEST_CASE("symbol API: replace-cpp-method by separate class and method name")
     fs::path f = tmp / "foo.cpp";
     {
         std::ofstream out(f);
-        out <<
-"class Foo {\n"
-"public:\n"
-"    void a();\n"
-"    int value() const;\n"
-"};\n";
+        out << "class Foo {\n"
+               "public:\n"
+               "    void a();\n"
+               "    int value() const;\n"
+               "};\n";
     }
 
     fs::path patch = tmp / "patch_method1.txt";
     {
         std::ofstream out(patch);
-        out <<
-"=== file: " << f.string() << " ===\n"
-"--- replace-cpp-method Foo value\n"
-"    int value() const { return 10; }\n"
-"=END=\n";
+        out << "=== file: " << f.string()
+            << " ===\n"
+               "--- replace-cpp-method Foo value\n"
+               "    int value() const { return 10; }\n"
+               "=END=\n";
     }
 
     CHECK(run_apply(patch) == 0);
@@ -136,22 +134,21 @@ TEST_CASE("symbol API: replace-cpp-method with Class::method syntax")
     fs::path f = tmp / "bar.cpp";
     {
         std::ofstream out(f);
-        out <<
-"class Bar {\n"
-"public:\n"
-"    int calc(int x) const;\n"
-"    int other() const;\n"
-"};\n";
+        out << "class Bar {\n"
+               "public:\n"
+               "    int calc(int x) const;\n"
+               "    int other() const;\n"
+               "};\n";
     }
 
     fs::path patch = tmp / "patch_method2.txt";
     {
         std::ofstream out(patch);
-        out <<
-"=== file: " << f.string() << " ===\n"
-"--- replace-cpp-method Bar::calc\n"
-"    int calc(int x) const { return x * 2; }\n"
-"=END=\n";
+        out << "=== file: " << f.string()
+            << " ===\n"
+               "--- replace-cpp-method Bar::calc\n"
+               "    int calc(int x) const { return x * 2; }\n"
+               "=END=\n";
     }
 
     CHECK(run_apply(patch) == 0);
@@ -174,27 +171,26 @@ TEST_CASE("symbol API: replace-py-class replaces whole class body")
     fs::path f = tmp / "foo.py";
     {
         std::ofstream out(f);
-        out <<
-"class Foo:\n"
-"    def __init__(self):\n"
-"        self.x = 1\n"
-"\n"
-"class Bar:\n"
-"    pass\n";
+        out << "class Foo:\n"
+               "    def __init__(self):\n"
+               "        self.x = 1\n"
+               "\n"
+               "class Bar:\n"
+               "    pass\n";
     }
 
     fs::path patch = tmp / "patch_py_class.txt";
     {
         std::ofstream out(patch);
-        out <<
-"=== file: " << f.string() << " ===\n"
-"--- replace-py-class Foo\n"
-"class Foo:\n"
-"    def __init__(self):\n"
-"        self.x = 2\n"
-"    def answer(self):\n"
-"        return 42\n"
-"=END=\n";
+        out << "=== file: " << f.string()
+            << " ===\n"
+               "--- replace-py-class Foo\n"
+               "class Foo:\n"
+               "    def __init__(self):\n"
+               "        self.x = 2\n"
+               "    def answer(self):\n"
+               "        return 42\n"
+               "=END=\n";
     }
 
     CHECK(run_apply(patch) == 0);
@@ -206,12 +202,12 @@ TEST_CASE("symbol API: replace-py-class replaces whole class body")
     CHECK(L[0] == "class Foo:");
 
     bool found_init = false;
-    bool found_x2   = false;
+    bool found_x2 = false;
     bool found_answer = false;
-    bool found_ret42  = false;
-    bool found_bar    = false;
+    bool found_ret42 = false;
+    bool found_bar = false;
 
-    for (const auto& line : L)
+    for (const auto &line : L)
     {
         if (line.find("def __init__") != std::string::npos)
             found_init = true;
@@ -244,24 +240,23 @@ TEST_CASE("symbol API: replace-py-method with separate class and method name")
     fs::path f = tmp / "weird.py";
     {
         std::ofstream out(f);
-        out <<
-"class Weird:\n"
-"    def run(self):\n"
-"        return 1\n"
-"\n"
-"    def other(self):\n"
-"        return 2\n";
+        out << "class Weird:\n"
+               "    def run(self):\n"
+               "        return 1\n"
+               "\n"
+               "    def other(self):\n"
+               "        return 2\n";
     }
 
     fs::path patch = tmp / "patch_py_method1.txt";
     {
         std::ofstream out(patch);
-        out <<
-"=== file: " << f.string() << " ===\n"
-"--- replace-py-method Weird run\n"
-"    def run(self):\n"
-"        return 100\n"
-"=END=\n";
+        out << "=== file: " << f.string()
+            << " ===\n"
+               "--- replace-py-method Weird run\n"
+               "    def run(self):\n"
+               "        return 100\n"
+               "=END=\n";
     }
 
     CHECK(run_apply(patch) == 0);
@@ -274,7 +269,7 @@ TEST_CASE("symbol API: replace-py-method with separate class and method name")
     bool seen_def_run = false;
     bool seen_return_100 = false;
 
-    for (const auto& line : L)
+    for (const auto &line : L)
     {
         if (line.find("def run") != std::string::npos)
             seen_def_run = true;
@@ -304,21 +299,20 @@ TEST_CASE("symbol API: replace-py-method with Class.method syntax")
     fs::path f = tmp / "async_foo.py";
     {
         std::ofstream out(f);
-        out <<
-"class Foo:\n"
-"    async def bar(self):\n"
-"        return 1\n";
+        out << "class Foo:\n"
+               "    async def bar(self):\n"
+               "        return 1\n";
     }
 
     fs::path patch = tmp / "patch_py_method2.txt";
     {
         std::ofstream out(patch);
-        out <<
-"=== file: " << f.string() << " ===\n"
-"--- replace-py-method Foo.bar\n"
-"    async def bar(self):\n"
-"        return 2\n"
-"=END=\n";
+        out << "=== file: " << f.string()
+            << " ===\n"
+               "--- replace-py-method Foo.bar\n"
+               "    async def bar(self):\n"
+               "        return 2\n"
+               "=END=\n";
     }
 
     CHECK(run_apply(patch) == 0);
@@ -329,7 +323,7 @@ TEST_CASE("symbol API: replace-py-method with Class.method syntax")
     CHECK(L[0] == "class Foo:");
 
     bool found_bar_2 = false;
-    for (const auto& line : L)
+    for (const auto &line : L)
     {
         if (line.find("async def bar") != std::string::npos)
             found_bar_2 = true;

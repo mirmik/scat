@@ -1,13 +1,13 @@
+#include "collector.h"
 #include "doctest/doctest.h"
 #include "glob.h"
-#include "collector.h"
-#include "rules.h"
 #include "options.h"
+#include "rules.h"
 
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <vector>
-#include <algorithm>
 
 namespace fs = std::filesystem;
 
@@ -15,26 +15,29 @@ namespace fs = std::filesystem;
 // Helpers
 // -----------------------------------------------------------------------------
 
-static void write_file(const fs::path& p, const std::string& text) {
+static void write_file(const fs::path &p, const std::string &text)
+{
     fs::create_directories(p.parent_path());
     std::ofstream out(p);
     out << text;
 }
 
-static std::vector<std::string> to_rel(const std::vector<fs::path>& v, const fs::path& root) {
+static std::vector<std::string> to_rel(const std::vector<fs::path> &v,
+                                       const fs::path &root)
+{
     std::vector<std::string> out;
-    for (auto& p : v)
+    for (auto &p : v)
         out.push_back(fs::relative(p, root).generic_string());
     std::sort(out.begin(), out.end());
     return out;
 }
 
-static void check_paths(const std::vector<std::string>& actual,
-                            std::initializer_list<const char*> expected)
+static void check_paths(const std::vector<std::string> &actual,
+                        std::initializer_list<const char *> expected)
 {
     std::vector<std::string> exp_vec;
     exp_vec.reserve(expected.size());
-    for (auto* e : expected)
+    for (auto *e : expected)
         exp_vec.emplace_back(e);
 
     std::vector<std::string> act = actual;
@@ -55,7 +58,8 @@ static void check_paths(const std::vector<std::string>& actual,
 // glob tests — как раньше, без смены current_path
 // ============================================================================
 
-TEST_CASE("glob: basic *") {
+TEST_CASE("glob: basic *")
+{
     fs::path tmp = fs::temp_directory_path() / "glob_test_a2";
     fs::remove_all(tmp);
 
@@ -69,7 +73,8 @@ TEST_CASE("glob: basic *") {
     check_paths(rel, {"a.txt", "c.txt"});
 }
 
-TEST_CASE("glob: recursive **") {
+TEST_CASE("glob: recursive **")
+{
     fs::path tmp = fs::temp_directory_path() / "glob_test_b2";
     fs::remove_all(tmp);
 
@@ -80,14 +85,11 @@ TEST_CASE("glob: recursive **") {
     auto out = expand_glob((tmp / "**").generic_string());
     auto rel = to_rel(out, tmp);
 
-    check_paths(rel, {
-        "1.txt",
-        "x/2.txt",
-        "x/y/3.txt"
-    });
+    check_paths(rel, {"1.txt", "x/2.txt", "x/y/3.txt"});
 }
 
-TEST_CASE("glob: **/*.cpp") {
+TEST_CASE("glob: **/*.cpp")
+{
     fs::path tmp = fs::temp_directory_path() / "glob_test_c2";
     fs::remove_all(tmp);
 
@@ -99,14 +101,11 @@ TEST_CASE("glob: **/*.cpp") {
     auto out = expand_glob((tmp / "**/*.cpp").generic_string());
     auto rel = to_rel(out, tmp);
 
-    check_paths(rel, {
-        "a.cpp",
-        "x/c.cpp",
-        "x/y/z.cpp"
-    });
+    check_paths(rel, {"a.cpp", "x/c.cpp", "x/y/z.cpp"});
 }
 
-TEST_CASE("glob: foo/*/bar/**/*.txt") {
+TEST_CASE("glob: foo/*/bar/**/*.txt")
+{
     fs::path tmp = fs::temp_directory_path() / "glob_test_d2";
     fs::remove_all(tmp);
 
@@ -119,14 +118,12 @@ TEST_CASE("glob: foo/*/bar/**/*.txt") {
     auto out = expand_glob(pat);
     auto rel = to_rel(out, tmp);
 
-    check_paths(rel, {
-        "foo/K/bar/a.txt",
-        "foo/K/bar/x/b.txt",
-        "foo/Z/bar/y/z.txt"
-    });
+    check_paths(rel,
+                {"foo/K/bar/a.txt", "foo/K/bar/x/b.txt", "foo/Z/bar/y/z.txt"});
 }
 
-TEST_CASE("glob: no matches") {
+TEST_CASE("glob: no matches")
+{
     fs::path tmp = fs::temp_directory_path() / "glob_test_e2";
     fs::remove_all(tmp);
 
@@ -140,7 +137,8 @@ TEST_CASE("glob: no matches") {
 // collector tests — тоже на абсолютных путях
 // ============================================================================
 
-TEST_CASE("collector: include then exclude subdir") {
+TEST_CASE("collector: include then exclude subdir")
+{
     fs::path tmp = fs::temp_directory_path() / "collector_test_1";
     fs::remove_all(tmp);
 
@@ -148,10 +146,8 @@ TEST_CASE("collector: include then exclude subdir") {
     write_file(tmp / "src/b.cpp", "B");
     write_file(tmp / "src/tests/c.cpp", "C");
 
-    std::vector<Rule> rules = {
-        {(tmp / "src/**/*.cpp").generic_string(), false},
-        {(tmp / "src/tests/**").generic_string(), true}
-    };
+    std::vector<Rule> rules = {{(tmp / "src/**/*.cpp").generic_string(), false},
+                               {(tmp / "src/tests/**").generic_string(), true}};
 
     Options opt;
     auto out = collect_from_rules(rules, opt);
@@ -160,7 +156,8 @@ TEST_CASE("collector: include then exclude subdir") {
     check_paths(rel, {"src/a.cpp", "src/b.cpp"});
 }
 
-TEST_CASE("collector: exclude *.cpp top level") {
+TEST_CASE("collector: exclude *.cpp top level")
+{
     fs::path tmp = fs::temp_directory_path() / "collector_test_2";
     fs::remove_all(tmp);
 
@@ -177,13 +174,11 @@ TEST_CASE("collector: exclude *.cpp top level") {
     auto out = collect_from_rules(rules, opt);
     auto rel = to_rel(out, tmp);
 
-    check_paths(rel, {
-        "b.h",
-        "sub/c.cpp"
-    });
+    check_paths(rel, {"b.h", "sub/c.cpp"});
 }
 
-TEST_CASE("collector: exclude all cpp recursively") {
+TEST_CASE("collector: exclude all cpp recursively")
+{
     fs::path tmp = fs::temp_directory_path() / "collector_test_3";
     fs::remove_all(tmp);
 
@@ -204,7 +199,8 @@ TEST_CASE("collector: exclude all cpp recursively") {
     check_paths(rel, {"ok.txt"});
 }
 
-TEST_CASE("collector: include-exclude-include chain") {
+TEST_CASE("collector: include-exclude-include chain")
+{
     fs::path tmp = fs::temp_directory_path() / "collector_test_4";
     fs::remove_all(tmp);
 
@@ -225,7 +221,8 @@ TEST_CASE("collector: include-exclude-include chain") {
     check_paths(rel, {"data/keep/a.txt", "data/keep/b.cpp"});
 }
 
-TEST_CASE("collector: empty after exclude") {
+TEST_CASE("collector: empty after exclude")
+{
     fs::path tmp = fs::temp_directory_path() / "collector_test_5";
     fs::remove_all(tmp);
 
@@ -278,20 +275,19 @@ TEST_CASE("collector: complex structure with 5 rules")
 
     std::vector<Rule> rules = {
         // 1) собрать всё
-        { (tmp / "**").generic_string(), false },
+        {(tmp / "**").generic_string(), false},
 
         // 2) исключить data/raw/**
-        { (tmp / "data/raw/**").generic_string(), true },
+        {(tmp / "data/raw/**").generic_string(), true},
 
         // 3) исключить все *.log
-        { (tmp / "**/*.log").generic_string(), true },
+        {(tmp / "**/*.log").generic_string(), true},
 
         // 4) добавить текстовые файлы только в tools
-        { (tmp / "src/tools/*.txt").generic_string(), false },
+        {(tmp / "src/tools/*.txt").generic_string(), false},
 
         // 5) исключить бинарники только в корне (root.bin)
-        { (tmp / "*.bin").generic_string(), true }
-    };
+        {(tmp / "*.bin").generic_string(), true}};
 
     Options opt;
     auto out = collect_from_rules(rules, opt);
@@ -319,16 +315,17 @@ TEST_CASE("collector: complex structure with 5 rules")
     //   *.log             (правило #3)
     //   root.bin          (правило #5)
     //
-    check_paths(rel, {
-        "root.txt",
-        "readme.md",
-        "src/a.cpp",
-        "src/b.cpp",
-        "src/tools/t1.txt",
-        "src/tools/t2.txt",
-        "src/tools/helper.cpp",
-        "data/info.txt",
-        "misc/x.cpp",
-        "misc/y.txt",
-    });
+    check_paths(rel,
+                {
+                    "root.txt",
+                    "readme.md",
+                    "src/a.cpp",
+                    "src/b.cpp",
+                    "src/tools/t1.txt",
+                    "src/tools/t2.txt",
+                    "src/tools/helper.cpp",
+                    "data/info.txt",
+                    "misc/x.cpp",
+                    "misc/y.txt",
+                });
 }

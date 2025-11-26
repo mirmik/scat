@@ -8,41 +8,45 @@
 <pre><code>
 #include &quot;glob.h&quot;
 #include &quot;doctest/doctest.h&quot;
+#include &lt;algorithm&gt;
 #include &lt;filesystem&gt;
 #include &lt;fstream&gt;
 #include &lt;vector&gt;
-#include &lt;algorithm&gt;
 
 namespace fs = std::filesystem;
 
-static void write_file(const fs::path&amp; p, const std::string&amp; text) {
+static void write_file(const fs::path &amp;p, const std::string &amp;text)
+{
     fs::create_directories(p.parent_path());
     std::ofstream out(p);
     out &lt;&lt; text;
 }
 
-static std::vector&lt;std::string&gt; to_rel(const std::vector&lt;fs::path&gt;&amp; v, const fs::path&amp; root) {
+static std::vector&lt;std::string&gt; to_rel(const std::vector&lt;fs::path&gt; &amp;v,
+                                       const fs::path &amp;root)
+{
     std::vector&lt;std::string&gt; out;
-    for (auto&amp; p : v)
+    for (auto &amp;p : v)
         out.push_back(fs::relative(p, root).generic_string());
     std::sort(out.begin(), out.end());
     return out;
 }
 
-static void check_paths(const std::vector&lt;std::string&gt;&amp; actual,
-                        std::initializer_list&lt;const char*&gt; expected)
+static void check_paths(const std::vector&lt;std::string&gt; &amp;actual,
+                        std::initializer_list&lt;const char *&gt; expected)
 {
     CHECK(actual.size() == expected.size());
 
     size_t i = 0;
-    for (auto* e : expected)
+    for (auto *e : expected)
     {
         CHECK(actual[i] == e);
         ++i;
     }
 }
 
-TEST_CASE(&quot;glob: basic *&quot;) {
+TEST_CASE(&quot;glob: basic *&quot;)
+{
     fs::path tmp = fs::temp_directory_path() / &quot;glob_test_a&quot;;
     fs::remove_all(tmp);
 
@@ -56,7 +60,8 @@ TEST_CASE(&quot;glob: basic *&quot;) {
     check_paths(rel, {&quot;a.txt&quot;, &quot;c.txt&quot;});
 }
 
-TEST_CASE(&quot;glob: recursive **&quot;) {
+TEST_CASE(&quot;glob: recursive **&quot;)
+{
     fs::path tmp = fs::temp_directory_path() / &quot;glob_test_b&quot;;
     fs::remove_all(tmp);
 
@@ -67,14 +72,11 @@ TEST_CASE(&quot;glob: recursive **&quot;) {
     auto out = expand_glob((tmp / &quot;**&quot;).generic_string());
     auto rel = to_rel(out, tmp);
 
-    check_paths(rel, {
-        &quot;1.txt&quot;,
-        &quot;x/2.txt&quot;,
-        &quot;x/y/3.txt&quot;
-    });
+    check_paths(rel, {&quot;1.txt&quot;, &quot;x/2.txt&quot;, &quot;x/y/3.txt&quot;});
 }
 
-TEST_CASE(&quot;glob: **/*.cpp&quot;) {
+TEST_CASE(&quot;glob: **/*.cpp&quot;)
+{
     fs::path tmp = fs::temp_directory_path() / &quot;glob_test_c&quot;;
     fs::remove_all(tmp);
 
@@ -86,14 +88,11 @@ TEST_CASE(&quot;glob: **/*.cpp&quot;) {
     auto out = expand_glob((tmp / &quot;**/*.cpp&quot;).generic_string());
     auto rel = to_rel(out, tmp);
 
-    check_paths(rel, {
-        &quot;a.cpp&quot;,
-        &quot;x/c.cpp&quot;,
-        &quot;x/y/z.cpp&quot;
-    });
+    check_paths(rel, {&quot;a.cpp&quot;, &quot;x/c.cpp&quot;, &quot;x/y/z.cpp&quot;});
 }
 
-TEST_CASE(&quot;glob: foo/*/bar/**/*.txt&quot;) {
+TEST_CASE(&quot;glob: foo/*/bar/**/*.txt&quot;)
+{
     fs::path tmp = fs::temp_directory_path() / &quot;glob_test_d&quot;;
     fs::remove_all(tmp);
 
@@ -106,14 +105,12 @@ TEST_CASE(&quot;glob: foo/*/bar/**/*.txt&quot;) {
     auto out = expand_glob(pat);
     auto rel = to_rel(out, tmp);
 
-    check_paths(rel, {
-        &quot;foo/K/bar/a.txt&quot;,
-        &quot;foo/K/bar/x/b.txt&quot;,
-        &quot;foo/Z/bar/y/z.txt&quot;
-    });
+    check_paths(rel,
+                {&quot;foo/K/bar/a.txt&quot;, &quot;foo/K/bar/x/b.txt&quot;, &quot;foo/Z/bar/y/z.txt&quot;});
 }
 
-TEST_CASE(&quot;glob: no matches returns empty&quot;) {
+TEST_CASE(&quot;glob: no matches returns empty&quot;)
+{
     fs::path tmp = fs::temp_directory_path() / &quot;glob_test_e&quot;;
     fs::remove_all(tmp);
 
@@ -123,7 +120,8 @@ TEST_CASE(&quot;glob: no matches returns empty&quot;) {
     CHECK(out.empty());
 }
 
-TEST_CASE(&quot;glob: duplicates removed&quot;) {
+TEST_CASE(&quot;glob: duplicates removed&quot;)
+{
     fs::path tmp = fs::temp_directory_path() / &quot;glob_test_f&quot;;
     fs::remove_all(tmp);
 
@@ -143,13 +141,11 @@ TEST_CASE(&quot;glob: duplicates removed&quot;) {
 
     // удаляем дубликаты вручную, как collector делает
     std::sort(combined.begin(), combined.end());
-    combined.erase(std::unique(combined.begin(), combined.end()), combined.end());
+    combined.erase(std::unique(combined.begin(), combined.end()),
+                   combined.end());
 
     auto rel = to_rel(combined, tmp);
-    check_paths(rel, {
-        &quot;a.txt&quot;,
-        &quot;d/a.txt&quot;
-    });
+    check_paths(rel, {&quot;a.txt&quot;, &quot;d/a.txt&quot;});
 }
 
 </code></pre>

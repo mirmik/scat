@@ -34,8 +34,8 @@ TEST_CASE(&quot;scat walks example/ correctly&quot;)
     std::stringstream buffer;
     auto old = std::cout.rdbuf(buffer.rdbuf());
 
-    const char* argv[] = {&quot;scat&quot;, tmp.string().c_str(), &quot;-r&quot;};
-    scat_main(3, (char**)argv);
+    const char *argv[] = {&quot;scat&quot;, tmp.string().c_str(), &quot;-r&quot;};
+    scat_main(3, (char **)argv);
 
     std::cout.rdbuf(old);
 

@@ -9,15 +9,15 @@
 #include &quot;doctest/doctest.h&quot;
 #include &lt;filesystem&gt;
 #include &lt;fstream&gt;
+#include &lt;iostream&gt;
 #include &lt;string&gt;
 #include &lt;vector&gt;
-#include &lt;iostream&gt;
 
-int apply_chunk_main(int argc, char** argv);
+int apply_chunk_main(int argc, char **argv);
 
 namespace fs = std::filesystem;
 
-static std::vector&lt;std::string&gt; read_lines(const fs::path&amp; p)
+static std::vector&lt;std::string&gt; read_lines(const fs::path &amp;p)
 {
     std::ifstream in(p);
     std::vector&lt;std::string&gt; v;
@@ -27,14 +27,15 @@ static std::vector&lt;std::string&gt; read_lines(const fs::path&amp; p)
     return v;
 }
 
-static int run_apply(const fs::path&amp; patch)
+static int run_apply(const fs::path &amp;patch)
 {
     std::string a0 = &quot;apply&quot;;
     std::string a1 = patch.string();
 
     std::vector&lt;std::string&gt; store = {a0, a1};
-    std::vector&lt;char*&gt; argv;
-    for (auto&amp; s : store) argv.push_back(s.data());
+    std::vector&lt;char *&gt; argv;
+    for (auto &amp;s : store)
+        argv.push_back(s.data());
 
     return apply_chunk_main((int)argv.size(), argv.data());
 }
@@ -57,14 +58,14 @@ TEST_CASE(&quot;YAML: only MARKER: behaves like legacy replace-text&quot;)
     fs::path patch = tmp / &quot;patch1.txt&quot;;
     {
         std::ofstream out(patch);
-        out &lt;&lt;
-&quot;=== file: &quot; &lt;&lt; f.string() &lt;&lt; &quot; ===\n&quot;
-&quot;--- replace-text\n&quot;
-&quot;MARKER:\n&quot;
-&quot;B\n&quot;
-&quot;---\n&quot;
-&quot;X\n&quot;
-&quot;=END=\n&quot;;
+        out &lt;&lt; &quot;=== file: &quot; &lt;&lt; f.string()
+            &lt;&lt; &quot; ===\n&quot;
+               &quot;--- replace-text\n&quot;
+               &quot;MARKER:\n&quot;
+               &quot;B\n&quot;
+               &quot;---\n&quot;
+               &quot;X\n&quot;
+               &quot;=END=\n&quot;;
     }
 
     CHECK(run_apply(patch) == 0);
@@ -88,29 +89,28 @@ TEST_CASE(&quot;YAML: BEFORE fuzzy selects the correct marker&quot;)
     fs::path f = tmp / &quot;b.txt&quot;;
     {
         std::ofstream out(f);
-        out &lt;&lt;
-&quot;foo\n&quot;
-&quot;target\n&quot;
-&quot;bar\n&quot;
-&quot;\n&quot;
-&quot;XXX\n&quot;
-&quot;target\n&quot;
-&quot;YYY\n&quot;;
+        out &lt;&lt; &quot;foo\n&quot;
+               &quot;target\n&quot;
+               &quot;bar\n&quot;
+               &quot;\n&quot;
+               &quot;XXX\n&quot;
+               &quot;target\n&quot;
+               &quot;YYY\n&quot;;
     }
 
     fs::path patch = tmp / &quot;patch2.txt&quot;;
     {
         std::ofstream out(patch);
-        out &lt;&lt;
-&quot;=== file: &quot; &lt;&lt; f.string() &lt;&lt; &quot; ===\n&quot;
-&quot;--- replace-text\n&quot;
-&quot;BEFORE:\n&quot;
-&quot;XXX\n&quot;
-&quot;MARKER:\n&quot;
-&quot;target\n&quot;
-&quot;---\n&quot;
-&quot;SECOND\n&quot;
-&quot;=END=\n&quot;;
+        out &lt;&lt; &quot;=== file: &quot; &lt;&lt; f.string()
+            &lt;&lt; &quot; ===\n&quot;
+               &quot;--- replace-text\n&quot;
+               &quot;BEFORE:\n&quot;
+               &quot;XXX\n&quot;
+               &quot;MARKER:\n&quot;
+               &quot;target\n&quot;
+               &quot;---\n&quot;
+               &quot;SECOND\n&quot;
+               &quot;=END=\n&quot;;
     }
 
     CHECK(run_apply(patch) == 0);
@@ -132,29 +132,28 @@ TEST_CASE(&quot;YAML: AFTER fuzzy selects correct block&quot;)
     fs::path f = tmp / &quot;c.txt&quot;;
     {
         std::ofstream out(f);
-        out &lt;&lt;
-&quot;log\n&quot;
-&quot;X\n&quot;
-&quot;done\n&quot;
-&quot;\n&quot;
-&quot;log\n&quot;
-&quot;X\n&quot;
-&quot;finish\n&quot;;
+        out &lt;&lt; &quot;log\n&quot;
+               &quot;X\n&quot;
+               &quot;done\n&quot;
+               &quot;\n&quot;
+               &quot;log\n&quot;
+               &quot;X\n&quot;
+               &quot;finish\n&quot;;
     }
 
     fs::path patch = tmp / &quot;patch3.txt&quot;;
     {
         std::ofstream out(patch);
-        out &lt;&lt;
-&quot;=== file: &quot; &lt;&lt; f.string() &lt;&lt; &quot; ===\n&quot;
-&quot;--- replace-text\n&quot;
-&quot;MARKER:\n&quot;
-&quot;X\n&quot;
-&quot;AFTER:\n&quot;
-&quot;finish\n&quot;
-&quot;---\n&quot;
-&quot;CHANGED\n&quot;
-&quot;=END=\n&quot;;
+        out &lt;&lt; &quot;=== file: &quot; &lt;&lt; f.string()
+            &lt;&lt; &quot; ===\n&quot;
+               &quot;--- replace-text\n&quot;
+               &quot;MARKER:\n&quot;
+               &quot;X\n&quot;
+               &quot;AFTER:\n&quot;
+               &quot;finish\n&quot;
+               &quot;---\n&quot;
+               &quot;CHANGED\n&quot;
+               &quot;=END=\n&quot;;
     }
 
     CHECK(run_apply(patch) == 0);
@@ -176,31 +175,30 @@ TEST_CASE(&quot;YAML: strong fuzzy match with BEFORE + AFTER&quot;)
     fs::path f = tmp / &quot;d.txt&quot;;
     {
         std::ofstream out(f);
-        out &lt;&lt;
-&quot;A\n&quot;
-&quot;mark\n&quot;
-&quot;B\n&quot;
-&quot;\n&quot;
-&quot;C\n&quot;
-&quot;mark\n&quot;
-&quot;D\n&quot;;
+        out &lt;&lt; &quot;A\n&quot;
+               &quot;mark\n&quot;
+               &quot;B\n&quot;
+               &quot;\n&quot;
+               &quot;C\n&quot;
+               &quot;mark\n&quot;
+               &quot;D\n&quot;;
     }
 
     fs::path patch = tmp / &quot;patch4.txt&quot;;
     {
         std::ofstream out(patch);
-        out &lt;&lt;
-&quot;=== file: &quot; &lt;&lt; f.string() &lt;&lt; &quot; ===\n&quot;
-&quot;--- replace-text\n&quot;
-&quot;BEFORE:\n&quot;
-&quot;C\n&quot;
-&quot;MARKER:\n&quot;
-&quot;mark\n&quot;
-&quot;AFTER:\n&quot;
-&quot;D\n&quot;
-&quot;---\n&quot;
-&quot;SELECTED\n&quot;
-&quot;=END=\n&quot;;
+        out &lt;&lt; &quot;=== file: &quot; &lt;&lt; f.string()
+            &lt;&lt; &quot; ===\n&quot;
+               &quot;--- replace-text\n&quot;
+               &quot;BEFORE:\n&quot;
+               &quot;C\n&quot;
+               &quot;MARKER:\n&quot;
+               &quot;mark\n&quot;
+               &quot;AFTER:\n&quot;
+               &quot;D\n&quot;
+               &quot;---\n&quot;
+               &quot;SELECTED\n&quot;
+               &quot;=END=\n&quot;;
     }
 
     CHECK(run_apply(patch) == 0);
@@ -209,7 +207,6 @@ TEST_CASE(&quot;YAML: strong fuzzy match with BEFORE + AFTER&quot;)
     REQUIRE(L.size() == 7);
     CHECK(L[5] == &quot;SELECTED&quot;);
 }
-
 
 // ============================================================================
 // 7. Legacy format still works
@@ -223,22 +220,21 @@ TEST_CASE(&quot;YAML: legacy replace-text still works&quot;)
     fs::path f = tmp / &quot;g.txt&quot;;
     {
         std::ofstream out(f);
-        out &lt;&lt;
-&quot;1\n&quot;
-&quot;2\n&quot;
-&quot;3\n&quot;;
+        out &lt;&lt; &quot;1\n&quot;
+               &quot;2\n&quot;
+               &quot;3\n&quot;;
     }
 
     fs::path patch = tmp / &quot;patch7.txt&quot;;
     {
         std::ofstream out(patch);
-        out &lt;&lt;
-&quot;=== file: &quot; &lt;&lt; f.string() &lt;&lt; &quot; ===\n&quot;
-&quot;--- replace-text\n&quot;
-&quot;2\n&quot;
-&quot;---\n&quot;
-&quot;X\n&quot;
-&quot;=END=\n&quot;;
+        out &lt;&lt; &quot;=== file: &quot; &lt;&lt; f.string()
+            &lt;&lt; &quot; ===\n&quot;
+               &quot;--- replace-text\n&quot;
+               &quot;2\n&quot;
+               &quot;---\n&quot;
+               &quot;X\n&quot;
+               &quot;=END=\n&quot;;
     }
 
     CHECK(run_apply(patch) == 0);

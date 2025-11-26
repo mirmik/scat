@@ -1,15 +1,15 @@
 #include "doctest/doctest.h"
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 #include <string>
 #include <vector>
-#include <iostream>
 
-int apply_chunk_main(int argc, char** argv);
+int apply_chunk_main(int argc, char **argv);
 
 namespace fs = std::filesystem;
 
-static std::vector<std::string> read_lines(const fs::path& p)
+static std::vector<std::string> read_lines(const fs::path &p)
 {
     std::ifstream in(p);
     std::vector<std::string> v;
@@ -19,14 +19,15 @@ static std::vector<std::string> read_lines(const fs::path& p)
     return v;
 }
 
-static int run_apply(const fs::path& patch)
+static int run_apply(const fs::path &patch)
 {
     std::string a0 = "apply";
     std::string a1 = patch.string();
 
     std::vector<std::string> store = {a0, a1};
-    std::vector<char*> argv;
-    for (auto& s : store) argv.push_back(s.data());
+    std::vector<char *> argv;
+    for (auto &s : store)
+        argv.push_back(s.data());
 
     return apply_chunk_main((int)argv.size(), argv.data());
 }
@@ -49,14 +50,14 @@ TEST_CASE("YAML: only MARKER: behaves like legacy replace-text")
     fs::path patch = tmp / "patch1.txt";
     {
         std::ofstream out(patch);
-        out <<
-"=== file: " << f.string() << " ===\n"
-"--- replace-text\n"
-"MARKER:\n"
-"B\n"
-"---\n"
-"X\n"
-"=END=\n";
+        out << "=== file: " << f.string()
+            << " ===\n"
+               "--- replace-text\n"
+               "MARKER:\n"
+               "B\n"
+               "---\n"
+               "X\n"
+               "=END=\n";
     }
 
     CHECK(run_apply(patch) == 0);
@@ -80,29 +81,28 @@ TEST_CASE("YAML: BEFORE fuzzy selects the correct marker")
     fs::path f = tmp / "b.txt";
     {
         std::ofstream out(f);
-        out <<
-"foo\n"
-"target\n"
-"bar\n"
-"\n"
-"XXX\n"
-"target\n"
-"YYY\n";
+        out << "foo\n"
+               "target\n"
+               "bar\n"
+               "\n"
+               "XXX\n"
+               "target\n"
+               "YYY\n";
     }
 
     fs::path patch = tmp / "patch2.txt";
     {
         std::ofstream out(patch);
-        out <<
-"=== file: " << f.string() << " ===\n"
-"--- replace-text\n"
-"BEFORE:\n"
-"XXX\n"
-"MARKER:\n"
-"target\n"
-"---\n"
-"SECOND\n"
-"=END=\n";
+        out << "=== file: " << f.string()
+            << " ===\n"
+               "--- replace-text\n"
+               "BEFORE:\n"
+               "XXX\n"
+               "MARKER:\n"
+               "target\n"
+               "---\n"
+               "SECOND\n"
+               "=END=\n";
     }
 
     CHECK(run_apply(patch) == 0);
@@ -124,29 +124,28 @@ TEST_CASE("YAML: AFTER fuzzy selects correct block")
     fs::path f = tmp / "c.txt";
     {
         std::ofstream out(f);
-        out <<
-"log\n"
-"X\n"
-"done\n"
-"\n"
-"log\n"
-"X\n"
-"finish\n";
+        out << "log\n"
+               "X\n"
+               "done\n"
+               "\n"
+               "log\n"
+               "X\n"
+               "finish\n";
     }
 
     fs::path patch = tmp / "patch3.txt";
     {
         std::ofstream out(patch);
-        out <<
-"=== file: " << f.string() << " ===\n"
-"--- replace-text\n"
-"MARKER:\n"
-"X\n"
-"AFTER:\n"
-"finish\n"
-"---\n"
-"CHANGED\n"
-"=END=\n";
+        out << "=== file: " << f.string()
+            << " ===\n"
+               "--- replace-text\n"
+               "MARKER:\n"
+               "X\n"
+               "AFTER:\n"
+               "finish\n"
+               "---\n"
+               "CHANGED\n"
+               "=END=\n";
     }
 
     CHECK(run_apply(patch) == 0);
@@ -168,31 +167,30 @@ TEST_CASE("YAML: strong fuzzy match with BEFORE + AFTER")
     fs::path f = tmp / "d.txt";
     {
         std::ofstream out(f);
-        out <<
-"A\n"
-"mark\n"
-"B\n"
-"\n"
-"C\n"
-"mark\n"
-"D\n";
+        out << "A\n"
+               "mark\n"
+               "B\n"
+               "\n"
+               "C\n"
+               "mark\n"
+               "D\n";
     }
 
     fs::path patch = tmp / "patch4.txt";
     {
         std::ofstream out(patch);
-        out <<
-"=== file: " << f.string() << " ===\n"
-"--- replace-text\n"
-"BEFORE:\n"
-"C\n"
-"MARKER:\n"
-"mark\n"
-"AFTER:\n"
-"D\n"
-"---\n"
-"SELECTED\n"
-"=END=\n";
+        out << "=== file: " << f.string()
+            << " ===\n"
+               "--- replace-text\n"
+               "BEFORE:\n"
+               "C\n"
+               "MARKER:\n"
+               "mark\n"
+               "AFTER:\n"
+               "D\n"
+               "---\n"
+               "SELECTED\n"
+               "=END=\n";
     }
 
     CHECK(run_apply(patch) == 0);
@@ -201,7 +199,6 @@ TEST_CASE("YAML: strong fuzzy match with BEFORE + AFTER")
     REQUIRE(L.size() == 7);
     CHECK(L[5] == "SELECTED");
 }
-
 
 // ============================================================================
 // 7. Legacy format still works
@@ -215,22 +212,21 @@ TEST_CASE("YAML: legacy replace-text still works")
     fs::path f = tmp / "g.txt";
     {
         std::ofstream out(f);
-        out <<
-"1\n"
-"2\n"
-"3\n";
+        out << "1\n"
+               "2\n"
+               "3\n";
     }
 
     fs::path patch = tmp / "patch7.txt";
     {
         std::ofstream out(patch);
-        out <<
-"=== file: " << f.string() << " ===\n"
-"--- replace-text\n"
-"2\n"
-"---\n"
-"X\n"
-"=END=\n";
+        out << "=== file: " << f.string()
+            << " ===\n"
+               "--- replace-text\n"
+               "2\n"
+               "---\n"
+               "X\n"
+               "=END=\n";
     }
 
     CHECK(run_apply(patch) == 0);
