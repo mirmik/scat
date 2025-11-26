@@ -35,7 +35,7 @@ You can pipe into clipboard tools:
 
 ```bash
 scat src -r | clip.exe   # Windows / WSL
-scat src -r | wl-copy    # Linux
+scat src -r | wl-copy    # Linux / WSL
 ```
 
 ---
