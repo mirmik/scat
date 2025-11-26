@@ -126,7 +126,7 @@ std::string wrap_cpp_as_html(std::string_view cpp_code,
     html += "<head>\n";
     html += "  <meta charset=\"UTF-8\">\n";
     html += "  <title>";
-    html += html_escape(title);
+    html += html_escape(title);      // title экранируем, пробелы оставляем обычными
     html += "</title>\n";
     html += "</head>\n";
     html += "<body>\n";
@@ -144,22 +144,17 @@ std::string wrap_cpp_as_html(std::string_view cpp_code,
 
         std::string_view line = cpp_code.substr(pos, nl - pos);
 
-        // считаем ведущие пробелы
-        std::size_t lead_spaces = 0;
-        while (lead_spaces < line.size() && line[lead_spaces] == ' ')
-            ++lead_spaces;
+        // 1) экранируем спецсимволы (&, <, >, ")
+        std::string escaped = html_escape(line);
 
-        // каждые 4 пробела -> одна "ступень" отступа
-        std::size_t em_count = lead_spaces / 4;
-
-        for (std::size_t i = 0; i < em_count; ++i)
-            html += "&emsp;"; // em space как HTML-сущность
-
-        // остаток (lead_spaces % 4) выбрасываем
-        std::string_view rest = line.substr(lead_spaces);
-
-        // экранируем спецсимволы только в полезной части строки
-        html += html_escape(rest);
+        // 2) превращаем каждый пробел в &nbsp;, чтобы отступы не схлопывались
+        for (char ch : escaped)
+        {
+            if (ch == ' ')
+                html += "&nbsp;";
+            else
+                html.push_back(ch);
+        }
 
         html += "<br>\n";
 
@@ -167,12 +162,12 @@ std::string wrap_cpp_as_html(std::string_view cpp_code,
     }
 
     html += "<!-- END SCAT CODE -->\n";
+
     html += "</body>\n";
     html += "</html>\n";
 
     return html;
 }
-
 
 
 

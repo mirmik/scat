@@ -6,39 +6,39 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#pragma once<br>
-#include &lt;string&gt;<br>
-#include &lt;vector&gt;<br>
+#pragma&nbsp;once<br>
+#include&nbsp;&lt;string&gt;<br>
+#include&nbsp;&lt;vector&gt;<br>
 <br>
-struct Options<br>
+struct&nbsp;Options<br>
 {<br>
-&emsp;bool chunk_trailer = false;<br>
-&emsp;bool recursive = false;<br>
-&emsp;bool list_only = false;<br>
-&emsp;bool abs_paths = false;<br>
-&emsp;bool line_numbers = false;<br>
-&emsp;bool sorted = false; // --sorted: sort list (-l) by size<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;chunk_trailer&nbsp;=&nbsp;false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;recursive&nbsp;=&nbsp;false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;list_only&nbsp;=&nbsp;false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;abs_paths&nbsp;=&nbsp;false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;line_numbers&nbsp;=&nbsp;false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;sorted&nbsp;=&nbsp;false;&nbsp;//&nbsp;--sorted:&nbsp;sort&nbsp;list&nbsp;(-l)&nbsp;by&nbsp;size<br>
 <br>
-&emsp;bool show_size = false; // --size: show file sizes in -l<br>
-&emsp;int server_port = 0;    // --server PORT<br>
-&emsp;std::string apply_file;<br>
-&emsp;bool apply_stdin = false;<br>
-&emsp;std::string config_file; // empty = no config mode<br>
-&emsp;bool chunk_help = false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;show_size&nbsp;=&nbsp;false;&nbsp;//&nbsp;--size:&nbsp;show&nbsp;file&nbsp;sizes&nbsp;in&nbsp;-l<br>
+&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;server_port&nbsp;=&nbsp;0;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;--server&nbsp;PORT<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;apply_file;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;apply_stdin&nbsp;=&nbsp;false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;config_file;&nbsp;//&nbsp;empty&nbsp;=&nbsp;no&nbsp;config&nbsp;mode<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;chunk_help&nbsp;=&nbsp;false;<br>
 <br>
-&emsp;bool git_info = false; // --git-info: print git meta info<br>
-&emsp;bool gh_map = false;   // --ghmap: print GitHub raw URLs for current commit<br>
-&emsp;bool copy_out = false; // --copy: also send stdout to clipboard<br>
-&emsp;bool hook_install =<br>
-&emsp;&emsp;false; // --hook-install: install/update git pre-commit hook<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;git_info&nbsp;=&nbsp;false;&nbsp;//&nbsp;--git-info:&nbsp;print&nbsp;git&nbsp;meta&nbsp;info<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;gh_map&nbsp;=&nbsp;false;&nbsp;&nbsp;&nbsp;//&nbsp;--ghmap:&nbsp;print&nbsp;GitHub&nbsp;raw&nbsp;URLs&nbsp;for&nbsp;current&nbsp;commit<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;copy_out&nbsp;=&nbsp;false;&nbsp;//&nbsp;--copy:&nbsp;also&nbsp;send&nbsp;stdout&nbsp;to&nbsp;clipboard<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;hook_install&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;false;&nbsp;//&nbsp;--hook-install:&nbsp;install/update&nbsp;git&nbsp;pre-commit&nbsp;hook<br>
 <br>
-&emsp;std::vector&lt;std::string&gt; paths; // positional paths<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;paths;&nbsp;//&nbsp;positional&nbsp;paths<br>
 <br>
-&emsp;std::string wrap_root;   // --wrap<br>
-&emsp;std::string path_prefix; // --prefix P<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;wrap_root;&nbsp;&nbsp;&nbsp;//&nbsp;--wrap<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;path_prefix;&nbsp;//&nbsp;--prefix&nbsp;P<br>
 };<br>
 <br>
-Options parse_options(int argc, char **argv);<br>
+Options&nbsp;parse_options(int&nbsp;argc,&nbsp;char&nbsp;**argv);<br>
 <!-- END SCAT CODE -->
 </body>
 </html>

@@ -6,20 +6,20 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#pragma once<br>
-#include &quot;rules.h&quot;<br>
-#include &lt;filesystem&gt;<br>
-#include &lt;string&gt;<br>
-#include &lt;vector&gt;<br>
+#pragma&nbsp;once<br>
+#include&nbsp;&quot;rules.h&quot;<br>
+#include&nbsp;&lt;filesystem&gt;<br>
+#include&nbsp;&lt;string&gt;<br>
+#include&nbsp;&lt;vector&gt;<br>
 <br>
-struct Config<br>
+struct&nbsp;Config<br>
 {<br>
-&emsp;std::vector&lt;Rule&gt; text_rules;<br>
-&emsp;std::vector&lt;Rule&gt; tree_rules;<br>
-&emsp;std::string map_format; // новый блок [MAPFORMAT], может быть пустым<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;Rule&gt;&nbsp;text_rules;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;Rule&gt;&nbsp;tree_rules;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;map_format;&nbsp;//&nbsp;новый&nbsp;блок&nbsp;[MAPFORMAT],&nbsp;может&nbsp;быть&nbsp;пустым<br>
 };<br>
 <br>
-Config parse_config(const std::filesystem::path &amp;path);<br>
+Config&nbsp;parse_config(const&nbsp;std::filesystem::path&nbsp;&amp;path);<br>
 <!-- END SCAT CODE -->
 </body>
 </html>

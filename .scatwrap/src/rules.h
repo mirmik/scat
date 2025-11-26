@@ -6,29 +6,29 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#pragma once<br>
-#include &lt;string&gt;<br>
+#pragma&nbsp;once<br>
+#include&nbsp;&lt;string&gt;<br>
 <br>
-struct Rule<br>
+struct&nbsp;Rule<br>
 {<br>
-&emsp;std::string pattern;<br>
-&emsp;bool exclude = false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;pattern;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;exclude&nbsp;=&nbsp;false;<br>
 <br>
-&emsp;static Rule from_string(const std::string &amp;line)<br>
-&emsp;{<br>
-&emsp;&emsp;Rule r;<br>
-&emsp;&emsp;if (!line.empty() &amp;&amp; line[0] == '!')<br>
-&emsp;&emsp;{<br>
-&emsp;&emsp;&emsp;r.exclude = true;<br>
-&emsp;&emsp;&emsp;r.pattern = line.substr(1);<br>
-&emsp;&emsp;}<br>
-&emsp;&emsp;else<br>
-&emsp;&emsp;{<br>
-&emsp;&emsp;&emsp;r.exclude = false;<br>
-&emsp;&emsp;&emsp;r.pattern = line;<br>
-&emsp;&emsp;}<br>
-&emsp;&emsp;return r;<br>
-&emsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;static&nbsp;Rule&nbsp;from_string(const&nbsp;std::string&nbsp;&amp;line)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Rule&nbsp;r;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!line.empty()&nbsp;&amp;&amp;&nbsp;line[0]&nbsp;==&nbsp;'!')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;r.exclude&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;r.pattern&nbsp;=&nbsp;line.substr(1);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;r.exclude&nbsp;=&nbsp;false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;r.pattern&nbsp;=&nbsp;line;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;r;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 };<br>
 <!-- END SCAT CODE -->
 </body>
