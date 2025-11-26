@@ -22,6 +22,61 @@ namespace fs = std::filesystem;
 
 bool g_use_absolute_paths = false;
 
+
+
+// Разбор remote вроде git@github.com:user/repo.git или https://github.com/user/repo(.git)
+static bool parse_github_remote(const std::string& remote,
+                                std::string& user,
+                                std::string& repo)
+{
+    const std::string host = "github.com";
+    auto pos = remote.find(host);
+    if (pos == std::string::npos)
+        return false;
+
+    pos += host.size();
+
+    // пропускаем ':' или '/' после github.com
+    while (pos < remote.size() && (remote[pos] == ':' || remote[pos] == '/'))
+        ++pos;
+
+    if (pos >= remote.size())
+        return false;
+
+    // user / repo[.git] / ...
+    auto slash1 = remote.find('/', pos);
+    if (slash1 == std::string::npos)
+        return false;
+
+    user = remote.substr(pos, slash1 - pos);
+
+    auto start_repo = slash1 + 1;
+    if (start_repo >= remote.size())
+        return false;
+
+    auto slash2 = remote.find('/', start_repo);
+    std::string repo_part =
+        (slash2 == std::string::npos)
+            ? remote.substr(start_repo)
+            : remote.substr(start_repo, slash2 - start_repo);
+
+    // обрежем .git в конце, если есть
+    const std::string dot_git = ".git";
+    if (repo_part.size() > dot_git.size() &&
+        repo_part.compare(repo_part.size() - dot_git.size(), dot_git.size(), dot_git) == 0)
+    {
+        repo_part.resize(repo_part.size() - dot_git.size());
+    }
+
+    if (user.empty() || repo_part.empty())
+        return false;
+
+    repo = repo_part;
+    return true;
+}
+
+
+
 void print_chunk_help()
 {
     std::cout << "# Chunk v2 — Change Description Format\n"
@@ -454,6 +509,44 @@ int scat_main(int argc, char** argv)
 
             return 0;
         }
+
+
+        // GH map mode: построить prefix = raw.githubusercontent/... и дальше работать как -l --prefix
+    if (opt.gh_map)
+    {
+        GitInfo info = detect_git_info();
+        if (!info.has_commit || !info.has_remote)
+        {
+            std::cerr << "--ghmap: unable to detect git commit or remote origin\n";
+            return 1;
+        }
+
+        std::string user;
+        std::string repo;
+        if (!parse_github_remote(info.remote, user, repo))
+        {
+            std::cerr << "--ghmap: remote is not a supported GitHub URL: "
+                      << info.remote << "\n";
+            return 1;
+        }
+
+        // по спецификации: https://raw.githubusercontent.com/GHUSER/scat/COMMITHASH/.scatwrap/
+        // здесь можно использовать repo, но в твоём кейсе это всё равно "scat"
+        std::string prefix = "https://raw.githubusercontent.com/";
+        prefix += user;
+        prefix += "/";
+        prefix += repo;          // == "scat" в твоём репозитории
+        prefix += "/";
+        prefix += info.commit;
+        prefix += "/.scatwrap/";
+
+        // Эквивалент -l --prefix PREFIX, без обёртки --wrap
+        opt.list_only = true;
+        opt.wrap_root.clear();
+        opt.path_prefix = prefix;
+        // show_size оставляем как есть: хочешь размеры — добавишь --size
+    }
+
 
     // HTTP server mode
     if (opt.server_port != 0)
