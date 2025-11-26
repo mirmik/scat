@@ -258,6 +258,7 @@ void print_tree(const std::vector<std::filesystem::path>& files)
 int scat_main(int argc, char** argv)
 {
     Options opt = parse_options(argc, argv);
+    g_use_absolute_paths = opt.abs_paths;
 
     // ------------------------------------------------------------
     // Chunk help
@@ -317,12 +318,30 @@ int scat_main(int argc, char** argv)
             return 0;
         }
 
-        // 2) Print files
+        // LIST ONLY в config-режиме: только пути и размеры
+        if (opt.list_only)
+        {
+            std::uintmax_t total = 0;
+            for (auto& f : text_files)
+            {
+                auto sz = get_file_size(f);
+                total += sz;
+                std::cout << make_display_path(f)
+                          << " (" << sz << " bytes)\n";
+            }
+
+            std::cout << "Total size: " << total << " bytes\n";
+            return 0;
+        }
+
+        // 2) Печать файлов с подсчётом суммарного размера
         bool first = true;
+        std::uintmax_t total = 0;
         for (auto& f : text_files)
         {
             dump_file(f, first, opt);
             first = false;
+            total += get_file_size(f);
         }
 
         // 3) TREE rules (optional)
@@ -343,6 +362,8 @@ int scat_main(int argc, char** argv)
             print_chunk_help();
         }
 
+        std::cout << "\nTotal size: " << total << " bytes\n";
+
         return 0;
     }
 
@@ -361,18 +382,28 @@ int scat_main(int argc, char** argv)
     // LIST ONLY
     if (opt.list_only)
     {
+        std::uintmax_t total = 0;
         for (auto& f : files)
-            std::cout << make_display_path(f) << "\n";
+        {
+            auto sz = get_file_size(f);
+            total += sz;
+            std::cout << make_display_path(f)
+                      << " (" << sz << " bytes)\n";
+        }
+
+        std::cout << "Total size: " << total << " bytes\n";
         return 0;
     }
 
-    // Dump all collected files
+    // Dump all collected files с подсчётом суммарного размера
+    std::uintmax_t total = 0;
     {
         bool first = true;
         for (auto& f : files)
         {
             dump_file(f, first, opt);
             first = false;
+            total += get_file_size(f);
         }
     }
 
@@ -385,6 +416,8 @@ int scat_main(int argc, char** argv)
         std::cout << "\n===== CHUNK FORMAT HELP =====\n\n";
         print_chunk_help();
     }
+
+    std::cout << "\nTotal size: " << total << " bytes\n";
 
     return 0;
 }

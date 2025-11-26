@@ -55,6 +55,14 @@ void dump_file(const fs::path& p, bool first, const Options& opt)
         ++line_no;
     }
 }
+std::uintmax_t get_file_size(const fs::path& p)
+{
+    std::error_code ec;
+    auto sz = fs::file_size(p, ec);
+    if (ec)
+        return 0;
+    return sz;
+}
 
 bool match_simple(const fs::path& p, const std::string& pat)
 {
