@@ -134,7 +134,7 @@ std::string wrap_cpp_as_html(std::string_view cpp_code,<br>
 &#9;html += &quot;&lt;head&gt;\n&quot;;<br>
 &#9;html += &quot;  &lt;meta charset=\&quot;UTF-8\&quot;&gt;\n&quot;;<br>
 &#9;html += &quot;  &lt;title&gt;&quot;;<br>
-&#9;html += html_escape(title);<br>
+&#9;html += html_escape(title);      // title экранируем, пробелы оставляем обычными<br>
 &#9;html += &quot;&lt;/title&gt;\n&quot;;<br>
 &#9;html += &quot;&lt;/head&gt;\n&quot;;<br>
 &#9;html += &quot;&lt;body&gt;\n&quot;;<br>
@@ -152,22 +152,17 @@ std::string wrap_cpp_as_html(std::string_view cpp_code,<br>
 <br>
 &#9;&#9;std::string_view line = cpp_code.substr(pos, nl - pos);<br>
 <br>
-&#9;&#9;// считаем ведущие пробелы<br>
-&#9;&#9;std::size_t lead_spaces = 0;<br>
-&#9;&#9;while (lead_spaces &lt; line.size() &amp;&amp; line[lead_spaces] == ' ')<br>
-&#9;&#9;&#9;++lead_spaces;<br>
+&#9;&#9;// 1) экранируем спецсимволы (&amp;, &lt;, &gt;, &quot;)<br>
+&#9;&#9;std::string escaped = html_escape(line);<br>
 <br>
-&#9;&#9;// каждые 4 пробела -&gt; один таб<br>
-&#9;&#9;std::size_t tab_count = lead_spaces / 4;<br>
-<br>
-&#9;&#9;for (std::size_t i = 0; i &lt; tab_count; ++i)<br>
-&#9;&#9;&#9;html += &quot;&amp;#9;&quot;; // табуляция как HTML-entity<br>
-<br>
-&#9;&#9;// остаток от 4 пробелов просто отбрасываем<br>
-&#9;&#9;std::string_view rest = line.substr(lead_spaces);<br>
-<br>
-&#9;&#9;// экранируем только спецсимволы в &quot;полезной&quot; части строки<br>
-&#9;&#9;html += html_escape(rest);<br>
+&#9;&#9;// 2) превращаем каждый пробел в &amp;nbsp;, чтобы отступы не схлопывались<br>
+&#9;&#9;for (char ch : escaped)<br>
+&#9;&#9;{<br>
+&#9;&#9;&#9;if (ch == ' ')<br>
+&#9;&#9;&#9;&#9;html += &quot;&amp;nbsp;&quot;;<br>
+&#9;&#9;&#9;else<br>
+&#9;&#9;&#9;&#9;html.push_back(ch);<br>
+&#9;&#9;}<br>
 <br>
 &#9;&#9;html += &quot;&lt;br&gt;\n&quot;;<br>
 <br>
@@ -175,13 +170,12 @@ std::string wrap_cpp_as_html(std::string_view cpp_code,<br>
 &#9;}<br>
 <br>
 &#9;html += &quot;&lt;!-- END SCAT CODE --&gt;\n&quot;;<br>
+<br>
 &#9;html += &quot;&lt;/body&gt;\n&quot;;<br>
 &#9;html += &quot;&lt;/html&gt;\n&quot;;<br>
-&#9;<br>
 <br>
 &#9;return html;<br>
 }<br>
-<br>
 <br>
 <br>
 <!-- END SCAT CODE -->
