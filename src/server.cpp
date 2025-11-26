@@ -167,6 +167,31 @@ int run_server(const Options& opt)
         if (target.empty())
             target = "/";
 
+        // Корневая страница с краткой подсказкой
+        if (target == "/")
+        {
+            std::ostringstream body;
+            body
+                << "<!DOCTYPE html>\n"
+                << "<html><head><meta charset=\"utf-8\">"
+                << "<title>scat server</title></head><body>\n"
+                << "<h1>scat server</h1>\n"
+                << "<p>This is a read-only file server started by "
+                << "<code>scat --server PORT</code>.</p>\n"
+                << "<ul>\n"
+                << "  <li><code>/index.json</code> – list of files as JSON.</li>\n"
+                << "  <li><code>/{relative-path}</code> – raw file contents. "
+                << "Path must match an entry from <code>index.json</code>.</li>\n"
+                << "</ul>\n"
+                << "</body></html>\n";
+
+            send_response("HTTP/1.0 200 OK",
+                          "text/html; charset=utf-8",
+                          body.str());
+            ::close(client);
+            continue;
+        }
+
         if (target == "/index.json")
         {
             std::ostringstream body;
