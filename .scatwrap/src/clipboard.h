@@ -6,23 +6,23 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#pragma &#20;once<br>
-#include &#20;&lt;iostream&gt;<br>
-#include &#20;&lt;sstream&gt;<br>
-#include &#20;&lt;string&gt;<br>
+#pragma&#32;once<br>
+#include&#32;&lt;iostream&gt;<br>
+#include&#32;&lt;sstream&gt;<br>
+#include&#32;&lt;string&gt;<br>
 <br>
-void &#20;copy_to_clipboard(const &#20;std::string &#20;&amp;text);<br>
+void&#32;copy_to_clipboard(const&#32;std::string&#32;&amp;text);<br>
 <br>
-class &#20;CopyGuard<br>
+class&#32;CopyGuard<br>
 {<br>
 public:<br>
- &#20; &#20; &#20; &#20;explicit &#20;CopyGuard(bool &#20;enabled);<br>
- &#20; &#20; &#20; &#20;~CopyGuard();<br>
+&#32;&#32;&#32;&#32;explicit&#32;CopyGuard(bool&#32;enabled);<br>
+&#32;&#32;&#32;&#32;~CopyGuard();<br>
 <br>
 private:<br>
- &#20; &#20; &#20; &#20;bool &#20;enabled_;<br>
- &#20; &#20; &#20; &#20;std::ostringstream &#20;buffer_;<br>
- &#20; &#20; &#20; &#20;std::streambuf &#20;*old_buf_;<br>
+&#32;&#32;&#32;&#32;bool&#32;enabled_;<br>
+&#32;&#32;&#32;&#32;std::ostringstream&#32;buffer_;<br>
+&#32;&#32;&#32;&#32;std::streambuf&#32;*old_buf_;<br>
 };<br>
 <!-- END SCAT CODE -->
 </body>

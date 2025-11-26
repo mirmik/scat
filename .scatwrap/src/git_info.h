@@ -6,34 +6,34 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#pragma &#20;once<br>
+#pragma&#32;once<br>
 <br>
-#include &#20;&lt;string&gt;<br>
+#include&#32;&lt;string&gt;<br>
 <br>
-struct &#20;GitInfo<br>
+struct&#32;GitInfo<br>
 {<br>
- &#20; &#20; &#20; &#20;std::string &#20;commit;<br>
- &#20; &#20; &#20; &#20;std::string &#20;remote;<br>
- &#20; &#20; &#20; &#20;bool &#20;has_commit &#20;= &#20;false;<br>
- &#20; &#20; &#20; &#20;bool &#20;has_remote &#20;= &#20;false;<br>
+&#32;&#32;&#32;&#32;std::string&#32;commit;<br>
+&#32;&#32;&#32;&#32;std::string&#32;remote;<br>
+&#32;&#32;&#32;&#32;bool&#32;has_commit&#32;=&#32;false;<br>
+&#32;&#32;&#32;&#32;bool&#32;has_remote&#32;=&#32;false;<br>
 };<br>
 <br>
-struct &#20;GitHubInfo<br>
+struct&#32;GitHubInfo<br>
 {<br>
- &#20; &#20; &#20; &#20;std::string &#20;user;<br>
- &#20; &#20; &#20; &#20;std::string &#20;repo;<br>
- &#20; &#20; &#20; &#20;std::string &#20;commit;<br>
- &#20; &#20; &#20; &#20;bool &#20;ok &#20;= &#20;false;<br>
+&#32;&#32;&#32;&#32;std::string&#32;user;<br>
+&#32;&#32;&#32;&#32;std::string&#32;repo;<br>
+&#32;&#32;&#32;&#32;std::string&#32;commit;<br>
+&#32;&#32;&#32;&#32;bool&#32;ok&#32;=&#32;false;<br>
 };<br>
 <br>
-// &#20;Tries &#20;to &#20;detect &#20;git &#20;commit &#20;hash &#20;and &#20;remote &#20;origin &#20;URL<br>
-GitInfo &#20;detect_git_info();<br>
-bool &#20;parse_github_remote(const &#20;std::string &#20;&amp;remote,<br>
- &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::string &#20;&amp;user,<br>
- &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::string &#20;&amp;repo);<br>
+//&#32;Tries&#32;to&#32;detect&#32;git&#32;commit&#32;hash&#32;and&#32;remote&#32;origin&#32;URL<br>
+GitInfo&#32;detect_git_info();<br>
+bool&#32;parse_github_remote(const&#32;std::string&#32;&amp;remote,<br>
+&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;std::string&#32;&amp;user,<br>
+&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;std::string&#32;&amp;repo);<br>
 <br>
-GitHubInfo &#20;detect_github_info();<br>
-std::string &#20;detect_git_dir(); &#20;// &#20;NEW<br>
+GitHubInfo&#32;detect_github_info();<br>
+std::string&#32;detect_git_dir();&#32;//&#32;NEW<br>
 <!-- END SCAT CODE -->
 </body>
 </html>

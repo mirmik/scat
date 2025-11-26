@@ -6,26 +6,26 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#pragma &#20;once<br>
-#include &#20;&quot;options.h&quot;<br>
-#include &#20;&lt;cstdint&gt;<br>
-#include &#20;&lt;filesystem&gt;<br>
-#include &#20;&lt;string&gt;<br>
-#include &#20;&lt;string_view&gt;<br>
-#include &#20;&lt;vector&gt;<br>
+#pragma&#32;once<br>
+#include&#32;&quot;options.h&quot;<br>
+#include&#32;&lt;cstdint&gt;<br>
+#include&#32;&lt;filesystem&gt;<br>
+#include&#32;&lt;string&gt;<br>
+#include&#32;&lt;string_view&gt;<br>
+#include&#32;&lt;vector&gt;<br>
 <br>
-std::string &#20;make_display_path(const &#20;std::filesystem::path &#20;&amp;p);<br>
-void &#20;dump_file(const &#20;std::filesystem::path &#20;&amp;p, &#20;bool &#20;first, &#20;const &#20;Options &#20;&amp;opt);<br>
+std::string&#32;make_display_path(const&#32;std::filesystem::path&#32;&amp;p);<br>
+void&#32;dump_file(const&#32;std::filesystem::path&#32;&amp;p,&#32;bool&#32;first,&#32;const&#32;Options&#32;&amp;opt);<br>
 <br>
-// &#20;Безопасное &#20;получение &#20;размера &#20;файла; &#20;при &#20;ошибке &#20;возвращает &#20;0.<br>
-std::uintmax_t &#20;get_file_size(const &#20;std::filesystem::path &#20;&amp;p);<br>
+//&#32;Безопасное&#32;получение&#32;размера&#32;файла;&#32;при&#32;ошибке&#32;возвращает&#32;0.<br>
+std::uintmax_t&#32;get_file_size(const&#32;std::filesystem::path&#32;&amp;p);<br>
 <br>
-bool &#20;match_simple(const &#20;std::filesystem::path &#20;&amp;p, &#20;const &#20;std::string &#20;&amp;mask);<br>
+bool&#32;match_simple(const&#32;std::filesystem::path&#32;&amp;p,&#32;const&#32;std::string&#32;&amp;mask);<br>
 <br>
-// &#20;HTML &#20;helpers<br>
-std::string &#20;html_escape(std::string_view &#20;src);<br>
-std::string &#20;wrap_cpp_as_html(std::string_view &#20;cpp_code,<br>
- &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::string_view &#20;title &#20;= &#20;&quot;C++ &#20;code&quot;);<br>
+//&#32;HTML&#32;helpers<br>
+std::string&#32;html_escape(std::string_view&#32;src);<br>
+std::string&#32;wrap_cpp_as_html(std::string_view&#32;cpp_code,<br>
+&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;std::string_view&#32;title&#32;=&#32;&quot;C++&#32;code&quot;);<br>
 <!-- END SCAT CODE -->
 </body>
 </html>

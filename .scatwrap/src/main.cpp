@@ -6,11 +6,11 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#include &#20;&quot;scat.h&quot;<br>
+#include&#32;&quot;scat.h&quot;<br>
 <br>
-int &#20;main(int &#20;argc, &#20;char &#20;**argv)<br>
+int&#32;main(int&#32;argc,&#32;char&#32;**argv)<br>
 {<br>
- &#20; &#20; &#20; &#20;return &#20;scat_main(argc, &#20;argv);<br>
+&#32;&#32;&#32;&#32;return&#32;scat_main(argc,&#32;argv);<br>
 }<br>
 <!-- END SCAT CODE -->
 </body>

@@ -6,19 +6,19 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#pragma &#20;once<br>
-#include &#20;&lt;filesystem&gt;<br>
-#include &#20;&lt;string&gt;<br>
-#include &#20;&lt;vector&gt;<br>
+#pragma&#32;once<br>
+#include&#32;&lt;filesystem&gt;<br>
+#include&#32;&lt;string&gt;<br>
+#include&#32;&lt;vector&gt;<br>
 <br>
-// &#20;expand_glob:<br>
-// &#20; &#20; &#20;Поддерживает &#20;паттерны:<br>
-// &#20; &#20; &#20; &#20; &#20;* &#20;&quot;*&quot; &#20;внутри &#20;уровня<br>
-// &#20; &#20; &#20; &#20; &#20;* &#20;&quot;**&quot; &#20;— &#20;рекурсивный &#20;обход<br>
-// &#20; &#20; &#20; &#20; &#20;* &#20;сложные &#20;пути &#20;вида &#20;&quot;foo/*/bar/**/*.txt&quot;<br>
+//&#32;expand_glob:<br>
+//&#32;&#32;&#32;Поддерживает&#32;паттерны:<br>
+//&#32;&#32;&#32;&#32;&#32;*&#32;&quot;*&quot;&#32;внутри&#32;уровня<br>
+//&#32;&#32;&#32;&#32;&#32;*&#32;&quot;**&quot;&#32;—&#32;рекурсивный&#32;обход<br>
+//&#32;&#32;&#32;&#32;&#32;*&#32;сложные&#32;пути&#32;вида&#32;&quot;foo/*/bar/**/*.txt&quot;<br>
 //<br>
-// &#20;Возвращает &#20;список &#20;regular &#20;files.<br>
-std::vector&lt;std::filesystem::path&gt; &#20;expand_glob(const &#20;std::string &#20;&amp;pattern);<br>
+//&#32;Возвращает&#32;список&#32;regular&#32;files.<br>
+std::vector&lt;std::filesystem::path&gt;&#32;expand_glob(const&#32;std::string&#32;&amp;pattern);<br>
 <!-- END SCAT CODE -->
 </body>
 </html>
