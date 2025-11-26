@@ -261,7 +261,184 @@ void print_tree(const std::vector&lt;std::filesystem::path&gt;&amp; files)
     std::cout &lt;&lt; &quot;========================\n\n&quot;;
 }
 
+// Печать списка файлов (с размерами — опционально)
+static void print_list_with_sizes(const std::vector&lt;std::filesystem::path&gt;&amp; files,
+                                  const Options&amp; opt)
+{
+    namespace fs = std::filesystem;
+
+    struct Item {
+        fs::path           path;
+        std::string        display;
+        std::uintmax_t     size;
+    };
+
+    std::vector&lt;Item&gt; items;
+    items.reserve(files.size());
+
+    std::uintmax_t total   = 0;
+    std::size_t    max_len = 0;
+
+    for (auto&amp; f : files) {
+        auto disp = make_display_path(f);
+        auto sz   = get_file_size(f);
+
+        total += sz;
+
+        std::size_t shown_len = opt.path_prefix.size() + disp.size();
+        if (shown_len &gt; max_len)
+            max_len = shown_len;
+
+        items.push_back(Item{f, std::move(disp), sz});
+    }
+
+    if (opt.sorted) {
+        std::sort(items.begin(), items.end(),
+                  [](const Item&amp; a, const Item&amp; b) {
+                      if (a.size != b.size)
+                          return a.size &gt; b.size; // по убыванию
+                      return a.display &lt; b.display;
+                  });
+    }
+
+    const bool show_size = opt.show_size;
+
+    for (const auto&amp; it : items) {
+        std::string shown = opt.path_prefix + it.display;
+        std::cout &lt;&lt; shown;
+
+        if (show_size) {
+            if (max_len &gt; shown.size()) {
+                std::size_t pad = max_len - shown.size();
+                for (std::size_t i = 0; i &lt; pad; ++i)
+                    std::cout &lt;&lt; ' ';
+            }
+            std::cout &lt;&lt; &quot; (&quot; &lt;&lt; it.size &lt;&lt; &quot; bytes)&quot;;
+        }
+
+        std::cout &lt;&lt; &quot;\n&quot;;
+    }
+
+    if (show_size) {
+        std::cout &lt;&lt; &quot;Total size: &quot; &lt;&lt; total &lt;&lt; &quot; bytes\n&quot;;
+    }
+}
+
+
+// Вывод всех файлов и подсчёт суммарного размера
+static std::uintmax_t dump_files_and_total(const std::vector&lt;std::filesystem::path&gt;&amp; files,
+                                           const Options&amp; opt)
+{
+    std::uintmax_t total = 0;
+    bool first = true;
+
+    for (auto&amp; f : files)
+    {
+        dump_file(f, first, opt);
+        first = false;
+        total += get_file_size(f);
+    }
+
+    return total;
+}
+
+
 int run_server(const Options&amp; opt);
+
+
+// общий каркас обработки списка файлов
+static int process_files(const std::vector&lt;std::filesystem::path&gt;&amp; files,
+                         const Options&amp; opt,
+                         const std::function&lt;void(std::uintmax_t)&gt;&amp; after_dump)
+{
+    if (files.empty())
+    {
+        std::cerr &lt;&lt; &quot;No files collected.\n&quot;;
+        return 0;
+    }
+
+    if (!opt.wrap_root.empty())
+        return wrap_files_to_html(files, opt);
+
+    if (opt.list_only)
+    {
+        print_list_with_sizes(files, opt);
+        return 0;
+    }
+
+    std::uintmax_t total = dump_files_and_total(files, opt);
+
+    if (after_dump)
+        after_dump(total);
+
+    return 0;
+}
+
+// =========================
+// CONFIG MODE
+// =========================
+
+static int run_config_mode(const Options&amp; opt)
+{
+    Config cfg;
+    try
+    {
+        cfg = parse_config(opt.config_file);
+    }
+    catch (const std::exception&amp; e)
+    {
+        std::cerr &lt;&lt; e.what() &lt;&lt; &quot;\n&quot;;
+        return 1;
+    }
+
+    auto text_files = collect_from_rules(cfg.text_rules, opt);
+
+    auto after_dump = [&amp;](std::uintmax_t total) {
+        // TREE rules (если есть)
+        if (!cfg.tree_rules.empty())
+        {
+            auto tree_files = collect_from_rules(cfg.tree_rules, opt);
+            if (!tree_files.empty())
+            {
+                std::cout &lt;&lt; &quot;\n&quot;;
+                print_tree(tree_files);
+            }
+        }
+
+        if (opt.chunk_trailer)
+        {
+            std::cout &lt;&lt; &quot;\n===== CHUNK FORMAT HELP =====\n\n&quot;;
+            print_chunk_help();
+        }
+
+        std::cout &lt;&lt; &quot;\nTotal size: &quot; &lt;&lt; total &lt;&lt; &quot; bytes\n&quot;;
+    };
+
+    return process_files(text_files, opt, after_dump);
+}
+
+// =========================
+// NORMAL MODE
+// =========================
+
+static int run_normal_mode(const Options&amp; opt)
+{
+    std::vector&lt;std::filesystem::path&gt; files = collect_from_paths(opt.paths, opt);
+
+    auto after_dump = [&amp;](std::uintmax_t total) {
+        // В обычном режиме дерево не печатаем
+        if (opt.chunk_trailer)
+        {
+            std::cout &lt;&lt; &quot;\n===== CHUNK FORMAT HELP =====\n\n&quot;;
+            print_chunk_help();
+        }
+
+        std::cout &lt;&lt; &quot;\nTotal size: &quot; &lt;&lt; total &lt;&lt; &quot; bytes\n&quot;;
+    };
+
+    return process_files(files, opt, after_dump);
+}
+
 
 int scat_main(int argc, char** argv)
 {
@@ -292,7 +469,6 @@ int scat_main(int argc, char** argv)
 
             std::stringstream ss;
             ss &lt;&lt; std::cin.rdbuf();
-
             fs::path tmp = fs::temp_directory_path() / &quot;scat_stdin_patch.txt&quot;;
             {
                 std::ofstream out(tmp);
@@ -302,7 +478,6 @@ int scat_main(int argc, char** argv)
             std::string tmp_str = tmp.string();
             const char* args[] = {&quot;apply&quot;, tmp_str.c_str()};
             int r = apply_chunk_main(2, const_cast&lt;char**&gt;(args));
-
             fs::remove(tmp);
             return r;
         }
@@ -318,222 +493,14 @@ int scat_main(int argc, char** argv)
     // CONFIG MODE — uses scat.txt or --config F
     // ------------------------------------------------------------
     if (!opt.config_file.empty())
-    {
-        Config cfg;
-        try
-        {
-            cfg = parse_config(opt.config_file);
-        }
-        catch (const std::exception&amp; e)
-        {
-            std::cerr &lt;&lt; e.what() &lt;&lt; &quot;\n&quot;;
-            return 1;
-        }
-
-        // 1) TEXT rules
-        auto text_files = collect_from_rules(cfg.text_rules, opt);
-
-        if (text_files.empty())
-        {
-            std::cerr &lt;&lt; &quot;No files collected.\n&quot;;
-            return 0;
-        }
-
-            if (!opt.wrap_root.empty()) {
-        // вместо вывода в stdout просто делаем HTML-копии
-        return wrap_files_to_html(text_files, opt);
-    }
-
-        // LIST ONLY в config-режиме: только пути и размеры
-        if (opt.list_only)
-        {
-            struct Item
-            {
-                fs::path path;
-                std::string display;
-                std::uintmax_t size;
-            };
-
-            std::vector&lt;Item&gt; items;
-            items.reserve(text_files.size());
-
-            std::uintmax_t total = 0;
-            std::size_t max_name = 0;
-
-            for (auto&amp; f : text_files)
-            {
-                auto disp = make_display_path(f);
-                auto sz = get_file_size(f);
-
-                total += sz;
-
-                std::size_t shown_len = opt.path_prefix.size() + disp.size();
-                if (shown_len &gt; max_name)
-                    max_name = shown_len;
-
-                items.push_back(Item{f, disp, sz});
-            }
-
-            if (opt.sorted)
-            {
-                std::sort(items.begin(), items.end(), [](const Item&amp; a, const Item&amp; b) {
-                    if (a.size != b.size)
-                        return a.size &gt; b.size; // по убыванию
-                    return a.display &lt; b.display;
-                });
-            }
-
-            for (const auto&amp; it : items)
-            {
-                std::string shown = opt.path_prefix + it.display;
-
-                std::cout &lt;&lt; shown;
-                if (max_name &gt; shown.size())
-                {
-                    std::size_t pad = max_name - shown.size();
-                    for (std::size_t i = 0; i &lt; pad; ++i)
-                        std::cout &lt;&lt; ' ';
-                }
-                std::cout &lt;&lt; &quot; (&quot; &lt;&lt; it.size &lt;&lt; &quot; bytes)\n&quot;;
-            }
-
-            std::cout &lt;&lt; &quot;Total size: &quot; &lt;&lt; total &lt;&lt; &quot; bytes\n&quot;;
-            return 0;
-        }
-
-
-        // 2) Печать файлов с подсчётом суммарного размера
-        bool first = true;
-        std::uintmax_t total = 0;
-        for (auto&amp; f : text_files)
-        {
-            dump_file(f, first, opt);
-            first = false;
-            total += get_file_size(f);
-        }
-
-        // 3) TREE rules (optional)
-        if (!cfg.tree_rules.empty())
-        {
-            auto tree_files = collect_from_rules(cfg.tree_rules, opt);
-            if (!tree_files.empty())
-            {
-                std::cout &lt;&lt; &quot;\n&quot;;
-                print_tree(tree_files); // выводим дерево строго в самом конце
-            }
-        }
-
-        // 4) Chunk trailer, if needed
-        if (opt.chunk_trailer)
-        {
-            std::cout &lt;&lt; &quot;\n===== CHUNK FORMAT HELP =====\n\n&quot;;
-            print_chunk_help();
-        }
-
-        std::cout &lt;&lt; &quot;\nTotal size: &quot; &lt;&lt; total &lt;&lt; &quot; bytes\n&quot;;
-
-        return 0;
-    }
+        return run_config_mode(opt);
 
     // ------------------------------------------------------------
-    // NORMAL MODE — user provided paths, not using a config file
+    // NORMAL MODE — user provided paths
     // ------------------------------------------------------------
-    std::vector&lt;std::filesystem::path&gt; files = collect_from_paths(opt.paths, opt);
-
-    if (files.empty())
-    {
-        std::cerr &lt;&lt; &quot;No files collected.\n&quot;;
-        return 0;
-    }
-
-    if (!opt.wrap_root.empty()) {
-    return wrap_files_to_html(files, opt);
+    return run_normal_mode(opt);
 }
 
-    // LIST ONLY
-    if (opt.list_only)
-    {
-        struct Item
-        {
-            fs::path path;
-            std::string display;
-            std::uintmax_t size;
-        };
-
-        std::vector&lt;Item&gt; items;
-        items.reserve(files.size());
-
-        std::uintmax_t total = 0;
-        std::size_t max_name = 0;
-
-        for (auto&amp; f : files)
-        {
-            auto disp = make_display_path(f);
-            auto sz = get_file_size(f);
-
-            total += sz;
-
-            std::size_t shown_len = opt.path_prefix.size() + disp.size();
-            if (shown_len &gt; max_name)
-                max_name = shown_len;
-
-            items.push_back(Item{f, disp, sz});
-        }
-
-        if (opt.sorted)
-        {
-            std::sort(items.begin(), items.end(), [](const Item&amp; a, const Item&amp; b) {
-                if (a.size != b.size)
-                    return a.size &gt; b.size; // по убыванию
-                return a.display &lt; b.display;
-            });
-        }
-
-        for (const auto&amp; it : items)
-        {
-            std::string shown = opt.path_prefix + it.display;
-
-            std::cout &lt;&lt; shown;
-            if (max_name &gt; shown.size())
-            {
-                std::size_t pad = max_name - shown.size();
-                for (std::size_t i = 0; i &lt; pad; ++i)
-                    std::cout &lt;&lt; ' ';
-            }
-            std::cout &lt;&lt; &quot; (&quot; &lt;&lt; it.size &lt;&lt; &quot; bytes)\n&quot;;
-        }
-
-        std::cout &lt;&lt; &quot;Total size: &quot; &lt;&lt; total &lt;&lt; &quot; bytes\n&quot;;
-        return 0;
-    }
-
-
-    // Dump all collected files с подсчётом суммарного размера
-    std::uintmax_t total = 0;
-    {
-        bool first = true;
-        for (auto&amp; f : files)
-        {
-            dump_file(f, first, opt);
-            first = false;
-            total += get_file_size(f);
-        }
-    }
-
-    // Notice:
-    //  * В обычном режиме дерево НЕ выводим.
-    //  * Теперь дерево выводится ТОЛЬКО через [TREE] секцию config mode.
-
-    if (opt.chunk_trailer)
-    {
-        std::cout &lt;&lt; &quot;\n===== CHUNK FORMAT HELP =====\n\n&quot;;
-        print_chunk_help();
-    }
-
-    std::cout &lt;&lt; &quot;\nTotal size: &quot; &lt;&lt; total &lt;&lt; &quot; bytes\n&quot;;
-
-    return 0;
-}
 
 
 int wrap_files_to_html(const std::vector&lt;std::filesystem::path&gt;&amp; files,
