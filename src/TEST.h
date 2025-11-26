@@ -1,5 +1,7 @@
-=== file: src/TEST.h ===
---- replace-cpp-class TargetClass
+
+
+#include <vector>
+
 class TargetClass
 {
   public:
@@ -24,13 +26,21 @@ class TargetClass
         // Updated implementation
     }
 };
-=END=
 
-=== file: src/TEST.h ===
---- replace-cpp-method ClassWithTargetMethod::TargetMethod
+class ClassWithTargetMethod
+{
+  public:
+    ClassWithTargetMethod() = default;
+    ~ClassWithTargetMethod() = default;
+
+  private:
+    int member_variable_;
+
+    void member_function_() {}
+
     void TargetMethod()
     {
         // Updated implementation
         member_variable_ += 1;
     }
-=END=
+};
