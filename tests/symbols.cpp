@@ -93,27 +93,26 @@ TEST_CASE("CppSymbolFinder: method not found returns false")
 
 TEST_CASE("CppSymbolFinder: complex file with multiple classes and comments")
 {
-    std::string src =
-        "#pragma once\n"                               // 0
-        "\n"                                           // 1
-        "// forward decl\n"                            // 2
-        "class Forward;\n"                             // 3
-        "\n"                                           // 4
-        "/* comment with class Fake { */\n"            // 5
-        "\n"                                           // 6
-        "class First {\n"                              // 7
-        "public:\n"                                    // 8
-        "    // method comment\n"                      // 9
-        "    int m1(int x) const;\n"                   // 10
-        "    std::string m2() const {\n"               // 11
-        "        return \"class Fake {\"; // in string\n" // 12
-        "    }\n"                                      // 13
-        "};\n"                                         // 14
-        "\n"                                           // 15
-        "// Another class\n"                           // 16
-        "struct Second {\n"                            // 17
-        "    void go();\n"                             // 18
-        "};\n";                                        // 19
+    std::string src = "#pragma once\n"                                  // 0
+                      "\n"                                              // 1
+                      "// forward decl\n"                               // 2
+                      "class Forward;\n"                                // 3
+                      "\n"                                              // 4
+                      "/* comment with class Fake { */\n"               // 5
+                      "\n"                                              // 6
+                      "class First {\n"                                 // 7
+                      "public:\n"                                       // 8
+                      "    // method comment\n"                         // 9
+                      "    int m1(int x) const;\n"                      // 10
+                      "    std::string m2() const {\n"                  // 11
+                      "        return \"class Fake {\"; // in string\n" // 12
+                      "    }\n"                                         // 13
+                      "};\n"                                            // 14
+                      "\n"                                              // 15
+                      "// Another class\n"                              // 16
+                      "struct Second {\n"                               // 17
+                      "    void go();\n"                                // 18
+                      "};\n";                                           // 19
 
     CppSymbolFinder finder(src);
     Region r;
@@ -147,18 +146,19 @@ TEST_CASE("CppSymbolFinder: complex file with multiple classes and comments")
     CHECK(finder.find_method("Second", "go", m_go));
     CHECK(m_go.start_line == 18);
     CHECK(m_go.end_line == 18);
+
+    CHECK_FALSE(finder.find_class("Fake", r));
 }
 
 TEST_CASE("CppSymbolFinder: handles extra whitespace and newlines")
 {
-    std::string src =
-        "  \n"                       // 0
-        "class   Weird  \n"          // 1
-        "  : public Base\n"          // 2
-        "{\n"                        // 3
-        "public:\n"                  // 4
-        "    void  run ( );\n"       // 5
-        "};\n";                      // 6
+    std::string src = "  \n"                 // 0
+                      "class   Weird  \n"    // 1
+                      "  : public Base\n"    // 2
+                      "{\n"                  // 3
+                      "public:\n"            // 4
+                      "    void  run ( );\n" // 5
+                      "};\n";                // 6
 
     CppSymbolFinder finder(src);
     Region rc;
