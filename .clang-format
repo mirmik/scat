@@ -1,16 +1,12 @@
 BasedOnStyle: LLVM
-IndentWidth: 4
 TabWidth: 4
-UseTab: Never
-
-# Основное: Allman
+IndentWidth: 4
+ContinuationIndentWidth: 4
+ObjCBlockIndentWidth: 4
+NamespaceIndentation: All
 BreakBeforeBraces: Allman
-
-# Дополнительно, чтобы везде было консистентно
-AllowShortIfStatementsOnASingleLine: false
+FixNamespaceComments: false
+AccessModifierOffset: -4
 AllowShortFunctionsOnASingleLine: Empty
-AllowShortLoopsOnASingleLine: false
-IndentCaseLabels: true
-ColumnLimit: 120
-PointerAlignment: Left
-SpaceBeforeParens: ControlStatements
+BinPackArguments: false
+BinPackParameters: false

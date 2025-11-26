@@ -31,6 +31,7 @@ static void print_help() {
         &quot;  --prefix P    Prepend P before file paths in -l output\n&quot;
         &quot;  --git-info    Print git commit hash and remote origin\n&quot;
         &quot;  --ghmap       List raw.githubusercontent.com URLs for current commit\n&quot;
+        &quot;  --copy        Copy all stdout output to system clipboard\n&quot;
         &quot;  -h, --help    Show this help\n&quot;
         &quot;\n&quot;
         &quot;If no paths are given, scat reads patterns from scat.txt.\n&quot;;
@@ -93,6 +94,9 @@ Options parse_options(int argc, char** argv) {
             opt.git_info = true;
             } else if (a == &quot;--ghmap&quot;) {
     opt.gh_map = true; 
+
+} else if (a == &quot;--copy&quot;) {
+    opt.copy_out = true;
         } else if (a == &quot;-h&quot; || a == &quot;--help&quot;) {
             print_help();
             std::exit(0);

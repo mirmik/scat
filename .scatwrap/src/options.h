@@ -20,7 +20,6 @@ struct Options {
 
     bool show_size     = false;  // --size: show file sizes in -l
     int  server_port   = 0;      // --server PORT
-
     std::string apply_file;
     bool        apply_stdin = false;
 
@@ -29,6 +28,7 @@ struct Options {
 
     bool        git_info = false; // --git-info: print git meta info
     bool        gh_map   = false; // --ghmap: print GitHub raw URLs for current commit
+    bool        copy_out = false; // --copy: also send stdout to clipboard
 
     std::vector&lt;std::string&gt; paths; // positional paths
 

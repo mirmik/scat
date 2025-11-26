@@ -12,7 +12,12 @@
 #include <set>
 #include <sstream>
 #include <exception>
+#include <cstdio>
     #include "git_info.h"
+
+
+
+
 
 int wrap_files_to_html(const std::vector<std::filesystem::path>& files,
                               const Options& opt);
@@ -21,6 +26,89 @@ int wrap_files_to_html(const std::vector<std::filesystem::path>& files,
 namespace fs = std::filesystem;
 
 bool g_use_absolute_paths = false;
+
+// Копирование текста в системный буфер обмена.
+// Платформы:
+//   Linux/Unix: wl-copy, xclip, xsel (что найдётся и успешно отработает)
+//   macOS: pbcopy
+//   Windows: clip
+static void copy_to_clipboard(const std::string& text)
+{
+    if (text.empty())
+        return;
+
+#if defined(_WIN32)
+    FILE* pipe = _popen("clip", "w");
+    if (!pipe)
+        return;
+    std::fwrite(text.data(), 1, text.size(), pipe);
+    _pclose(pipe);
+#elif defined(__APPLE__)
+    FILE* pipe = popen("pbcopy", "w");
+    if (!pipe)
+        return;
+    std::fwrite(text.data(), 1, text.size(), pipe);
+    pclose(pipe);
+#else
+    // POSIX: пытаемся по очереди несколько утилит.
+    // stderr каждой уводим в /dev/null, чтобы они не засоряли терминал.
+    const char* commands[] = {
+        "wl-copy 2>/dev/null",
+        "xclip -selection clipboard 2>/dev/null",
+        "xsel --clipboard --input 2>/dev/null",
+    };
+
+    for (const char* cmd : commands)
+    {
+        FILE* pipe = popen(cmd, "w");
+        if (!pipe)
+            continue;
+
+        std::fwrite(text.data(), 1, text.size(), pipe);
+        int rc = pclose(pipe);
+        if (rc == 0)
+            break; // какая-то из утилит успешно отработала
+    }
+#endif
+}
+
+// RAII-обёртка: перенаправляет std::cout в буфер,
+// а при выходе из области видимости:
+//   1) восстанавливает std::cout
+//   2) печатает накопленное в stdout
+//   3) отправляет тот же текст в буфер обмена
+class CopyGuard
+{
+public:
+    explicit CopyGuard(bool enabled)
+        : enabled_(enabled), old_buf_(nullptr)
+    {
+        if (enabled_) {
+            old_buf_ = std::cout.rdbuf(buffer_.rdbuf());
+        }
+    }
+
+    ~CopyGuard()
+    {
+        if (!enabled_)
+            return;
+
+        // вернуть настоящий буфер std::cout
+        std::cout.rdbuf(old_buf_);
+
+        const std::string out = buffer_.str();
+        if (!out.empty()) {
+            // НИЧЕГО не печатаем в консоль!
+            // Просто отправляем весь текст в буфер обмена.
+            copy_to_clipboard(out);
+        }
+    }
+
+private:
+    bool enabled_;
+    std::ostringstream buffer_;
+    std::streambuf* old_buf_;
+};
 
 
 
@@ -492,6 +580,7 @@ int scat_main(int argc, char** argv)
 {
     Options opt = parse_options(argc, argv);
     g_use_absolute_paths = opt.abs_paths;
+    CopyGuard copy_guard(opt.copy_out);
 
         // Git info mode: print repository metadata and exit
         if (opt.git_info)
