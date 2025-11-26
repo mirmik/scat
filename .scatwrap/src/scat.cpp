@@ -512,10 +512,40 @@ int scat_main(int argc, char **argv)
         std::string prefix = &quot;https://raw.githubusercontent.com/&quot; + gh.user +
                              &quot;/&quot; + gh.repo + &quot;/&quot; + gh.commit + &quot;/.scatwrap/&quot;;
 
-        if (!opt.config_file.empty())
-        {
-            // тут уже чисто логика MAPFORMAT + collect_from_rules
+            if (!opt.config_file.empty())
+    {
+        Config cfg;
+        try {
+            cfg = parse_config(opt.config_file);
+        } catch (const std::exception&amp; e) {
+            std::cerr &lt;&lt; e.what() &lt;&lt; &quot;\n&quot;;
+            return 1;
         }
+
+        auto text_files = collect_from_rules(cfg.text_rules, opt);
+        if (text_files.empty())
+        {
+            std::cerr &lt;&lt; &quot;No files collected.\n&quot;;
+            return 0;
+        }
+
+        // Собираем &quot;сырой&quot; список ссылок в строку — это и есть {RAWMAP}
+        Options list_opt = opt;
+        list_opt.path_prefix = prefix;
+
+        std::ostringstream oss;
+        print_list_with_sizes_to(text_files, list_opt, oss);
+        std::string rawmap = oss.str();
+
+        std::string output;
+        if (!cfg.map_format.empty())
+            output = substitute_rawmap(cfg.map_format, rawmap);
+        else
+            output = rawmap;
+
+        std::cout &lt;&lt; output;
+        return 0;
+    }
         else
         {
             opt.list_only = true;
