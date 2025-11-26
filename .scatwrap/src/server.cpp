@@ -6,268 +6,268 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#include&nbsp;&quot;collector.h&quot;<br>
-#include&nbsp;&quot;options.h&quot;<br>
-#include&nbsp;&quot;parser.h&quot;<br>
-#include&nbsp;&quot;util.h&quot;<br>
+#include &quot;collector.h&quot;<br>
+#include &quot;options.h&quot;<br>
+#include &quot;parser.h&quot;<br>
+#include &quot;util.h&quot;<br>
 <br>
-#include&nbsp;&lt;cstdint&gt;<br>
-#include&nbsp;&lt;filesystem&gt;<br>
-#include&nbsp;&lt;fstream&gt;<br>
-#include&nbsp;&lt;iostream&gt;<br>
-#include&nbsp;&lt;map&gt;<br>
-#include&nbsp;&lt;sstream&gt;<br>
-#include&nbsp;&lt;vector&gt;<br>
+#include &lt;cstdint&gt;<br>
+#include &lt;filesystem&gt;<br>
+#include &lt;fstream&gt;<br>
+#include &lt;iostream&gt;<br>
+#include &lt;map&gt;<br>
+#include &lt;sstream&gt;<br>
+#include &lt;vector&gt;<br>
 <br>
-namespace&nbsp;fs&nbsp;=&nbsp;std::filesystem;<br>
+namespace fs = std::filesystem;<br>
 <br>
-#ifndef&nbsp;_WIN32<br>
-#include&nbsp;&lt;arpa/inet.h&gt;<br>
-#include&nbsp;&lt;netinet/in.h&gt;<br>
-#include&nbsp;&lt;sys/socket.h&gt;<br>
-#include&nbsp;&lt;sys/types.h&gt;<br>
-#include&nbsp;&lt;unistd.h&gt;<br>
+#ifndef _WIN32<br>
+#include &lt;arpa/inet.h&gt;<br>
+#include &lt;netinet/in.h&gt;<br>
+#include &lt;sys/socket.h&gt;<br>
+#include &lt;sys/types.h&gt;<br>
+#include &lt;unistd.h&gt;<br>
 #endif<br>
 <br>
-static&nbsp;std::string&nbsp;json_escape(const&nbsp;std::string&nbsp;&amp;s)<br>
+static std::string json_escape(const std::string &amp;s)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;out;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;out.reserve(s.size());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(char&nbsp;c&nbsp;:&nbsp;s)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;switch&nbsp;(c)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case&nbsp;'\\':<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;+=&nbsp;&quot;\\\\&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case&nbsp;'&quot;':<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;+=&nbsp;&quot;\\\&quot;&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case&nbsp;'\n':<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;+=&nbsp;&quot;\\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case&nbsp;'\r':<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;+=&nbsp;&quot;\\r&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case&nbsp;'\t':<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;+=&nbsp;&quot;\\t&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;+=&nbsp;c;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;out;<br>
+&emsp;std::string out;<br>
+&emsp;out.reserve(s.size());<br>
+&emsp;for (char c : s)<br>
+&emsp;{<br>
+&emsp;&emsp;switch (c)<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;case '\\':<br>
+&emsp;&emsp;&emsp;out += &quot;\\\\&quot;;<br>
+&emsp;&emsp;&emsp;break;<br>
+&emsp;&emsp;case '&quot;':<br>
+&emsp;&emsp;&emsp;out += &quot;\\\&quot;&quot;;<br>
+&emsp;&emsp;&emsp;break;<br>
+&emsp;&emsp;case '\n':<br>
+&emsp;&emsp;&emsp;out += &quot;\\n&quot;;<br>
+&emsp;&emsp;&emsp;break;<br>
+&emsp;&emsp;case '\r':<br>
+&emsp;&emsp;&emsp;out += &quot;\\r&quot;;<br>
+&emsp;&emsp;&emsp;break;<br>
+&emsp;&emsp;case '\t':<br>
+&emsp;&emsp;&emsp;out += &quot;\\t&quot;;<br>
+&emsp;&emsp;&emsp;break;<br>
+&emsp;&emsp;default:<br>
+&emsp;&emsp;&emsp;out += c;<br>
+&emsp;&emsp;&emsp;break;<br>
+&emsp;&emsp;}<br>
+&emsp;}<br>
+&emsp;return out;<br>
 }<br>
 <br>
-int&nbsp;run_server(const&nbsp;Options&nbsp;&amp;opt)<br>
+int run_server(const Options &amp;opt)<br>
 {<br>
-#ifdef&nbsp;_WIN32<br>
-&nbsp;&nbsp;&nbsp;&nbsp;(void)opt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::cerr&nbsp;&lt;&lt;&nbsp;&quot;--server&nbsp;is&nbsp;not&nbsp;supported&nbsp;on&nbsp;Windows&nbsp;yet.\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;1;<br>
+#ifdef _WIN32<br>
+&emsp;(void)opt;<br>
+&emsp;std::cerr &lt;&lt; &quot;--server is not supported on Windows yet.\n&quot;;<br>
+&emsp;return 1;<br>
 #else<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(opt.server_port&nbsp;&lt;=&nbsp;0&nbsp;||&nbsp;opt.server_port&nbsp;&gt;&nbsp;65535)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cerr&nbsp;&lt;&lt;&nbsp;&quot;Invalid&nbsp;port&nbsp;for&nbsp;--server:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;opt.server_port&nbsp;&lt;&lt;&nbsp;&quot;\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;if (opt.server_port &lt;= 0 || opt.server_port &gt; 65535)<br>
+&emsp;{<br>
+&emsp;&emsp;std::cerr &lt;&lt; &quot;Invalid port for --server: &quot; &lt;&lt; opt.server_port &lt;&lt; &quot;\n&quot;;<br>
+&emsp;&emsp;return 1;<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Собираем&nbsp;список&nbsp;файлов&nbsp;так&nbsp;же,&nbsp;как&nbsp;в&nbsp;обычном&nbsp;scat:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;при&nbsp;наличии&nbsp;config_file&nbsp;—&nbsp;через&nbsp;scat.txt/--config,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;иначе&nbsp;—&nbsp;из&nbsp;paths.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;fs::path&gt;&nbsp;files;<br>
+&emsp;// Собираем список файлов так же, как в обычном scat:<br>
+&emsp;// при наличии config_file — через scat.txt/--config,<br>
+&emsp;// иначе — из paths.<br>
+&emsp;std::vector&lt;fs::path&gt; files;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!opt.config_file.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Config&nbsp;cfg&nbsp;=&nbsp;parse_config(opt.config_file);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;files&nbsp;=&nbsp;collect_from_rules(cfg.text_rules,&nbsp;opt);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;else<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;files&nbsp;=&nbsp;collect_from_paths(opt.paths,&nbsp;opt);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;if (!opt.config_file.empty())<br>
+&emsp;{<br>
+&emsp;&emsp;Config cfg = parse_config(opt.config_file);<br>
+&emsp;&emsp;files = collect_from_rules(cfg.text_rules, opt);<br>
+&emsp;}<br>
+&emsp;else<br>
+&emsp;{<br>
+&emsp;&emsp;files = collect_from_paths(opt.paths, opt);<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(files.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cerr&nbsp;&lt;&lt;&nbsp;&quot;No&nbsp;files&nbsp;collected&nbsp;for&nbsp;server.\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;if (files.empty())<br>
+&emsp;{<br>
+&emsp;&emsp;std::cerr &lt;&lt; &quot;No files collected for server.\n&quot;;<br>
+&emsp;&emsp;return 1;<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Ключ:&nbsp;строковый&nbsp;путь&nbsp;(как&nbsp;печатаем&nbsp;в&nbsp;scat),&nbsp;значение:&nbsp;реальный&nbsp;путь<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::map&lt;std::string,&nbsp;fs::path&gt;&nbsp;file_map;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(auto&nbsp;&amp;f&nbsp;:&nbsp;files)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;key&nbsp;=&nbsp;make_display_path(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;file_map[key]&nbsp;=&nbsp;f;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;// Ключ: строковый путь (как печатаем в scat), значение: реальный путь<br>
+&emsp;std::map&lt;std::string, fs::path&gt; file_map;<br>
+&emsp;for (auto &amp;f : files)<br>
+&emsp;{<br>
+&emsp;&emsp;std::string key = make_display_path(f);<br>
+&emsp;&emsp;file_map[key] = f;<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;server_fd&nbsp;=&nbsp;::socket(AF_INET,&nbsp;SOCK_STREAM,&nbsp;0);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(server_fd&nbsp;&lt;&nbsp;0)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perror(&quot;socket&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;int server_fd = ::socket(AF_INET, SOCK_STREAM, 0);<br>
+&emsp;if (server_fd &lt; 0)<br>
+&emsp;{<br>
+&emsp;&emsp;perror(&quot;socket&quot;);<br>
+&emsp;&emsp;return 1;<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;yes&nbsp;=&nbsp;1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;::setsockopt(server_fd,&nbsp;SOL_SOCKET,&nbsp;SO_REUSEADDR,&nbsp;&amp;yes,&nbsp;sizeof(yes));<br>
+&emsp;int yes = 1;<br>
+&emsp;::setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &amp;yes, sizeof(yes));<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;sockaddr_in&nbsp;addr{};<br>
-&nbsp;&nbsp;&nbsp;&nbsp;addr.sin_family&nbsp;=&nbsp;AF_INET;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;addr.sin_addr.s_addr&nbsp;=&nbsp;htonl(INADDR_ANY);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;addr.sin_port&nbsp;=&nbsp;htons(static_cast&lt;uint16_t&gt;(opt.server_port));<br>
+&emsp;sockaddr_in addr{};<br>
+&emsp;addr.sin_family = AF_INET;<br>
+&emsp;addr.sin_addr.s_addr = htonl(INADDR_ANY);<br>
+&emsp;addr.sin_port = htons(static_cast&lt;uint16_t&gt;(opt.server_port));<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(::bind(server_fd,&nbsp;reinterpret_cast&lt;sockaddr&nbsp;*&gt;(&amp;addr),&nbsp;sizeof(addr))&nbsp;&lt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perror(&quot;bind&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;::close(server_fd);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;if (::bind(server_fd, reinterpret_cast&lt;sockaddr *&gt;(&amp;addr), sizeof(addr)) &lt;<br>
+&emsp;&emsp;0)<br>
+&emsp;{<br>
+&emsp;&emsp;perror(&quot;bind&quot;);<br>
+&emsp;&emsp;::close(server_fd);<br>
+&emsp;&emsp;return 1;<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(::listen(server_fd,&nbsp;16)&nbsp;&lt;&nbsp;0)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perror(&quot;listen&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;::close(server_fd);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;if (::listen(server_fd, 16) &lt; 0)<br>
+&emsp;{<br>
+&emsp;&emsp;perror(&quot;listen&quot;);<br>
+&emsp;&emsp;::close(server_fd);<br>
+&emsp;&emsp;return 1;<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::cout&nbsp;&lt;&lt;&nbsp;&quot;Serving&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;file_map.size()<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;files&nbsp;on&nbsp;http://127.0.0.1:&quot;&nbsp;&lt;&lt;&nbsp;opt.server_port&nbsp;&lt;&lt;&nbsp;&quot;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;Endpoints:\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;&nbsp;/index.json\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;&nbsp;/&lt;path&gt;\n&quot;;<br>
+&emsp;std::cout &lt;&lt; &quot;Serving &quot; &lt;&lt; file_map.size()<br>
+&emsp;&emsp;&emsp;&lt;&lt; &quot; files on http://127.0.0.1:&quot; &lt;&lt; opt.server_port &lt;&lt; &quot;\n&quot;<br>
+&emsp;&emsp;&emsp;&lt;&lt; &quot;Endpoints:\n&quot;<br>
+&emsp;&emsp;&emsp;&lt;&lt; &quot;  /index.json\n&quot;<br>
+&emsp;&emsp;&emsp;&lt;&lt; &quot;  /&lt;path&gt;\n&quot;;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(;;)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;client&nbsp;=&nbsp;::accept(server_fd,&nbsp;nullptr,&nbsp;nullptr);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(client&nbsp;&lt;&nbsp;0)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perror(&quot;accept&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;for (;;)<br>
+&emsp;{<br>
+&emsp;&emsp;int client = ::accept(server_fd, nullptr, nullptr);<br>
+&emsp;&emsp;if (client &lt; 0)<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;perror(&quot;accept&quot;);<br>
+&emsp;&emsp;&emsp;continue;<br>
+&emsp;&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;request;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;char&nbsp;buf[4096];<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ssize_t&nbsp;n&nbsp;=&nbsp;::recv(client,&nbsp;buf,&nbsp;sizeof(buf),&nbsp;0);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(n&nbsp;&lt;=&nbsp;0)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;::close(client);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;request.append(buf,&nbsp;static_cast&lt;std::size_t&gt;(n));<br>
+&emsp;&emsp;std::string request;<br>
+&emsp;&emsp;char buf[4096];<br>
+&emsp;&emsp;ssize_t n = ::recv(client, buf, sizeof(buf), 0);<br>
+&emsp;&emsp;if (n &lt;= 0)<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;::close(client);<br>
+&emsp;&emsp;&emsp;continue;<br>
+&emsp;&emsp;}<br>
+&emsp;&emsp;request.append(buf, static_cast&lt;std::size_t&gt;(n));<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::istringstream&nbsp;req_stream(request);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;method,&nbsp;target,&nbsp;version;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;req_stream&nbsp;&gt;&gt;&nbsp;method&nbsp;&gt;&gt;&nbsp;target&nbsp;&gt;&gt;&nbsp;version;<br>
+&emsp;&emsp;std::istringstream req_stream(request);<br>
+&emsp;&emsp;std::string method, target, version;<br>
+&emsp;&emsp;req_stream &gt;&gt; method &gt;&gt; target &gt;&gt; version;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;send_response&nbsp;=&nbsp;[&amp;](const&nbsp;std::string&nbsp;&amp;status_line,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;&amp;content_type,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;&amp;body)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ostringstream&nbsp;out;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;status_line&nbsp;&lt;&lt;&nbsp;&quot;\r\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;Content-Type:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;content_type&nbsp;&lt;&lt;&nbsp;&quot;\r\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;Content-Length:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;body.size()&nbsp;&lt;&lt;&nbsp;&quot;\r\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;Connection:&nbsp;close\r\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;\r\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;body;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;s&nbsp;=&nbsp;out.str();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;::send(client,&nbsp;s.data(),&nbsp;s.size(),&nbsp;0);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+&emsp;&emsp;auto send_response = [&amp;](const std::string &amp;status_line,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;const std::string &amp;content_type,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;const std::string &amp;body)<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;std::ostringstream out;<br>
+&emsp;&emsp;&emsp;out &lt;&lt; status_line &lt;&lt; &quot;\r\n&quot;;<br>
+&emsp;&emsp;&emsp;out &lt;&lt; &quot;Content-Type: &quot; &lt;&lt; content_type &lt;&lt; &quot;\r\n&quot;;<br>
+&emsp;&emsp;&emsp;out &lt;&lt; &quot;Content-Length: &quot; &lt;&lt; body.size() &lt;&lt; &quot;\r\n&quot;;<br>
+&emsp;&emsp;&emsp;out &lt;&lt; &quot;Connection: close\r\n&quot;;<br>
+&emsp;&emsp;&emsp;out &lt;&lt; &quot;\r\n&quot;;<br>
+&emsp;&emsp;&emsp;out &lt;&lt; body;<br>
+&emsp;&emsp;&emsp;std::string s = out.str();<br>
+&emsp;&emsp;&emsp;::send(client, s.data(), s.size(), 0);<br>
+&emsp;&emsp;};<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(method&nbsp;!=&nbsp;&quot;GET&quot;)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;send_response(&quot;HTTP/1.0&nbsp;405&nbsp;Method&nbsp;Not&nbsp;Allowed&quot;,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;text/plain;&nbsp;charset=utf-8&quot;,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;Only&nbsp;GET&nbsp;is&nbsp;supported\n&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;::close(client);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;if (method != &quot;GET&quot;)<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;send_response(&quot;HTTP/1.0 405 Method Not Allowed&quot;,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;text/plain; charset=utf-8&quot;,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;Only GET is supported\n&quot;);<br>
+&emsp;&emsp;&emsp;::close(client);<br>
+&emsp;&emsp;&emsp;continue;<br>
+&emsp;&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(target.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;target&nbsp;=&nbsp;&quot;/&quot;;<br>
+&emsp;&emsp;if (target.empty())<br>
+&emsp;&emsp;&emsp;target = &quot;/&quot;;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Корневая&nbsp;страница&nbsp;с&nbsp;краткой&nbsp;подсказкой<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(target&nbsp;==&nbsp;&quot;/&quot;)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ostringstream&nbsp;body;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;body&nbsp;&lt;&lt;&nbsp;&quot;&lt;!DOCTYPE&nbsp;html&gt;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&lt;html&gt;&lt;head&gt;&lt;meta&nbsp;charset=\&quot;utf-8\&quot;&gt;&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&lt;title&gt;scat&nbsp;server&lt;/title&gt;&lt;/head&gt;&lt;body&gt;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&lt;h1&gt;scat&nbsp;server&lt;/h1&gt;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&lt;p&gt;This&nbsp;is&nbsp;a&nbsp;read-only&nbsp;file&nbsp;server&nbsp;started&nbsp;by&nbsp;&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&lt;code&gt;scat&nbsp;--server&nbsp;PORT&lt;/code&gt;.&lt;/p&gt;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&lt;ul&gt;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;&nbsp;&lt;li&gt;&lt;code&gt;/index.json&lt;/code&gt;&nbsp;–&nbsp;list&nbsp;of&nbsp;files&nbsp;as&nbsp;&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;JSON.&lt;/li&gt;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;&nbsp;&lt;li&gt;&lt;code&gt;/{relative-path}&lt;/code&gt;&nbsp;–&nbsp;raw&nbsp;file&nbsp;contents.&nbsp;&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;Path&nbsp;must&nbsp;match&nbsp;an&nbsp;entry&nbsp;from&nbsp;&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&lt;code&gt;index.json&lt;/code&gt;.&lt;/li&gt;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&lt;/ul&gt;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&lt;/body&gt;&lt;/html&gt;\n&quot;;<br>
+&emsp;&emsp;// Корневая страница с краткой подсказкой<br>
+&emsp;&emsp;if (target == &quot;/&quot;)<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;std::ostringstream body;<br>
+&emsp;&emsp;&emsp;body &lt;&lt; &quot;&lt;!DOCTYPE html&gt;\n&quot;<br>
+&emsp;&emsp;&emsp;&emsp;&lt;&lt; &quot;&lt;html&gt;&lt;head&gt;&lt;meta charset=\&quot;utf-8\&quot;&gt;&quot;<br>
+&emsp;&emsp;&emsp;&emsp;&lt;&lt; &quot;&lt;title&gt;scat server&lt;/title&gt;&lt;/head&gt;&lt;body&gt;\n&quot;<br>
+&emsp;&emsp;&emsp;&emsp;&lt;&lt; &quot;&lt;h1&gt;scat server&lt;/h1&gt;\n&quot;<br>
+&emsp;&emsp;&emsp;&emsp;&lt;&lt; &quot;&lt;p&gt;This is a read-only file server started by &quot;<br>
+&emsp;&emsp;&emsp;&emsp;&lt;&lt; &quot;&lt;code&gt;scat --server PORT&lt;/code&gt;.&lt;/p&gt;\n&quot;<br>
+&emsp;&emsp;&emsp;&emsp;&lt;&lt; &quot;&lt;ul&gt;\n&quot;<br>
+&emsp;&emsp;&emsp;&emsp;&lt;&lt; &quot;  &lt;li&gt;&lt;code&gt;/index.json&lt;/code&gt; – list of files as &quot;<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&quot;JSON.&lt;/li&gt;\n&quot;<br>
+&emsp;&emsp;&emsp;&emsp;&lt;&lt; &quot;  &lt;li&gt;&lt;code&gt;/{relative-path}&lt;/code&gt; – raw file contents. &quot;<br>
+&emsp;&emsp;&emsp;&emsp;&lt;&lt; &quot;Path must match an entry from &quot;<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&quot;&lt;code&gt;index.json&lt;/code&gt;.&lt;/li&gt;\n&quot;<br>
+&emsp;&emsp;&emsp;&emsp;&lt;&lt; &quot;&lt;/ul&gt;\n&quot;<br>
+&emsp;&emsp;&emsp;&emsp;&lt;&lt; &quot;&lt;/body&gt;&lt;/html&gt;\n&quot;;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;send_response(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;HTTP/1.0&nbsp;200&nbsp;OK&quot;,&nbsp;&quot;text/html;&nbsp;charset=utf-8&quot;,&nbsp;body.str());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;::close(client);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;&emsp;send_response(<br>
+&emsp;&emsp;&emsp;&emsp;&quot;HTTP/1.0 200 OK&quot;, &quot;text/html; charset=utf-8&quot;, body.str());<br>
+&emsp;&emsp;&emsp;::close(client);<br>
+&emsp;&emsp;&emsp;continue;<br>
+&emsp;&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(target&nbsp;==&nbsp;&quot;/index.json&quot;)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ostringstream&nbsp;body;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;body&nbsp;&lt;&lt;&nbsp;&quot;{\n&nbsp;&nbsp;\&quot;files\&quot;:&nbsp;[\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;first&nbsp;=&nbsp;true;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(const&nbsp;auto&nbsp;&amp;[name,&nbsp;_]&nbsp;:&nbsp;file_map)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!first)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;body&nbsp;&lt;&lt;&nbsp;&quot;,\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;first&nbsp;=&nbsp;false;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;body&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;\&quot;&quot;&nbsp;&lt;&lt;&nbsp;json_escape(name)&nbsp;&lt;&lt;&nbsp;&quot;\&quot;&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;body&nbsp;&lt;&lt;&nbsp;&quot;\n&nbsp;&nbsp;]\n}\n&quot;;<br>
+&emsp;&emsp;if (target == &quot;/index.json&quot;)<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;std::ostringstream body;<br>
+&emsp;&emsp;&emsp;body &lt;&lt; &quot;{\n  \&quot;files\&quot;: [\n&quot;;<br>
+&emsp;&emsp;&emsp;bool first = true;<br>
+&emsp;&emsp;&emsp;for (const auto &amp;[name, _] : file_map)<br>
+&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;if (!first)<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;body &lt;&lt; &quot;,\n&quot;;<br>
+&emsp;&emsp;&emsp;&emsp;first = false;<br>
+&emsp;&emsp;&emsp;&emsp;body &lt;&lt; &quot;    \&quot;&quot; &lt;&lt; json_escape(name) &lt;&lt; &quot;\&quot;&quot;;<br>
+&emsp;&emsp;&emsp;}<br>
+&emsp;&emsp;&emsp;body &lt;&lt; &quot;\n  ]\n}\n&quot;;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;send_response(&quot;HTTP/1.0&nbsp;200&nbsp;OK&quot;,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;application/json;&nbsp;charset=utf-8&quot;,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;body.str());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;::close(client);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;&emsp;send_response(&quot;HTTP/1.0 200 OK&quot;,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;application/json; charset=utf-8&quot;,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;body.str());<br>
+&emsp;&emsp;&emsp;::close(client);<br>
+&emsp;&emsp;&emsp;continue;<br>
+&emsp;&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!target.empty()&nbsp;&amp;&amp;&nbsp;target[0]&nbsp;==&nbsp;'/')<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;target.erase(0,&nbsp;1);<br>
+&emsp;&emsp;if (!target.empty() &amp;&amp; target[0] == '/')<br>
+&emsp;&emsp;&emsp;target.erase(0, 1);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;it&nbsp;=&nbsp;file_map.find(target);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(it&nbsp;==&nbsp;file_map.end())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;send_response(&quot;HTTP/1.0&nbsp;404&nbsp;Not&nbsp;Found&quot;,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;text/plain;&nbsp;charset=utf-8&quot;,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;Not&nbsp;found\n&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;::close(client);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;auto it = file_map.find(target);<br>
+&emsp;&emsp;if (it == file_map.end())<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;send_response(&quot;HTTP/1.0 404 Not Found&quot;,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;text/plain; charset=utf-8&quot;,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;Not found\n&quot;);<br>
+&emsp;&emsp;&emsp;::close(client);<br>
+&emsp;&emsp;&emsp;continue;<br>
+&emsp;&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ifstream&nbsp;in(it-&gt;second,&nbsp;std::ios::binary);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!in)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;send_response(&quot;HTTP/1.0&nbsp;500&nbsp;Internal&nbsp;Server&nbsp;Error&quot;,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;text/plain;&nbsp;charset=utf-8&quot;,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;Cannot&nbsp;open&nbsp;file\n&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;::close(client);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;std::ifstream in(it-&gt;second, std::ios::binary);<br>
+&emsp;&emsp;if (!in)<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;send_response(&quot;HTTP/1.0 500 Internal Server Error&quot;,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;text/plain; charset=utf-8&quot;,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;Cannot open file\n&quot;);<br>
+&emsp;&emsp;&emsp;::close(client);<br>
+&emsp;&emsp;&emsp;continue;<br>
+&emsp;&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ostringstream&nbsp;body;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;body&nbsp;&lt;&lt;&nbsp;in.rdbuf();<br>
+&emsp;&emsp;std::ostringstream body;<br>
+&emsp;&emsp;body &lt;&lt; in.rdbuf();<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;send_response(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;HTTP/1.0&nbsp;200&nbsp;OK&quot;,&nbsp;&quot;text/plain;&nbsp;charset=utf-8&quot;,&nbsp;body.str());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;::close(client);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;send_response(<br>
+&emsp;&emsp;&emsp;&quot;HTTP/1.0 200 OK&quot;, &quot;text/plain; charset=utf-8&quot;, body.str());<br>
+&emsp;&emsp;::close(client);<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;теоретически&nbsp;недостижимо<br>
-&nbsp;&nbsp;&nbsp;&nbsp;::close(server_fd);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;0;<br>
+&emsp;// теоретически недостижимо<br>
+&emsp;::close(server_fd);<br>
+&emsp;return 0;<br>
 #endif<br>
 }<br>
 <!-- END SCAT CODE -->

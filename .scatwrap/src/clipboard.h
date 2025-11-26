@@ -6,23 +6,23 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#pragma&nbsp;once<br>
-#include&nbsp;&lt;iostream&gt;<br>
-#include&nbsp;&lt;sstream&gt;<br>
-#include&nbsp;&lt;string&gt;<br>
+#pragma once<br>
+#include &lt;iostream&gt;<br>
+#include &lt;sstream&gt;<br>
+#include &lt;string&gt;<br>
 <br>
-void&nbsp;copy_to_clipboard(const&nbsp;std::string&nbsp;&amp;text);<br>
+void copy_to_clipboard(const std::string &amp;text);<br>
 <br>
-class&nbsp;CopyGuard<br>
+class CopyGuard<br>
 {<br>
 public:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;explicit&nbsp;CopyGuard(bool&nbsp;enabled);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;~CopyGuard();<br>
+&emsp;explicit CopyGuard(bool enabled);<br>
+&emsp;~CopyGuard();<br>
 <br>
 private:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;enabled_;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::ostringstream&nbsp;buffer_;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::streambuf&nbsp;*old_buf_;<br>
+&emsp;bool enabled_;<br>
+&emsp;std::ostringstream buffer_;<br>
+&emsp;std::streambuf *old_buf_;<br>
 };<br>
 <!-- END SCAT CODE -->
 </body>

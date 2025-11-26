@@ -6,864 +6,864 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#include&nbsp;&quot;symbols.h&quot;<br>
-#include&nbsp;&lt;algorithm&gt;<br>
-#include&nbsp;&lt;cctype&gt;<br>
-#include&nbsp;&lt;filesystem&gt;<br>
-#include&nbsp;&lt;fstream&gt;<br>
-#include&nbsp;&lt;iostream&gt;<br>
-#include&nbsp;&lt;map&gt;<br>
-#include&nbsp;&lt;sstream&gt;<br>
-#include&nbsp;&lt;stdexcept&gt;<br>
-#include&nbsp;&lt;string&gt;<br>
-#include&nbsp;&lt;string_view&gt;<br>
-#include&nbsp;&lt;vector&gt;<br>
+#include &quot;symbols.h&quot;<br>
+#include &lt;algorithm&gt;<br>
+#include &lt;cctype&gt;<br>
+#include &lt;filesystem&gt;<br>
+#include &lt;fstream&gt;<br>
+#include &lt;iostream&gt;<br>
+#include &lt;map&gt;<br>
+#include &lt;sstream&gt;<br>
+#include &lt;stdexcept&gt;<br>
+#include &lt;string&gt;<br>
+#include &lt;string_view&gt;<br>
+#include &lt;vector&gt;<br>
 <br>
-namespace&nbsp;fs&nbsp;=&nbsp;std::filesystem;<br>
+namespace fs = std::filesystem;<br>
 <br>
-struct&nbsp;Section<br>
+struct Section<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;filepath;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;command;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;a&nbsp;=&nbsp;-1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;b&nbsp;=&nbsp;-1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;payload;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;marker;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;before;&nbsp;//&nbsp;контекст&nbsp;до&nbsp;маркера&nbsp;(BEFORE:)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;after;&nbsp;//&nbsp;контекст&nbsp;после&nbsp;маркера&nbsp;(AFTER:)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;seq&nbsp;=&nbsp;0;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;arg1;&nbsp;//&nbsp;доп.&nbsp;аргументы&nbsp;команды&nbsp;(например,&nbsp;имя&nbsp;класса)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;arg2;&nbsp;//&nbsp;второй&nbsp;аргумент&nbsp;(например,&nbsp;имя&nbsp;метода)<br>
+&emsp;std::string filepath;<br>
+&emsp;std::string command;<br>
+&emsp;int a = -1;<br>
+&emsp;int b = -1;<br>
+&emsp;std::vector&lt;std::string&gt; payload;<br>
+&emsp;std::vector&lt;std::string&gt; marker;<br>
+&emsp;std::vector&lt;std::string&gt; before; // контекст до маркера (BEFORE:)<br>
+&emsp;std::vector&lt;std::string&gt; after; // контекст после маркера (AFTER:)<br>
+&emsp;int seq = 0;<br>
+&emsp;std::string arg1; // доп. аргументы команды (например, имя класса)<br>
+&emsp;std::string arg2; // второй аргумент (например, имя метода)<br>
 };<br>
 <br>
-static&nbsp;std::vector&lt;std::string&gt;&nbsp;read_file_lines(const&nbsp;fs::path&nbsp;&amp;p)<br>
+static std::vector&lt;std::string&gt; read_file_lines(const fs::path &amp;p)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::ifstream&nbsp;in(p);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!in)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(&quot;cannot&nbsp;open&nbsp;file:&nbsp;&quot;&nbsp;+&nbsp;p.string());<br>
+&emsp;std::ifstream in(p);<br>
+&emsp;if (!in)<br>
+&emsp;&emsp;throw std::runtime_error(&quot;cannot open file: &quot; + p.string());<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;out;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;line;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(std::getline(in,&nbsp;line))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.push_back(line);<br>
+&emsp;std::vector&lt;std::string&gt; out;<br>
+&emsp;std::string line;<br>
+&emsp;while (std::getline(in, line))<br>
+&emsp;&emsp;out.push_back(line);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;out;<br>
+&emsp;return out;<br>
 }<br>
 <br>
-static&nbsp;void&nbsp;write_file_lines(const&nbsp;fs::path&nbsp;&amp;p,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::vector&lt;std::string&gt;&nbsp;&amp;lines)<br>
+static void write_file_lines(const fs::path &amp;p,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;const std::vector&lt;std::string&gt; &amp;lines)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(p,&nbsp;std::ios::trunc);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!out)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(&quot;cannot&nbsp;write&nbsp;file:&nbsp;&quot;&nbsp;+&nbsp;p.string());<br>
+&emsp;std::ofstream out(p, std::ios::trunc);<br>
+&emsp;if (!out)<br>
+&emsp;&emsp;throw std::runtime_error(&quot;cannot write file: &quot; + p.string());<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(const&nbsp;auto&nbsp;&amp;s&nbsp;:&nbsp;lines)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;s&nbsp;&lt;&lt;&nbsp;&quot;\n&quot;;<br>
+&emsp;for (const auto &amp;s : lines)<br>
+&emsp;&emsp;out &lt;&lt; s &lt;&lt; &quot;\n&quot;;<br>
 }<br>
 <br>
-std::string&nbsp;trim(const&nbsp;std::string_view&nbsp;&amp;view)<br>
+std::string trim(const std::string_view &amp;view)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(view.size()&nbsp;==&nbsp;0)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;&quot;&quot;;<br>
+&emsp;if (view.size() == 0)<br>
+&emsp;&emsp;return &quot;&quot;;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;char&nbsp;*left&nbsp;=&nbsp;view.data();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;char&nbsp;*right&nbsp;=&nbsp;view.data()&nbsp;+&nbsp;view.size()&nbsp;-&nbsp;1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;char&nbsp;*end&nbsp;=&nbsp;view.data()&nbsp;+&nbsp;view.size();<br>
+&emsp;const char *left = view.data();<br>
+&emsp;const char *right = view.data() + view.size() - 1;<br>
+&emsp;const char *end = view.data() + view.size();<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(left&nbsp;!=&nbsp;end&nbsp;&amp;&amp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(*left&nbsp;==&nbsp;'&nbsp;'&nbsp;||&nbsp;*left&nbsp;==&nbsp;'\n'&nbsp;||&nbsp;*left&nbsp;==&nbsp;'\r'&nbsp;||&nbsp;*left&nbsp;==&nbsp;'\t'))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++left;<br>
+&emsp;while (left != end &amp;&amp;<br>
+&emsp;&emsp;(*left == ' ' || *left == '\n' || *left == '\r' || *left == '\t'))<br>
+&emsp;&emsp;++left;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(left&nbsp;==&nbsp;end)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;&quot;&quot;;<br>
+&emsp;if (left == end)<br>
+&emsp;&emsp;return &quot;&quot;;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(left&nbsp;!=&nbsp;right&nbsp;&amp;&amp;&nbsp;(*right&nbsp;==&nbsp;'&nbsp;'&nbsp;||&nbsp;*right&nbsp;==&nbsp;'\n'&nbsp;||<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*right&nbsp;==&nbsp;'\r'&nbsp;||&nbsp;*right&nbsp;==&nbsp;'\t'))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--right;<br>
+&emsp;while (left != right &amp;&amp; (*right == ' ' || *right == '\n' ||<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;*right == '\r' || *right == '\t'))<br>
+&emsp;&emsp;--right;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;std::string(left,&nbsp;(right&nbsp;-&nbsp;left)&nbsp;+&nbsp;1);<br>
+&emsp;return std::string(left, (right - left) + 1);<br>
 }<br>
 <br>
-static&nbsp;bool&nbsp;is_text_command(const&nbsp;std::string&nbsp;&amp;cmd)<br>
+static bool is_text_command(const std::string &amp;cmd)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;cmd&nbsp;==&nbsp;&quot;insert-after-text&quot;&nbsp;||&nbsp;cmd&nbsp;==&nbsp;&quot;insert-before-text&quot;&nbsp;||<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cmd&nbsp;==&nbsp;&quot;replace-text&quot;&nbsp;||&nbsp;cmd&nbsp;==&nbsp;&quot;delete-text&quot;;<br>
+&emsp;return cmd == &quot;insert-after-text&quot; || cmd == &quot;insert-before-text&quot; ||<br>
+&emsp;&emsp;cmd == &quot;replace-text&quot; || cmd == &quot;delete-text&quot;;<br>
 }<br>
 <br>
-static&nbsp;bool&nbsp;is_symbol_command(const&nbsp;std::string&nbsp;&amp;cmd)<br>
+static bool is_symbol_command(const std::string &amp;cmd)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;cmd&nbsp;==&nbsp;&quot;replace-cpp-method&quot;&nbsp;||&nbsp;cmd&nbsp;==&nbsp;&quot;replace-cpp-class&quot;&nbsp;||<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cmd&nbsp;==&nbsp;&quot;replace-py-method&quot;&nbsp;||&nbsp;cmd&nbsp;==&nbsp;&quot;replace-py-class&quot;;<br>
+&emsp;return cmd == &quot;replace-cpp-method&quot; || cmd == &quot;replace-cpp-class&quot; ||<br>
+&emsp;&emsp;cmd == &quot;replace-py-method&quot; || cmd == &quot;replace-py-class&quot;;<br>
 }<br>
 <br>
-static&nbsp;int&nbsp;find_subsequence(const&nbsp;std::vector&lt;std::string&gt;&nbsp;&amp;haystack,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::vector&lt;std::string&gt;&nbsp;&amp;needle)<br>
+static int find_subsequence(const std::vector&lt;std::string&gt; &amp;haystack,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;const std::vector&lt;std::string&gt; &amp;needle)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(needle.empty()&nbsp;||&nbsp;needle.size()&nbsp;&gt;&nbsp;haystack.size())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;-1;<br>
+&emsp;if (needle.empty() || needle.size() &gt; haystack.size())<br>
+&emsp;&emsp;return -1;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::size_t&nbsp;n&nbsp;=&nbsp;haystack.size();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::size_t&nbsp;m&nbsp;=&nbsp;needle.size();<br>
+&emsp;const std::size_t n = haystack.size();<br>
+&emsp;const std::size_t m = needle.size();<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(std::size_t&nbsp;i&nbsp;=&nbsp;0;&nbsp;i&nbsp;+&nbsp;m&nbsp;&lt;=&nbsp;n;&nbsp;++i)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;ok&nbsp;=&nbsp;true;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(std::size_t&nbsp;j&nbsp;=&nbsp;0;&nbsp;j&nbsp;&lt;&nbsp;m;&nbsp;++j)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;h&nbsp;=&nbsp;trim(haystack[i&nbsp;+&nbsp;j]);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;nn&nbsp;=&nbsp;trim(needle[j]);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(h&nbsp;!=&nbsp;nn)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ok&nbsp;=&nbsp;false;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(ok)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;static_cast&lt;int&gt;(i);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;for (std::size_t i = 0; i + m &lt;= n; ++i)<br>
+&emsp;{<br>
+&emsp;&emsp;bool ok = true;<br>
+&emsp;&emsp;for (std::size_t j = 0; j &lt; m; ++j)<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;std::string h = trim(haystack[i + j]);<br>
+&emsp;&emsp;&emsp;std::string nn = trim(needle[j]);<br>
+&emsp;&emsp;&emsp;if (h != nn)<br>
+&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;ok = false;<br>
+&emsp;&emsp;&emsp;&emsp;break;<br>
+&emsp;&emsp;&emsp;}<br>
+&emsp;&emsp;}<br>
+&emsp;&emsp;if (ok)<br>
+&emsp;&emsp;&emsp;return static_cast&lt;int&gt;(i);<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;-1;<br>
+&emsp;return -1;<br>
 }<br>
 <br>
-//&nbsp;Строгий&nbsp;выбор&nbsp;позиции&nbsp;маркера&nbsp;с&nbsp;учётом&nbsp;BEFORE/AFTER.<br>
-//&nbsp;Никакого&nbsp;fuzzy,&nbsp;только&nbsp;точное&nbsp;позиционное&nbsp;совпадение.<br>
-static&nbsp;int&nbsp;find_best_marker_match(const&nbsp;std::vector&lt;std::string&gt;&nbsp;&amp;lines,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;Section&nbsp;*s,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::vector&lt;int&gt;&nbsp;&amp;candidates)<br>
+// Строгий выбор позиции маркера с учётом BEFORE/AFTER.<br>
+// Никакого fuzzy, только точное позиционное совпадение.<br>
+static int find_best_marker_match(const std::vector&lt;std::string&gt; &amp;lines,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;const Section *s,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;const std::vector&lt;int&gt; &amp;candidates)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(candidates.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;-1;<br>
+&emsp;if (candidates.empty())<br>
+&emsp;&emsp;return -1;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Нет&nbsp;дополнительного&nbsp;контекста&nbsp;—&nbsp;ведём&nbsp;себя&nbsp;как&nbsp;раньше.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(s-&gt;before.empty()&nbsp;&amp;&amp;&nbsp;s-&gt;after.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;candidates.front();<br>
+&emsp;// Нет дополнительного контекста — ведём себя как раньше.<br>
+&emsp;if (s-&gt;before.empty() &amp;&amp; s-&gt;after.empty())<br>
+&emsp;&emsp;return candidates.front();<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;trim_eq&nbsp;=&nbsp;[&amp;](const&nbsp;std::string&nbsp;&amp;a,&nbsp;const&nbsp;std::string&nbsp;&amp;b)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{&nbsp;return&nbsp;trim(a)&nbsp;==&nbsp;trim(b);&nbsp;};<br>
+&emsp;auto trim_eq = [&amp;](const std::string &amp;a, const std::string &amp;b)<br>
+&emsp;{ return trim(a) == trim(b); };<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;int&gt;&nbsp;strict;<br>
+&emsp;std::vector&lt;int&gt; strict;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(int&nbsp;pos&nbsp;:&nbsp;candidates)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;ok&nbsp;=&nbsp;true;<br>
+&emsp;for (int pos : candidates)<br>
+&emsp;{<br>
+&emsp;&emsp;bool ok = true;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;BEFORE:&nbsp;строки&nbsp;сразу&nbsp;над&nbsp;маркером<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!s-&gt;before.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;need&nbsp;=&nbsp;static_cast&lt;int&gt;(s-&gt;before.size());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(pos&nbsp;&lt;&nbsp;need)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ok&nbsp;=&nbsp;false;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Последняя&nbsp;строка&nbsp;BEFORE&nbsp;должна&nbsp;быть&nbsp;непосредственно&nbsp;над<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;первой&nbsp;строкой&nbsp;маркера.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(int&nbsp;i&nbsp;=&nbsp;0;&nbsp;i&nbsp;&lt;&nbsp;need;&nbsp;++i)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;&amp;want&nbsp;=<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s-&gt;before[static_cast&lt;std::size_t&gt;(need&nbsp;-&nbsp;1&nbsp;-&nbsp;i)];<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;&amp;got&nbsp;=<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lines[static_cast&lt;std::size_t&gt;(pos&nbsp;-&nbsp;1&nbsp;-&nbsp;i)];<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!trim_eq(got,&nbsp;want))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ok&nbsp;=&nbsp;false;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;// BEFORE: строки сразу над маркером<br>
+&emsp;&emsp;if (!s-&gt;before.empty())<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;int need = static_cast&lt;int&gt;(s-&gt;before.size());<br>
+&emsp;&emsp;&emsp;if (pos &lt; need)<br>
+&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;ok = false;<br>
+&emsp;&emsp;&emsp;}<br>
+&emsp;&emsp;&emsp;else<br>
+&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;// Последняя строка BEFORE должна быть непосредственно над<br>
+&emsp;&emsp;&emsp;&emsp;// первой строкой маркера.<br>
+&emsp;&emsp;&emsp;&emsp;for (int i = 0; i &lt; need; ++i)<br>
+&emsp;&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;const std::string &amp;want =<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;s-&gt;before[static_cast&lt;std::size_t&gt;(need - 1 - i)];<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;const std::string &amp;got =<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;lines[static_cast&lt;std::size_t&gt;(pos - 1 - i)];<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;if (!trim_eq(got, want))<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;ok = false;<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;break;<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;}<br>
+&emsp;&emsp;&emsp;&emsp;}<br>
+&emsp;&emsp;&emsp;}<br>
+&emsp;&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;AFTER:&nbsp;строки&nbsp;сразу&nbsp;под&nbsp;маркером<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(ok&nbsp;&amp;&amp;&nbsp;!s-&gt;after.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;start&nbsp;=&nbsp;pos&nbsp;+&nbsp;static_cast&lt;int&gt;(s-&gt;marker.size());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;need&nbsp;=&nbsp;static_cast&lt;int&gt;(s-&gt;after.size());<br>
+&emsp;&emsp;// AFTER: строки сразу под маркером<br>
+&emsp;&emsp;if (ok &amp;&amp; !s-&gt;after.empty())<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;int start = pos + static_cast&lt;int&gt;(s-&gt;marker.size());<br>
+&emsp;&emsp;&emsp;int need = static_cast&lt;int&gt;(s-&gt;after.size());<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(start&nbsp;&lt;&nbsp;0&nbsp;||&nbsp;start&nbsp;+&nbsp;need&nbsp;&gt;&nbsp;static_cast&lt;int&gt;(lines.size()))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ok&nbsp;=&nbsp;false;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(int&nbsp;i&nbsp;=&nbsp;0;&nbsp;i&nbsp;&lt;&nbsp;need;&nbsp;++i)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;&amp;want&nbsp;=<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s-&gt;after[static_cast&lt;std::size_t&gt;(i)];<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;&amp;got&nbsp;=<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lines[static_cast&lt;std::size_t&gt;(start&nbsp;+&nbsp;i)];<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!trim_eq(got,&nbsp;want))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ok&nbsp;=&nbsp;false;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;&emsp;if (start &lt; 0 || start + need &gt; static_cast&lt;int&gt;(lines.size()))<br>
+&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;ok = false;<br>
+&emsp;&emsp;&emsp;}<br>
+&emsp;&emsp;&emsp;else<br>
+&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;for (int i = 0; i &lt; need; ++i)<br>
+&emsp;&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;const std::string &amp;want =<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;s-&gt;after[static_cast&lt;std::size_t&gt;(i)];<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;const std::string &amp;got =<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;lines[static_cast&lt;std::size_t&gt;(start + i)];<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;if (!trim_eq(got, want))<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;ok = false;<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;break;<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;}<br>
+&emsp;&emsp;&emsp;&emsp;}<br>
+&emsp;&emsp;&emsp;}<br>
+&emsp;&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(ok)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;strict.push_back(pos);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;if (ok)<br>
+&emsp;&emsp;&emsp;strict.push_back(pos);<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(strict.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(&quot;strict&nbsp;marker&nbsp;context&nbsp;not&nbsp;found&quot;);<br>
+&emsp;if (strict.empty())<br>
+&emsp;&emsp;throw std::runtime_error(&quot;strict marker context not found&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(strict.size()&nbsp;&gt;&nbsp;1)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(&quot;strict&nbsp;marker&nbsp;match&nbsp;is&nbsp;ambiguous&quot;);<br>
+&emsp;if (strict.size() &gt; 1)<br>
+&emsp;&emsp;throw std::runtime_error(&quot;strict marker match is ambiguous&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;strict.front();<br>
+&emsp;return strict.front();<br>
 }<br>
 <br>
-static&nbsp;void&nbsp;apply_text_commands(const&nbsp;std::string&nbsp;&amp;filepath,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;&amp;lines,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::vector&lt;const&nbsp;Section&nbsp;*&gt;&nbsp;&amp;sections)<br>
+static void apply_text_commands(const std::string &amp;filepath,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;std::vector&lt;std::string&gt; &amp;lines,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;const std::vector&lt;const Section *&gt; &amp;sections)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(const&nbsp;Section&nbsp;*s&nbsp;:&nbsp;sections)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(s-&gt;marker.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(&quot;empty&nbsp;marker&nbsp;in&nbsp;text&nbsp;command&nbsp;for&nbsp;file:&nbsp;&quot;&nbsp;+<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;filepath);<br>
+&emsp;for (const Section *s : sections)<br>
+&emsp;{<br>
+&emsp;&emsp;if (s-&gt;marker.empty())<br>
+&emsp;&emsp;&emsp;throw std::runtime_error(&quot;empty marker in text command for file: &quot; +<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;filepath);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Собираем&nbsp;все&nbsp;вхождения&nbsp;маркера<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;int&gt;&nbsp;candidates;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;base&nbsp;=&nbsp;0;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(base&nbsp;&lt;&nbsp;static_cast&lt;int&gt;(lines.size()))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;sub(lines.begin()&nbsp;+&nbsp;base,&nbsp;lines.end());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;idx&nbsp;=&nbsp;find_subsequence(sub,&nbsp;s-&gt;marker);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(idx&nbsp;&lt;&nbsp;0)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;candidates.push_back(base&nbsp;+&nbsp;idx);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;base&nbsp;+=&nbsp;idx&nbsp;+&nbsp;1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;// Собираем все вхождения маркера<br>
+&emsp;&emsp;std::vector&lt;int&gt; candidates;<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;int base = 0;<br>
+&emsp;&emsp;&emsp;while (base &lt; static_cast&lt;int&gt;(lines.size()))<br>
+&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;std::vector&lt;std::string&gt; sub(lines.begin() + base, lines.end());<br>
+&emsp;&emsp;&emsp;&emsp;int idx = find_subsequence(sub, s-&gt;marker);<br>
+&emsp;&emsp;&emsp;&emsp;if (idx &lt; 0)<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;break;<br>
+&emsp;&emsp;&emsp;&emsp;candidates.push_back(base + idx);<br>
+&emsp;&emsp;&emsp;&emsp;base += idx + 1;<br>
+&emsp;&emsp;&emsp;}<br>
+&emsp;&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(candidates.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;text&nbsp;marker&nbsp;not&nbsp;found&nbsp;for&nbsp;file:&nbsp;&quot;&nbsp;+&nbsp;filepath&nbsp;+<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\ncommand:&nbsp;&quot;&nbsp;+&nbsp;s-&gt;command&nbsp;+&nbsp;&quot;\n&quot;);<br>
+&emsp;&emsp;if (candidates.empty())<br>
+&emsp;&emsp;&emsp;throw std::runtime_error(<br>
+&emsp;&emsp;&emsp;&emsp;&quot;text marker not found for file: &quot; + filepath +<br>
+&emsp;&emsp;&emsp;&emsp;&quot;\ncommand: &quot; + s-&gt;command + &quot;\n&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;idx&nbsp;=&nbsp;find_best_marker_match(lines,&nbsp;s,&nbsp;candidates);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(idx&nbsp;&lt;&nbsp;0)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(&quot;cannot&nbsp;locate&nbsp;marker&nbsp;uniquely&quot;);<br>
+&emsp;&emsp;int idx = find_best_marker_match(lines, s, candidates);<br>
+&emsp;&emsp;if (idx &lt; 0)<br>
+&emsp;&emsp;&emsp;throw std::runtime_error(&quot;cannot locate marker uniquely&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;pos&nbsp;=&nbsp;static_cast&lt;std::size_t&gt;(idx);<br>
+&emsp;&emsp;std::size_t pos = static_cast&lt;std::size_t&gt;(idx);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(s-&gt;command&nbsp;==&nbsp;&quot;insert-after-text&quot;)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pos&nbsp;+=&nbsp;s-&gt;marker.size();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lines.insert(lines.begin()&nbsp;+&nbsp;static_cast&lt;std::ptrdiff_t&gt;(pos),<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s-&gt;payload.begin(),<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s-&gt;payload.end());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(s-&gt;command&nbsp;==&nbsp;&quot;insert-before-text&quot;)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lines.insert(lines.begin()&nbsp;+&nbsp;static_cast&lt;std::ptrdiff_t&gt;(pos),<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s-&gt;payload.begin(),<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s-&gt;payload.end());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(s-&gt;command&nbsp;==&nbsp;&quot;replace-text&quot;)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;begin&nbsp;=&nbsp;lines.begin()&nbsp;+&nbsp;static_cast&lt;std::ptrdiff_t&gt;(pos);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;end&nbsp;=&nbsp;begin&nbsp;+&nbsp;static_cast&lt;std::ptrdiff_t&gt;(s-&gt;marker.size());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lines.erase(begin,&nbsp;end);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lines.insert(lines.begin()&nbsp;+&nbsp;static_cast&lt;std::ptrdiff_t&gt;(pos),<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s-&gt;payload.begin(),<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s-&gt;payload.end());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(s-&gt;command&nbsp;==&nbsp;&quot;delete-text&quot;)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;begin&nbsp;=&nbsp;lines.begin()&nbsp;+&nbsp;static_cast&lt;std::ptrdiff_t&gt;(pos);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;end&nbsp;=&nbsp;begin&nbsp;+&nbsp;static_cast&lt;std::ptrdiff_t&gt;(s-&gt;marker.size());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lines.erase(begin,&nbsp;end);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(&quot;unknown&nbsp;text&nbsp;command:&nbsp;&quot;&nbsp;+&nbsp;s-&gt;command);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;if (s-&gt;command == &quot;insert-after-text&quot;)<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;pos += s-&gt;marker.size();<br>
+&emsp;&emsp;&emsp;lines.insert(lines.begin() + static_cast&lt;std::ptrdiff_t&gt;(pos),<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;s-&gt;payload.begin(),<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;s-&gt;payload.end());<br>
+&emsp;&emsp;}<br>
+&emsp;&emsp;else if (s-&gt;command == &quot;insert-before-text&quot;)<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;lines.insert(lines.begin() + static_cast&lt;std::ptrdiff_t&gt;(pos),<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;s-&gt;payload.begin(),<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;s-&gt;payload.end());<br>
+&emsp;&emsp;}<br>
+&emsp;&emsp;else if (s-&gt;command == &quot;replace-text&quot;)<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;auto begin = lines.begin() + static_cast&lt;std::ptrdiff_t&gt;(pos);<br>
+&emsp;&emsp;&emsp;auto end = begin + static_cast&lt;std::ptrdiff_t&gt;(s-&gt;marker.size());<br>
+&emsp;&emsp;&emsp;lines.erase(begin, end);<br>
+&emsp;&emsp;&emsp;lines.insert(lines.begin() + static_cast&lt;std::ptrdiff_t&gt;(pos),<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;s-&gt;payload.begin(),<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;s-&gt;payload.end());<br>
+&emsp;&emsp;}<br>
+&emsp;&emsp;else if (s-&gt;command == &quot;delete-text&quot;)<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;auto begin = lines.begin() + static_cast&lt;std::ptrdiff_t&gt;(pos);<br>
+&emsp;&emsp;&emsp;auto end = begin + static_cast&lt;std::ptrdiff_t&gt;(s-&gt;marker.size());<br>
+&emsp;&emsp;&emsp;lines.erase(begin, end);<br>
+&emsp;&emsp;}<br>
+&emsp;&emsp;else<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;throw std::runtime_error(&quot;unknown text command: &quot; + s-&gt;command);<br>
+&emsp;&emsp;}<br>
+&emsp;}<br>
 }<br>
 <br>
-static&nbsp;std::string&nbsp;join_lines(const&nbsp;std::vector&lt;std::string&gt;&nbsp;&amp;lines)<br>
+static std::string join_lines(const std::vector&lt;std::string&gt; &amp;lines)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(lines.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;std::string();<br>
+&emsp;if (lines.empty())<br>
+&emsp;&emsp;return std::string();<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;text;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;total&nbsp;=&nbsp;0;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(const&nbsp;auto&nbsp;&amp;s&nbsp;:&nbsp;lines)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;total&nbsp;+=&nbsp;s.size()&nbsp;+&nbsp;1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;text.reserve(total);<br>
+&emsp;std::string text;<br>
+&emsp;std::size_t total = 0;<br>
+&emsp;for (const auto &amp;s : lines)<br>
+&emsp;&emsp;total += s.size() + 1;<br>
+&emsp;text.reserve(total);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(std::size_t&nbsp;i&nbsp;=&nbsp;0;&nbsp;i&nbsp;&lt;&nbsp;lines.size();&nbsp;++i)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text&nbsp;+=&nbsp;lines[i];<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(i&nbsp;+&nbsp;1&nbsp;&lt;&nbsp;lines.size())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text&nbsp;+=&nbsp;'\n';<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;for (std::size_t i = 0; i &lt; lines.size(); ++i)<br>
+&emsp;{<br>
+&emsp;&emsp;text += lines[i];<br>
+&emsp;&emsp;if (i + 1 &lt; lines.size())<br>
+&emsp;&emsp;&emsp;text += '\n';<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;text;<br>
+&emsp;return text;<br>
 }<br>
 <br>
-static&nbsp;void&nbsp;apply_symbol_commands(const&nbsp;std::string&nbsp;&amp;filepath,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;&amp;lines,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::vector&lt;const&nbsp;Section&nbsp;*&gt;&nbsp;&amp;sections)<br>
+static void apply_symbol_commands(const std::string &amp;filepath,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;std::vector&lt;std::string&gt; &amp;lines,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;const std::vector&lt;const Section *&gt; &amp;sections)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(const&nbsp;Section&nbsp;*s&nbsp;:&nbsp;sections)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Всегда&nbsp;работаем&nbsp;с&nbsp;текущей&nbsp;версией&nbsp;файла<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;text&nbsp;=&nbsp;join_lines(lines);<br>
+&emsp;for (const Section *s : sections)<br>
+&emsp;{<br>
+&emsp;&emsp;// Всегда работаем с текущей версией файла<br>
+&emsp;&emsp;std::string text = join_lines(lines);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(s-&gt;command&nbsp;==&nbsp;&quot;replace-cpp-class&quot;&nbsp;||<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s-&gt;command&nbsp;==&nbsp;&quot;replace-cpp-method&quot;)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CppSymbolFinder&nbsp;finder(text);<br>
+&emsp;&emsp;if (s-&gt;command == &quot;replace-cpp-class&quot; ||<br>
+&emsp;&emsp;&emsp;s-&gt;command == &quot;replace-cpp-method&quot;)<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;CppSymbolFinder finder(text);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(s-&gt;command&nbsp;==&nbsp;&quot;replace-cpp-class&quot;)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(s-&gt;arg1.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;replace-cpp-class:&nbsp;missing&nbsp;class&nbsp;name&nbsp;for&nbsp;file:&nbsp;&quot;&nbsp;+<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;filepath);<br>
+&emsp;&emsp;&emsp;if (s-&gt;command == &quot;replace-cpp-class&quot;)<br>
+&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;if (s-&gt;arg1.empty())<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;throw std::runtime_error(<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;replace-cpp-class: missing class name for file: &quot; +<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;filepath);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;r;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!finder.find_class(s-&gt;arg1,&nbsp;r))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;replace-cpp-class:&nbsp;class&nbsp;not&nbsp;found:&nbsp;&quot;&nbsp;+&nbsp;s-&gt;arg1&nbsp;+<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;in&nbsp;file:&nbsp;&quot;&nbsp;+&nbsp;filepath);<br>
+&emsp;&emsp;&emsp;&emsp;Region r;<br>
+&emsp;&emsp;&emsp;&emsp;if (!finder.find_class(s-&gt;arg1, r))<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;throw std::runtime_error(<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;replace-cpp-class: class not found: &quot; + s-&gt;arg1 +<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot; in file: &quot; + filepath);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(r.start_line&nbsp;&lt;&nbsp;0&nbsp;||&nbsp;r.end_line&nbsp;&lt;&nbsp;r.start_line&nbsp;||<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;r.end_line&nbsp;&gt;=&nbsp;static_cast&lt;int&gt;(lines.size()))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;replace-cpp-class:&nbsp;invalid&nbsp;region&quot;);<br>
+&emsp;&emsp;&emsp;&emsp;if (r.start_line &lt; 0 || r.end_line &lt; r.start_line ||<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;r.end_line &gt;= static_cast&lt;int&gt;(lines.size()))<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;throw std::runtime_error(<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;replace-cpp-class: invalid region&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;begin&nbsp;=&nbsp;lines.begin()&nbsp;+&nbsp;r.start_line;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;end&nbsp;=&nbsp;lines.begin()&nbsp;+&nbsp;(r.end_line&nbsp;+&nbsp;1);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lines.erase(begin,&nbsp;end);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lines.insert(lines.begin()&nbsp;+&nbsp;r.start_line,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s-&gt;payload.begin(),<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s-&gt;payload.end());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;//&nbsp;replace-cpp-method<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;cls;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;method;<br>
+&emsp;&emsp;&emsp;&emsp;auto begin = lines.begin() + r.start_line;<br>
+&emsp;&emsp;&emsp;&emsp;auto end = lines.begin() + (r.end_line + 1);<br>
+&emsp;&emsp;&emsp;&emsp;lines.erase(begin, end);<br>
+&emsp;&emsp;&emsp;&emsp;lines.insert(lines.begin() + r.start_line,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;s-&gt;payload.begin(),<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;s-&gt;payload.end());<br>
+&emsp;&emsp;&emsp;}<br>
+&emsp;&emsp;&emsp;else // replace-cpp-method<br>
+&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;std::string cls;<br>
+&emsp;&emsp;&emsp;&emsp;std::string method;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!s-&gt;arg2.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cls&nbsp;=&nbsp;s-&gt;arg1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;method&nbsp;=&nbsp;s-&gt;arg2;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;pos&nbsp;=&nbsp;s-&gt;arg1.find(&quot;::&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(pos&nbsp;==&nbsp;std::string::npos)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;replace-cpp-method:&nbsp;expected&nbsp;'Class::method'&nbsp;or&nbsp;&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;'Class&nbsp;method'&quot;);<br>
+&emsp;&emsp;&emsp;&emsp;if (!s-&gt;arg2.empty())<br>
+&emsp;&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;cls = s-&gt;arg1;<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;method = s-&gt;arg2;<br>
+&emsp;&emsp;&emsp;&emsp;}<br>
+&emsp;&emsp;&emsp;&emsp;else<br>
+&emsp;&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;auto pos = s-&gt;arg1.find(&quot;::&quot;);<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;if (pos == std::string::npos)<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;throw std::runtime_error(<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;replace-cpp-method: expected 'Class::method' or &quot;<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;'Class method'&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cls&nbsp;=&nbsp;s-&gt;arg1.substr(0,&nbsp;pos);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;method&nbsp;=&nbsp;s-&gt;arg1.substr(pos&nbsp;+&nbsp;2);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;cls = s-&gt;arg1.substr(0, pos);<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;method = s-&gt;arg1.substr(pos + 2);<br>
+&emsp;&emsp;&emsp;&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(cls.empty()&nbsp;||&nbsp;method.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;replace-cpp-method:&nbsp;empty&nbsp;class&nbsp;or&nbsp;method&nbsp;name&quot;);<br>
+&emsp;&emsp;&emsp;&emsp;if (cls.empty() || method.empty())<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;throw std::runtime_error(<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;replace-cpp-method: empty class or method name&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;r;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!finder.find_method(cls,&nbsp;method,&nbsp;r))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;replace-cpp-method:&nbsp;method&nbsp;not&nbsp;found:&nbsp;&quot;&nbsp;+&nbsp;cls&nbsp;+<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;::&quot;&nbsp;+&nbsp;method&nbsp;+&nbsp;&quot;&nbsp;in&nbsp;file:&nbsp;&quot;&nbsp;+&nbsp;filepath);<br>
+&emsp;&emsp;&emsp;&emsp;Region r;<br>
+&emsp;&emsp;&emsp;&emsp;if (!finder.find_method(cls, method, r))<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;throw std::runtime_error(<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;replace-cpp-method: method not found: &quot; + cls +<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;::&quot; + method + &quot; in file: &quot; + filepath);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(r.start_line&nbsp;&lt;&nbsp;0&nbsp;||&nbsp;r.end_line&nbsp;&lt;&nbsp;r.start_line&nbsp;||<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;r.end_line&nbsp;&gt;=&nbsp;static_cast&lt;int&gt;(lines.size()))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;replace-cpp-method:&nbsp;invalid&nbsp;region&quot;);<br>
+&emsp;&emsp;&emsp;&emsp;if (r.start_line &lt; 0 || r.end_line &lt; r.start_line ||<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;r.end_line &gt;= static_cast&lt;int&gt;(lines.size()))<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;throw std::runtime_error(<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;replace-cpp-method: invalid region&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;begin&nbsp;=&nbsp;lines.begin()&nbsp;+&nbsp;r.start_line;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;end&nbsp;=&nbsp;lines.begin()&nbsp;+&nbsp;(r.end_line&nbsp;+&nbsp;1);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lines.erase(begin,&nbsp;end);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lines.insert(lines.begin()&nbsp;+&nbsp;r.start_line,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s-&gt;payload.begin(),<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s-&gt;payload.end());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;&emsp;&emsp;auto begin = lines.begin() + r.start_line;<br>
+&emsp;&emsp;&emsp;&emsp;auto end = lines.begin() + (r.end_line + 1);<br>
+&emsp;&emsp;&emsp;&emsp;lines.erase(begin, end);<br>
+&emsp;&emsp;&emsp;&emsp;lines.insert(lines.begin() + r.start_line,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;s-&gt;payload.begin(),<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;s-&gt;payload.end());<br>
+&emsp;&emsp;&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;&emsp;continue;<br>
+&emsp;&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(s-&gt;command&nbsp;==&nbsp;&quot;replace-py-class&quot;&nbsp;||<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s-&gt;command&nbsp;==&nbsp;&quot;replace-py-method&quot;)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PythonSymbolFinder&nbsp;finder(text);<br>
+&emsp;&emsp;if (s-&gt;command == &quot;replace-py-class&quot; ||<br>
+&emsp;&emsp;&emsp;s-&gt;command == &quot;replace-py-method&quot;)<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;PythonSymbolFinder finder(text);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(s-&gt;command&nbsp;==&nbsp;&quot;replace-py-class&quot;)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(s-&gt;arg1.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;replace-py-class:&nbsp;missing&nbsp;class&nbsp;name&nbsp;for&nbsp;file:&nbsp;&quot;&nbsp;+<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;filepath);<br>
+&emsp;&emsp;&emsp;if (s-&gt;command == &quot;replace-py-class&quot;)<br>
+&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;if (s-&gt;arg1.empty())<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;throw std::runtime_error(<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;replace-py-class: missing class name for file: &quot; +<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;filepath);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;r;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!finder.find_class(s-&gt;arg1,&nbsp;r))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;replace-py-class:&nbsp;class&nbsp;not&nbsp;found:&nbsp;&quot;&nbsp;+&nbsp;s-&gt;arg1&nbsp;+<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;in&nbsp;file:&nbsp;&quot;&nbsp;+&nbsp;filepath);<br>
+&emsp;&emsp;&emsp;&emsp;Region r;<br>
+&emsp;&emsp;&emsp;&emsp;if (!finder.find_class(s-&gt;arg1, r))<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;throw std::runtime_error(<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;replace-py-class: class not found: &quot; + s-&gt;arg1 +<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot; in file: &quot; + filepath);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(r.start_line&nbsp;&lt;&nbsp;0&nbsp;||&nbsp;r.end_line&nbsp;&lt;&nbsp;r.start_line&nbsp;||<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;r.end_line&nbsp;&gt;=&nbsp;static_cast&lt;int&gt;(lines.size()))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;replace-py-class:&nbsp;invalid&nbsp;region&quot;);<br>
+&emsp;&emsp;&emsp;&emsp;if (r.start_line &lt; 0 || r.end_line &lt; r.start_line ||<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;r.end_line &gt;= static_cast&lt;int&gt;(lines.size()))<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;throw std::runtime_error(<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;replace-py-class: invalid region&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;begin&nbsp;=&nbsp;lines.begin()&nbsp;+&nbsp;r.start_line;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;end&nbsp;=&nbsp;lines.begin()&nbsp;+&nbsp;(r.end_line&nbsp;+&nbsp;1);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lines.erase(begin,&nbsp;end);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lines.insert(lines.begin()&nbsp;+&nbsp;r.start_line,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s-&gt;payload.begin(),<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s-&gt;payload.end());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;//&nbsp;replace-py-method<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;cls;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;method;<br>
+&emsp;&emsp;&emsp;&emsp;auto begin = lines.begin() + r.start_line;<br>
+&emsp;&emsp;&emsp;&emsp;auto end = lines.begin() + (r.end_line + 1);<br>
+&emsp;&emsp;&emsp;&emsp;lines.erase(begin, end);<br>
+&emsp;&emsp;&emsp;&emsp;lines.insert(lines.begin() + r.start_line,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;s-&gt;payload.begin(),<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;s-&gt;payload.end());<br>
+&emsp;&emsp;&emsp;}<br>
+&emsp;&emsp;&emsp;else // replace-py-method<br>
+&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;std::string cls;<br>
+&emsp;&emsp;&emsp;&emsp;std::string method;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!s-&gt;arg2.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cls&nbsp;=&nbsp;s-&gt;arg1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;method&nbsp;=&nbsp;s-&gt;arg2;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;pos&nbsp;=&nbsp;s-&gt;arg1.find('.');<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(pos&nbsp;==&nbsp;std::string::npos)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;replace-py-method:&nbsp;expected&nbsp;'Class.method'&nbsp;or&nbsp;&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;'Class&nbsp;method'&quot;);<br>
+&emsp;&emsp;&emsp;&emsp;if (!s-&gt;arg2.empty())<br>
+&emsp;&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;cls = s-&gt;arg1;<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;method = s-&gt;arg2;<br>
+&emsp;&emsp;&emsp;&emsp;}<br>
+&emsp;&emsp;&emsp;&emsp;else<br>
+&emsp;&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;auto pos = s-&gt;arg1.find('.');<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;if (pos == std::string::npos)<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;throw std::runtime_error(<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;replace-py-method: expected 'Class.method' or &quot;<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;'Class method'&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cls&nbsp;=&nbsp;s-&gt;arg1.substr(0,&nbsp;pos);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;method&nbsp;=&nbsp;s-&gt;arg1.substr(pos&nbsp;+&nbsp;1);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;cls = s-&gt;arg1.substr(0, pos);<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;method = s-&gt;arg1.substr(pos + 1);<br>
+&emsp;&emsp;&emsp;&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(cls.empty()&nbsp;||&nbsp;method.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;replace-py-method:&nbsp;empty&nbsp;class&nbsp;or&nbsp;method&nbsp;name&quot;);<br>
+&emsp;&emsp;&emsp;&emsp;if (cls.empty() || method.empty())<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;throw std::runtime_error(<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;replace-py-method: empty class or method name&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;r;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!finder.find_method(cls,&nbsp;method,&nbsp;r))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;replace-py-method:&nbsp;method&nbsp;not&nbsp;found:&nbsp;&quot;&nbsp;+&nbsp;cls&nbsp;+&nbsp;&quot;.&quot;&nbsp;+<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;method&nbsp;+&nbsp;&quot;&nbsp;in&nbsp;file:&nbsp;&quot;&nbsp;+&nbsp;filepath);<br>
+&emsp;&emsp;&emsp;&emsp;Region r;<br>
+&emsp;&emsp;&emsp;&emsp;if (!finder.find_method(cls, method, r))<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;throw std::runtime_error(<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;replace-py-method: method not found: &quot; + cls + &quot;.&quot; +<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;method + &quot; in file: &quot; + filepath);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(r.start_line&nbsp;&lt;&nbsp;0&nbsp;||&nbsp;r.end_line&nbsp;&lt;&nbsp;r.start_line&nbsp;||<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;r.end_line&nbsp;&gt;=&nbsp;static_cast&lt;int&gt;(lines.size()))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;replace-py-method:&nbsp;invalid&nbsp;region&quot;);<br>
+&emsp;&emsp;&emsp;&emsp;if (r.start_line &lt; 0 || r.end_line &lt; r.start_line ||<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;r.end_line &gt;= static_cast&lt;int&gt;(lines.size()))<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;throw std::runtime_error(<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;replace-py-method: invalid region&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;begin&nbsp;=&nbsp;lines.begin()&nbsp;+&nbsp;r.start_line;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;end&nbsp;=&nbsp;lines.begin()&nbsp;+&nbsp;(r.end_line&nbsp;+&nbsp;1);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lines.erase(begin,&nbsp;end);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lines.insert(lines.begin()&nbsp;+&nbsp;r.start_line,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s-&gt;payload.begin(),<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s-&gt;payload.end());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;&emsp;&emsp;auto begin = lines.begin() + r.start_line;<br>
+&emsp;&emsp;&emsp;&emsp;auto end = lines.begin() + (r.end_line + 1);<br>
+&emsp;&emsp;&emsp;&emsp;lines.erase(begin, end);<br>
+&emsp;&emsp;&emsp;&emsp;lines.insert(lines.begin() + r.start_line,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;s-&gt;payload.begin(),<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;s-&gt;payload.end());<br>
+&emsp;&emsp;&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;&emsp;continue;<br>
+&emsp;&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(&quot;apply_symbol_commands:&nbsp;unknown&nbsp;command:&nbsp;&quot;&nbsp;+<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s-&gt;command);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;throw std::runtime_error(&quot;apply_symbol_commands: unknown command: &quot; +<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;s-&gt;command);<br>
+&emsp;}<br>
 }<br>
 <br>
-static&nbsp;Section&nbsp;parse_section(std::istream&nbsp;&amp;in,&nbsp;const&nbsp;std::string&nbsp;&amp;header)<br>
+static Section parse_section(std::istream &amp;in, const std::string &amp;header)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Section&nbsp;s;<br>
+&emsp;Section s;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;pos&nbsp;=&nbsp;header.find(':');<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(pos&nbsp;==&nbsp;std::string::npos)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(&quot;bad&nbsp;section&nbsp;header:&nbsp;&quot;&nbsp;+&nbsp;header);<br>
+&emsp;auto pos = header.find(':');<br>
+&emsp;if (pos == std::string::npos)<br>
+&emsp;&emsp;throw std::runtime_error(&quot;bad section header: &quot; + header);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;pos2&nbsp;=&nbsp;header.find(&quot;===&quot;,&nbsp;pos);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(pos2&nbsp;==&nbsp;std::string::npos)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pos2&nbsp;=&nbsp;header.size();<br>
+&emsp;auto pos2 = header.find(&quot;===&quot;, pos);<br>
+&emsp;if (pos2 == std::string::npos)<br>
+&emsp;&emsp;pos2 = header.size();<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;raw&nbsp;=&nbsp;header.substr(pos&nbsp;+&nbsp;1,&nbsp;pos2&nbsp;-&nbsp;pos&nbsp;-&nbsp;1);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;s.filepath&nbsp;=&nbsp;trim(raw);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(s.filepath.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(&quot;empty&nbsp;filepath&nbsp;in&nbsp;header:&nbsp;&quot;&nbsp;+&nbsp;header);<br>
+&emsp;auto raw = header.substr(pos + 1, pos2 - pos - 1);<br>
+&emsp;s.filepath = trim(raw);<br>
+&emsp;if (s.filepath.empty())<br>
+&emsp;&emsp;throw std::runtime_error(&quot;empty filepath in header: &quot; + header);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;line;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!std::getline(in,&nbsp;line))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(&quot;unexpected&nbsp;end&nbsp;after&nbsp;header&quot;);<br>
+&emsp;std::string line;<br>
+&emsp;if (!std::getline(in, line))<br>
+&emsp;&emsp;throw std::runtime_error(&quot;unexpected end after header&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(line.rfind(&quot;---&nbsp;&quot;,&nbsp;0)&nbsp;!=&nbsp;0)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(&quot;expected&nbsp;command&nbsp;after&nbsp;header&quot;);<br>
+&emsp;if (line.rfind(&quot;--- &quot;, 0) != 0)<br>
+&emsp;&emsp;throw std::runtime_error(&quot;expected command after header&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::istringstream&nbsp;ss(line.substr(4));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ss&nbsp;&gt;&gt;&nbsp;s.command;<br>
+&emsp;{<br>
+&emsp;&emsp;std::istringstream ss(line.substr(4));<br>
+&emsp;&emsp;ss &gt;&gt; s.command;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;читаем&nbsp;остаток&nbsp;строки&nbsp;как&nbsp;аргументы&nbsp;команды<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;rest;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::getline(ss,&nbsp;rest);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!rest.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::istringstream&nbsp;as(rest);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;as&nbsp;&gt;&gt;&nbsp;s.arg1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;as&nbsp;&gt;&gt;&nbsp;s.arg2;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;// читаем остаток строки как аргументы команды<br>
+&emsp;&emsp;std::string rest;<br>
+&emsp;&emsp;std::getline(ss, rest);<br>
+&emsp;&emsp;if (!rest.empty())<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;std::istringstream as(rest);<br>
+&emsp;&emsp;&emsp;as &gt;&gt; s.arg1;<br>
+&emsp;&emsp;&emsp;as &gt;&gt; s.arg2;<br>
+&emsp;&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(is_text_command(s.command))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(s.command&nbsp;==&nbsp;&quot;create-file&quot;&nbsp;||&nbsp;s.command&nbsp;==&nbsp;&quot;delete-file&quot;)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(is_symbol_command(s.command))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(&quot;index-based&nbsp;commands&nbsp;removed:&nbsp;&quot;&nbsp;+<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s.command);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;if (is_text_command(s.command))<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;}<br>
+&emsp;&emsp;else if (s.command == &quot;create-file&quot; || s.command == &quot;delete-file&quot;)<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;}<br>
+&emsp;&emsp;else if (is_symbol_command(s.command))<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;}<br>
+&emsp;&emsp;else<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;throw std::runtime_error(&quot;index-based commands removed: &quot; +<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;s.command);<br>
+&emsp;&emsp;}<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;found_end&nbsp;=&nbsp;false;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(std::getline(in,&nbsp;line))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(line&nbsp;==&nbsp;&quot;=END=&quot;)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;found_end&nbsp;=&nbsp;true;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s.payload.push_back(line);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;bool found_end = false;<br>
+&emsp;while (std::getline(in, line))<br>
+&emsp;{<br>
+&emsp;&emsp;if (line == &quot;=END=&quot;)<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;found_end = true;<br>
+&emsp;&emsp;&emsp;break;<br>
+&emsp;&emsp;}<br>
+&emsp;&emsp;s.payload.push_back(line);<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!found_end)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(&quot;missing&nbsp;=END=&quot;);<br>
+&emsp;if (!found_end)<br>
+&emsp;&emsp;throw std::runtime_error(&quot;missing =END=&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(is_text_command(s.command))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Определяем,&nbsp;в&nbsp;YAML-режиме&nbsp;мы&nbsp;или&nbsp;в&nbsp;старом&nbsp;формате.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Если&nbsp;сразу&nbsp;после&nbsp;команды&nbsp;нет&nbsp;BEFORE:/MARKER:/AFTER:,&nbsp;используется<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;старая&nbsp;логика.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;yaml_mode&nbsp;=&nbsp;false;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;first_non_empty&nbsp;=&nbsp;0;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(first_non_empty&nbsp;&lt;&nbsp;s.payload.size()&nbsp;&amp;&amp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;trim(s.payload[first_non_empty]).empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++first_non_empty;<br>
+&emsp;if (is_text_command(s.command))<br>
+&emsp;{<br>
+&emsp;&emsp;// Определяем, в YAML-режиме мы или в старом формате.<br>
+&emsp;&emsp;// Если сразу после команды нет BEFORE:/MARKER:/AFTER:, используется<br>
+&emsp;&emsp;// старая логика.<br>
+&emsp;&emsp;bool yaml_mode = false;<br>
+&emsp;&emsp;std::size_t first_non_empty = 0;<br>
+&emsp;&emsp;while (first_non_empty &lt; s.payload.size() &amp;&amp;<br>
+&emsp;&emsp;&emsp;trim(s.payload[first_non_empty]).empty())<br>
+&emsp;&emsp;&emsp;++first_non_empty;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(first_non_empty&nbsp;&lt;&nbsp;s.payload.size())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;t&nbsp;=&nbsp;trim(s.payload[first_non_empty]);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(t&nbsp;==&nbsp;&quot;BEFORE:&quot;&nbsp;||&nbsp;t&nbsp;==&nbsp;&quot;MARKER:&quot;&nbsp;||&nbsp;t&nbsp;==&nbsp;&quot;AFTER:&quot;)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;yaml_mode&nbsp;=&nbsp;true;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;if (first_non_empty &lt; s.payload.size())<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;const std::string t = trim(s.payload[first_non_empty]);<br>
+&emsp;&emsp;&emsp;if (t == &quot;BEFORE:&quot; || t == &quot;MARKER:&quot; || t == &quot;AFTER:&quot;)<br>
+&emsp;&emsp;&emsp;&emsp;yaml_mode = true;<br>
+&emsp;&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!yaml_mode)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Старый&nbsp;режим:&nbsp;всё&nbsp;до&nbsp;'---'&nbsp;—&nbsp;marker,&nbsp;после&nbsp;—&nbsp;payload<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;it&nbsp;=&nbsp;std::find(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s.payload.begin(),&nbsp;s.payload.end(),&nbsp;std::string(&quot;---&quot;));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(it&nbsp;==&nbsp;s.payload.end())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;text&nbsp;command&nbsp;requires&nbsp;'---'&nbsp;separator&quot;);<br>
+&emsp;&emsp;if (!yaml_mode)<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;// Старый режим: всё до '---' — marker, после — payload<br>
+&emsp;&emsp;&emsp;auto it = std::find(<br>
+&emsp;&emsp;&emsp;&emsp;s.payload.begin(), s.payload.end(), std::string(&quot;---&quot;));<br>
+&emsp;&emsp;&emsp;if (it == s.payload.end())<br>
+&emsp;&emsp;&emsp;&emsp;throw std::runtime_error(<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&quot;text command requires '---' separator&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s.marker.assign(s.payload.begin(),&nbsp;it);<br>
+&emsp;&emsp;&emsp;s.marker.assign(s.payload.begin(), it);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;tail;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(std::next(it)&nbsp;!=&nbsp;s.payload.end())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tail.assign(std::next(it),&nbsp;s.payload.end());<br>
+&emsp;&emsp;&emsp;std::vector&lt;std::string&gt; tail;<br>
+&emsp;&emsp;&emsp;if (std::next(it) != s.payload.end())<br>
+&emsp;&emsp;&emsp;&emsp;tail.assign(std::next(it), s.payload.end());<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s.payload.swap(tail);<br>
+&emsp;&emsp;&emsp;s.payload.swap(tail);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(s.marker.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(&quot;empty&nbsp;text&nbsp;marker&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;YAML-подобный&nbsp;режим:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;BEFORE:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;...<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;MARKER:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;...<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;AFTER:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;...<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;---<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&lt;payload&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s.before.clear();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s.marker.clear();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s.after.clear();<br>
+&emsp;&emsp;&emsp;if (s.marker.empty())<br>
+&emsp;&emsp;&emsp;&emsp;throw std::runtime_error(&quot;empty text marker&quot;);<br>
+&emsp;&emsp;}<br>
+&emsp;&emsp;else<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;// YAML-подобный режим:<br>
+&emsp;&emsp;&emsp;// BEFORE:<br>
+&emsp;&emsp;&emsp;//   ...<br>
+&emsp;&emsp;&emsp;// MARKER:<br>
+&emsp;&emsp;&emsp;//   ...<br>
+&emsp;&emsp;&emsp;// AFTER:<br>
+&emsp;&emsp;&emsp;//   ...<br>
+&emsp;&emsp;&emsp;// ---<br>
+&emsp;&emsp;&emsp;// &lt;payload&gt;<br>
+&emsp;&emsp;&emsp;s.before.clear();<br>
+&emsp;&emsp;&emsp;s.marker.clear();<br>
+&emsp;&emsp;&emsp;s.after.clear();<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;enum&nbsp;class&nbsp;Block<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NONE,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BEFORE,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MARKER,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AFTER<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+&emsp;&emsp;&emsp;enum class Block<br>
+&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;NONE,<br>
+&emsp;&emsp;&emsp;&emsp;BEFORE,<br>
+&emsp;&emsp;&emsp;&emsp;MARKER,<br>
+&emsp;&emsp;&emsp;&emsp;AFTER<br>
+&emsp;&emsp;&emsp;};<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Block&nbsp;blk&nbsp;=&nbsp;Block::NONE;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;new_payload;<br>
+&emsp;&emsp;&emsp;Block blk = Block::NONE;<br>
+&emsp;&emsp;&emsp;std::vector&lt;std::string&gt; new_payload;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;seen_separator&nbsp;=&nbsp;false;<br>
+&emsp;&emsp;&emsp;bool seen_separator = false;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(std::size_t&nbsp;i&nbsp;=&nbsp;first_non_empty;&nbsp;i&nbsp;&lt;&nbsp;s.payload.size();&nbsp;++i)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;&amp;ln&nbsp;=&nbsp;s.payload[i];<br>
+&emsp;&emsp;&emsp;for (std::size_t i = first_non_empty; i &lt; s.payload.size(); ++i)<br>
+&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;const std::string &amp;ln = s.payload[i];<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!seen_separator&nbsp;&amp;&amp;&nbsp;ln&nbsp;==&nbsp;&quot;---&quot;)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;seen_separator&nbsp;=&nbsp;true;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;&emsp;&emsp;if (!seen_separator &amp;&amp; ln == &quot;---&quot;)<br>
+&emsp;&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;seen_separator = true;<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;continue;<br>
+&emsp;&emsp;&emsp;&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!seen_separator)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;t&nbsp;=&nbsp;trim(ln);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(t&nbsp;==&nbsp;&quot;BEFORE:&quot;)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;blk&nbsp;=&nbsp;Block::BEFORE;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(t&nbsp;==&nbsp;&quot;MARKER:&quot;)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;blk&nbsp;=&nbsp;Block::MARKER;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(t&nbsp;==&nbsp;&quot;AFTER:&quot;)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;blk&nbsp;=&nbsp;Block::AFTER;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;&emsp;&emsp;if (!seen_separator)<br>
+&emsp;&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;const std::string t = trim(ln);<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;if (t == &quot;BEFORE:&quot;)<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;blk = Block::BEFORE;<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;continue;<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;}<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;if (t == &quot;MARKER:&quot;)<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;blk = Block::MARKER;<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;continue;<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;}<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;if (t == &quot;AFTER:&quot;)<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;blk = Block::AFTER;<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;continue;<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;switch&nbsp;(blk)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case&nbsp;Block::BEFORE:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s.before.push_back(ln);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case&nbsp;Block::MARKER:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s.marker.push_back(ln);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case&nbsp;Block::AFTER:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s.after.push_back(ln);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case&nbsp;Block::NONE:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;unexpected&nbsp;content&nbsp;before&nbsp;YAML&nbsp;block&nbsp;tag&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;new_payload.push_back(ln);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;switch (blk)<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;case Block::BEFORE:<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;s.before.push_back(ln);<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;break;<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;case Block::MARKER:<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;s.marker.push_back(ln);<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;break;<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;case Block::AFTER:<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;s.after.push_back(ln);<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;break;<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;case Block::NONE:<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;throw std::runtime_error(<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;unexpected content before YAML block tag&quot;);<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;}<br>
+&emsp;&emsp;&emsp;&emsp;}<br>
+&emsp;&emsp;&emsp;&emsp;else<br>
+&emsp;&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;new_payload.push_back(ln);<br>
+&emsp;&emsp;&emsp;&emsp;}<br>
+&emsp;&emsp;&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s.payload.swap(new_payload);<br>
+&emsp;&emsp;&emsp;s.payload.swap(new_payload);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(s.marker.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;YAML&nbsp;text&nbsp;command&nbsp;requires&nbsp;MARKER:&nbsp;section&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;&emsp;if (s.marker.empty())<br>
+&emsp;&emsp;&emsp;&emsp;throw std::runtime_error(<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&quot;YAML text command requires MARKER: section&quot;);<br>
+&emsp;&emsp;}<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;s;<br>
+&emsp;return s;<br>
 }<br>
 <br>
-static&nbsp;void&nbsp;apply_for_file(const&nbsp;std::string&nbsp;&amp;filepath,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::vector&lt;const&nbsp;Section&nbsp;*&gt;&nbsp;&amp;sections)<br>
+static void apply_for_file(const std::string &amp;filepath,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;const std::vector&lt;const Section *&gt; &amp;sections)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;p&nbsp;=&nbsp;filepath;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;orig;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;existed&nbsp;=&nbsp;true;<br>
+&emsp;fs::path p = filepath;<br>
+&emsp;std::vector&lt;std::string&gt; orig;<br>
+&emsp;bool existed = true;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;try<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;orig&nbsp;=&nbsp;read_file_lines(p);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;catch&nbsp;(...)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;existed&nbsp;=&nbsp;false;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;orig.clear();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;try<br>
+&emsp;{<br>
+&emsp;&emsp;orig = read_file_lines(p);<br>
+&emsp;}<br>
+&emsp;catch (...)<br>
+&emsp;{<br>
+&emsp;&emsp;existed = false;<br>
+&emsp;&emsp;orig.clear();<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(const&nbsp;Section&nbsp;*s&nbsp;:&nbsp;sections)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!existed&nbsp;&amp;&amp;&nbsp;s-&gt;command&nbsp;==&nbsp;&quot;delete-file&quot;)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(&quot;delete-file:&nbsp;file&nbsp;does&nbsp;not&nbsp;exist&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;for (const Section *s : sections)<br>
+&emsp;{<br>
+&emsp;&emsp;if (!existed &amp;&amp; s-&gt;command == &quot;delete-file&quot;)<br>
+&emsp;&emsp;&emsp;throw std::runtime_error(&quot;delete-file: file does not exist&quot;);<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(const&nbsp;Section&nbsp;*s&nbsp;:&nbsp;sections)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(s-&gt;command&nbsp;==&nbsp;&quot;create-file&quot;)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;write_file_lines(p,&nbsp;s-&gt;payload);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(s-&gt;command&nbsp;==&nbsp;&quot;delete-file&quot;)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::error_code&nbsp;ec;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fs::remove(p,&nbsp;ec);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(ec)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(&quot;delete-file&nbsp;failed&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;for (const Section *s : sections)<br>
+&emsp;{<br>
+&emsp;&emsp;if (s-&gt;command == &quot;create-file&quot;)<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;write_file_lines(p, s-&gt;payload);<br>
+&emsp;&emsp;&emsp;return;<br>
+&emsp;&emsp;}<br>
+&emsp;&emsp;if (s-&gt;command == &quot;delete-file&quot;)<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;std::error_code ec;<br>
+&emsp;&emsp;&emsp;fs::remove(p, ec);<br>
+&emsp;&emsp;&emsp;if (ec)<br>
+&emsp;&emsp;&emsp;&emsp;throw std::runtime_error(&quot;delete-file failed&quot;);<br>
+&emsp;&emsp;&emsp;return;<br>
+&emsp;&emsp;}<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;const&nbsp;Section&nbsp;*&gt;&nbsp;text_sections;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;const&nbsp;Section&nbsp;*&gt;&nbsp;symbol_sections;<br>
+&emsp;std::vector&lt;const Section *&gt; text_sections;<br>
+&emsp;std::vector&lt;const Section *&gt; symbol_sections;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(const&nbsp;Section&nbsp;*s&nbsp;:&nbsp;sections)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(is_text_command(s-&gt;command))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;text_sections.push_back(s);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(is_symbol_command(s-&gt;command))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;symbol_sections.push_back(s);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(&quot;unexpected&nbsp;non-text&nbsp;command:&nbsp;&quot;&nbsp;+<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s-&gt;command);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;for (const Section *s : sections)<br>
+&emsp;{<br>
+&emsp;&emsp;if (is_text_command(s-&gt;command))<br>
+&emsp;&emsp;&emsp;text_sections.push_back(s);<br>
+&emsp;&emsp;else if (is_symbol_command(s-&gt;command))<br>
+&emsp;&emsp;&emsp;symbol_sections.push_back(s);<br>
+&emsp;&emsp;else<br>
+&emsp;&emsp;&emsp;throw std::runtime_error(&quot;unexpected non-text command: &quot; +<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;s-&gt;command);<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!text_sections.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;apply_text_commands(filepath,&nbsp;orig,&nbsp;text_sections);<br>
+&emsp;if (!text_sections.empty())<br>
+&emsp;&emsp;apply_text_commands(filepath, orig, text_sections);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!symbol_sections.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;apply_symbol_commands(filepath,&nbsp;orig,&nbsp;symbol_sections);<br>
+&emsp;if (!symbol_sections.empty())<br>
+&emsp;&emsp;apply_symbol_commands(filepath, orig, symbol_sections);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!text_sections.empty()&nbsp;||&nbsp;!symbol_sections.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;write_file_lines(p,&nbsp;orig);<br>
+&emsp;if (!text_sections.empty() || !symbol_sections.empty())<br>
+&emsp;&emsp;write_file_lines(p, orig);<br>
 }<br>
 <br>
-static&nbsp;void&nbsp;apply_all(const&nbsp;std::vector&lt;Section&gt;&nbsp;&amp;sections)<br>
+static void apply_all(const std::vector&lt;Section&gt; &amp;sections)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;namespace&nbsp;fs&nbsp;=&nbsp;std::filesystem;<br>
+&emsp;namespace fs = std::filesystem;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;1.&nbsp;Собираем&nbsp;список&nbsp;всех&nbsp;файлов,&nbsp;которые&nbsp;будут&nbsp;затронуты<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;files;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;files.reserve(sections.size());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(auto&nbsp;&amp;s&nbsp;:&nbsp;sections)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;files.push_back(s.filepath);<br>
+&emsp;// 1. Собираем список всех файлов, которые будут затронуты<br>
+&emsp;std::vector&lt;std::string&gt; files;<br>
+&emsp;files.reserve(sections.size());<br>
+&emsp;for (auto &amp;s : sections)<br>
+&emsp;&emsp;files.push_back(s.filepath);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::sort(files.begin(),&nbsp;files.end());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;files.erase(std::unique(files.begin(),&nbsp;files.end()),&nbsp;files.end());<br>
+&emsp;std::sort(files.begin(), files.end());<br>
+&emsp;files.erase(std::unique(files.begin(), files.end()), files.end());<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;struct&nbsp;Backup<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;existed&nbsp;=&nbsp;false;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;lines;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+&emsp;struct Backup<br>
+&emsp;{<br>
+&emsp;&emsp;bool existed = false;<br>
+&emsp;&emsp;std::vector&lt;std::string&gt; lines;<br>
+&emsp;};<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::map&lt;std::string,&nbsp;Backup&gt;&nbsp;backup;<br>
+&emsp;std::map&lt;std::string, Backup&gt; backup;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;2.&nbsp;Делаем&nbsp;резервную&nbsp;копию&nbsp;всех&nbsp;файлов<br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(auto&nbsp;&amp;f&nbsp;:&nbsp;files)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Backup&nbsp;b;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;p&nbsp;=&nbsp;f;<br>
+&emsp;// 2. Делаем резервную копию всех файлов<br>
+&emsp;for (auto &amp;f : files)<br>
+&emsp;{<br>
+&emsp;&emsp;Backup b;<br>
+&emsp;&emsp;fs::path p = f;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::error_code&nbsp;ec;<br>
+&emsp;&emsp;std::error_code ec;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(fs::exists(p,&nbsp;ec))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;b.existed&nbsp;=&nbsp;true;<br>
+&emsp;&emsp;if (fs::exists(p, ec))<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;b.existed = true;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;try<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;b.lines&nbsp;=&nbsp;read_file_lines(p);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;catch&nbsp;(...)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(&quot;cannot&nbsp;read&nbsp;original&nbsp;file:&nbsp;&quot;&nbsp;+&nbsp;f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;b.existed&nbsp;=&nbsp;false;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;&emsp;try<br>
+&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;b.lines = read_file_lines(p);<br>
+&emsp;&emsp;&emsp;}<br>
+&emsp;&emsp;&emsp;catch (...)<br>
+&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;throw std::runtime_error(&quot;cannot read original file: &quot; + f);<br>
+&emsp;&emsp;&emsp;}<br>
+&emsp;&emsp;}<br>
+&emsp;&emsp;else<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;b.existed = false;<br>
+&emsp;&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;backup[f]&nbsp;=&nbsp;std::move(b);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;backup[f] = std::move(b);<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;3.&nbsp;Применяем&nbsp;секции&nbsp;с&nbsp;защитой&nbsp;(try/catch)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;try<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(auto&nbsp;&amp;s&nbsp;:&nbsp;sections)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;const&nbsp;Section&nbsp;*&gt;&nbsp;single{&amp;s};<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;apply_for_file(s.filepath,&nbsp;single);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;catch&nbsp;(...)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;4.&nbsp;Откат&nbsp;(rollback)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(auto&nbsp;&amp;[path,&nbsp;b]&nbsp;:&nbsp;backup)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;p&nbsp;=&nbsp;path;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::error_code&nbsp;ec;<br>
+&emsp;// 3. Применяем секции с защитой (try/catch)<br>
+&emsp;try<br>
+&emsp;{<br>
+&emsp;&emsp;for (auto &amp;s : sections)<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;std::vector&lt;const Section *&gt; single{&amp;s};<br>
+&emsp;&emsp;&emsp;apply_for_file(s.filepath, single);<br>
+&emsp;&emsp;}<br>
+&emsp;}<br>
+&emsp;catch (...)<br>
+&emsp;{<br>
+&emsp;&emsp;// 4. Откат (rollback)<br>
+&emsp;&emsp;for (auto &amp;[path, b] : backup)<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;fs::path p = path;<br>
+&emsp;&emsp;&emsp;std::error_code ec;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(b.existed)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;try<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;write_file_lines(p,&nbsp;b.lines);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;catch&nbsp;(...)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;если&nbsp;даже&nbsp;откат&nbsp;не&nbsp;удался&nbsp;—&nbsp;сдаёмся<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fs::remove(p,&nbsp;ec);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;&emsp;if (b.existed)<br>
+&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;try<br>
+&emsp;&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;write_file_lines(p, b.lines);<br>
+&emsp;&emsp;&emsp;&emsp;}<br>
+&emsp;&emsp;&emsp;&emsp;catch (...)<br>
+&emsp;&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;// если даже откат не удался — сдаёмся<br>
+&emsp;&emsp;&emsp;&emsp;}<br>
+&emsp;&emsp;&emsp;}<br>
+&emsp;&emsp;&emsp;else<br>
+&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;fs::remove(p, ec);<br>
+&emsp;&emsp;&emsp;}<br>
+&emsp;&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;throw;<br>
+&emsp;}<br>
 }<br>
 <br>
-int&nbsp;apply_chunk_main(int&nbsp;argc,&nbsp;char&nbsp;**argv)<br>
+int apply_chunk_main(int argc, char **argv)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(argc&nbsp;&lt;&nbsp;2)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cerr&nbsp;&lt;&lt;&nbsp;&quot;usage:&nbsp;apply_patch&nbsp;&lt;patchfile&gt;\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;if (argc &lt; 2)<br>
+&emsp;{<br>
+&emsp;&emsp;std::cerr &lt;&lt; &quot;usage: apply_patch &lt;patchfile&gt;\n&quot;;<br>
+&emsp;&emsp;return 1;<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::ifstream&nbsp;in(argv[1]);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!in)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cerr&nbsp;&lt;&lt;&nbsp;&quot;cannot&nbsp;open&nbsp;patch&nbsp;file:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;argv[1]&nbsp;&lt;&lt;&nbsp;&quot;\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;std::ifstream in(argv[1]);<br>
+&emsp;if (!in)<br>
+&emsp;{<br>
+&emsp;&emsp;std::cerr &lt;&lt; &quot;cannot open patch file: &quot; &lt;&lt; argv[1] &lt;&lt; &quot;\n&quot;;<br>
+&emsp;&emsp;return 1;<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;line;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;Section&gt;&nbsp;sections;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;seq&nbsp;=&nbsp;0;<br>
+&emsp;std::string line;<br>
+&emsp;std::vector&lt;Section&gt; sections;<br>
+&emsp;int seq = 0;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;try<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(std::getline(in,&nbsp;line))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(line.rfind(&quot;===&nbsp;file:&quot;,&nbsp;0)&nbsp;==&nbsp;0)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Section&nbsp;s&nbsp;=&nbsp;parse_section(in,&nbsp;line);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s.seq&nbsp;=&nbsp;seq++;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sections.push_back(std::move(s));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;try<br>
+&emsp;{<br>
+&emsp;&emsp;while (std::getline(in, line))<br>
+&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;if (line.rfind(&quot;=== file:&quot;, 0) == 0)<br>
+&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;Section s = parse_section(in, line);<br>
+&emsp;&emsp;&emsp;&emsp;s.seq = seq++;<br>
+&emsp;&emsp;&emsp;&emsp;sections.push_back(std::move(s));<br>
+&emsp;&emsp;&emsp;}<br>
+&emsp;&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;apply_all(sections);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;catch&nbsp;(const&nbsp;std::exception&nbsp;&amp;e)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cerr&nbsp;&lt;&lt;&nbsp;&quot;error&nbsp;while&nbsp;applying&nbsp;patch:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;e.what()&nbsp;&lt;&lt;&nbsp;&quot;\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;&emsp;apply_all(sections);<br>
+&emsp;}<br>
+&emsp;catch (const std::exception &amp;e)<br>
+&emsp;{<br>
+&emsp;&emsp;std::cerr &lt;&lt; &quot;error while applying patch: &quot; &lt;&lt; e.what() &lt;&lt; &quot;\n&quot;;<br>
+&emsp;&emsp;return 1;<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;0;<br>
+&emsp;return 0;<br>
 }<br>
 <!-- END SCAT CODE -->
 </body>

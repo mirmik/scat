@@ -6,19 +6,19 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#pragma&nbsp;once<br>
-#include&nbsp;&lt;filesystem&gt;<br>
-#include&nbsp;&lt;string&gt;<br>
-#include&nbsp;&lt;vector&gt;<br>
+#pragma once<br>
+#include &lt;filesystem&gt;<br>
+#include &lt;string&gt;<br>
+#include &lt;vector&gt;<br>
 <br>
-//&nbsp;expand_glob:<br>
-//&nbsp;&nbsp;&nbsp;Поддерживает&nbsp;паттерны:<br>
-//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;&quot;*&quot;&nbsp;внутри&nbsp;уровня<br>
-//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;&quot;**&quot;&nbsp;—&nbsp;рекурсивный&nbsp;обход<br>
-//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;сложные&nbsp;пути&nbsp;вида&nbsp;&quot;foo/*/bar/**/*.txt&quot;<br>
+// expand_glob:<br>
+//   Поддерживает паттерны:<br>
+//     * &quot;*&quot; внутри уровня<br>
+//     * &quot;**&quot; — рекурсивный обход<br>
+//     * сложные пути вида &quot;foo/*/bar/**/*.txt&quot;<br>
 //<br>
-//&nbsp;Возвращает&nbsp;список&nbsp;regular&nbsp;files.<br>
-std::vector&lt;std::filesystem::path&gt;&nbsp;expand_glob(const&nbsp;std::string&nbsp;&amp;pattern);<br>
+// Возвращает список regular files.<br>
+std::vector&lt;std::filesystem::path&gt; expand_glob(const std::string &amp;pattern);<br>
 <!-- END SCAT CODE -->
 </body>
 </html>

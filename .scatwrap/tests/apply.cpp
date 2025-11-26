@@ -6,279 +6,279 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#include&nbsp;&quot;doctest/doctest.h&quot;<br>
-#include&nbsp;&lt;filesystem&gt;<br>
-#include&nbsp;&lt;fstream&gt;<br>
-#include&nbsp;&lt;iostream&gt;<br>
-#include&nbsp;&lt;scat.h&gt;<br>
-#include&nbsp;&lt;sstream&gt;<br>
-#include&nbsp;&lt;string&gt;<br>
-#include&nbsp;&lt;vector&gt;<br>
+#include &quot;doctest/doctest.h&quot;<br>
+#include &lt;filesystem&gt;<br>
+#include &lt;fstream&gt;<br>
+#include &lt;iostream&gt;<br>
+#include &lt;scat.h&gt;<br>
+#include &lt;sstream&gt;<br>
+#include &lt;string&gt;<br>
+#include &lt;vector&gt;<br>
 <br>
-int&nbsp;apply_chunk_main(int&nbsp;argc,&nbsp;char&nbsp;**argv);<br>
+int apply_chunk_main(int argc, char **argv);<br>
 <br>
-namespace&nbsp;fs&nbsp;=&nbsp;std::filesystem;<br>
+namespace fs = std::filesystem;<br>
 <br>
-std::vector&lt;std::string&gt;&nbsp;read_lines(const&nbsp;fs::path&nbsp;&amp;p)<br>
+std::vector&lt;std::string&gt; read_lines(const fs::path &amp;p)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::ifstream&nbsp;in(p);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;v;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;s;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(std::getline(in,&nbsp;s))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v.push_back(s);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;v;<br>
+&emsp;std::ifstream in(p);<br>
+&emsp;std::vector&lt;std::string&gt; v;<br>
+&emsp;std::string s;<br>
+&emsp;while (std::getline(in, s))<br>
+&emsp;&emsp;v.push_back(s);<br>
+&emsp;return v;<br>
 }<br>
 <br>
-int&nbsp;run_apply(const&nbsp;fs::path&nbsp;&amp;patch)<br>
+int run_apply(const fs::path &amp;patch)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;arg0&nbsp;=&nbsp;&quot;apply&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;arg1&nbsp;=&nbsp;patch.string();<br>
+&emsp;std::string arg0 = &quot;apply&quot;;<br>
+&emsp;std::string arg1 = patch.string();<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;храним&nbsp;строки&nbsp;в&nbsp;живом&nbsp;виде<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;args&nbsp;=&nbsp;{arg0,&nbsp;arg1};<br>
+&emsp;// храним строки в живом виде<br>
+&emsp;std::vector&lt;std::string&gt; args = {arg0, arg1};<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;формируем&nbsp;argv&nbsp;как&nbsp;указатели&nbsp;НА&nbsp;ЖИВЫЕ&nbsp;строки<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;char&nbsp;*&gt;&nbsp;argv_real;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;argv_real.reserve(args.size());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(auto&nbsp;&amp;s&nbsp;:&nbsp;args)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;argv_real.push_back(s.data());<br>
+&emsp;// формируем argv как указатели НА ЖИВЫЕ строки<br>
+&emsp;std::vector&lt;char *&gt; argv_real;<br>
+&emsp;argv_real.reserve(args.size());<br>
+&emsp;for (auto &amp;s : args)<br>
+&emsp;&emsp;argv_real.push_back(s.data());<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;apply_chunk_main((int)argv_real.size(),&nbsp;argv_real.data());<br>
+&emsp;return apply_chunk_main((int)argv_real.size(), argv_real.data());<br>
 }<br>
 <br>
-TEST_CASE(&quot;apply_chunk_main:&nbsp;insert-after-text&quot;)<br>
+TEST_CASE(&quot;apply_chunk_main: insert-after-text&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;chunk_test_insert_after_text&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(tmp);<br>
+&emsp;fs::path tmp = fs::temp_directory_path() / &quot;chunk_test_insert_after_text&quot;;<br>
+&emsp;fs::remove_all(tmp);<br>
+&emsp;fs::create_directories(tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;f&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;a.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;LINE1\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;LINE2\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;LINE3\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;fs::path f = tmp / &quot;a.txt&quot;;<br>
+&emsp;{<br>
+&emsp;&emsp;std::ofstream out(f);<br>
+&emsp;&emsp;out &lt;&lt; &quot;LINE1\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;LINE2\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;LINE3\n&quot;;<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;patch&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;patch.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(patch);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;===&nbsp;file:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;f.string()<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;===\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;insert-after-text\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;LINE2\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;AFTER\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;TEXT\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;fs::path patch = tmp / &quot;patch.txt&quot;;<br>
+&emsp;{<br>
+&emsp;&emsp;std::ofstream out(patch);<br>
+&emsp;&emsp;out &lt;&lt; &quot;=== file: &quot; &lt;&lt; f.string()<br>
+&emsp;&emsp;&emsp;&lt;&lt; &quot; ===\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;--- insert-after-text\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;LINE2\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;---\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;AFTER\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;TEXT\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;=END=\n&quot;;<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;r&nbsp;=&nbsp;run_apply(patch);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r&nbsp;==&nbsp;0);<br>
+&emsp;int r = run_apply(patch);<br>
+&emsp;CHECK(r == 0);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;lines&nbsp;=&nbsp;read_lines(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;REQUIRE(lines.size()&nbsp;==&nbsp;5);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[0]&nbsp;==&nbsp;&quot;LINE1&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[1]&nbsp;==&nbsp;&quot;LINE2&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[2]&nbsp;==&nbsp;&quot;AFTER&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[3]&nbsp;==&nbsp;&quot;TEXT&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[4]&nbsp;==&nbsp;&quot;LINE3&quot;);<br>
+&emsp;auto lines = read_lines(f);<br>
+&emsp;REQUIRE(lines.size() == 5);<br>
+&emsp;CHECK(lines[0] == &quot;LINE1&quot;);<br>
+&emsp;CHECK(lines[1] == &quot;LINE2&quot;);<br>
+&emsp;CHECK(lines[2] == &quot;AFTER&quot;);<br>
+&emsp;CHECK(lines[3] == &quot;TEXT&quot;);<br>
+&emsp;CHECK(lines[4] == &quot;LINE3&quot;);<br>
 }<br>
 <br>
-TEST_CASE(&quot;apply_chunk_main:&nbsp;insert-before-text&quot;)<br>
+TEST_CASE(&quot;apply_chunk_main: insert-before-text&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;chunk_test_insert_before_text&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(tmp);<br>
+&emsp;fs::path tmp = fs::temp_directory_path() / &quot;chunk_test_insert_before_text&quot;;<br>
+&emsp;fs::remove_all(tmp);<br>
+&emsp;fs::create_directories(tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;f&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;b.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;AAA\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;BBB\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;CCC\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;fs::path f = tmp / &quot;b.txt&quot;;<br>
+&emsp;{<br>
+&emsp;&emsp;std::ofstream out(f);<br>
+&emsp;&emsp;out &lt;&lt; &quot;AAA\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;BBB\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;CCC\n&quot;;<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;patch&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;patch.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(patch);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;===&nbsp;file:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;f.string()<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;===\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;insert-before-text\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;BBB\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;X\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;Y\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;fs::path patch = tmp / &quot;patch.txt&quot;;<br>
+&emsp;{<br>
+&emsp;&emsp;std::ofstream out(patch);<br>
+&emsp;&emsp;out &lt;&lt; &quot;=== file: &quot; &lt;&lt; f.string()<br>
+&emsp;&emsp;&emsp;&lt;&lt; &quot; ===\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;--- insert-before-text\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;BBB\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;---\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;X\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;Y\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;=END=\n&quot;;<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;r&nbsp;=&nbsp;run_apply(patch);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r&nbsp;==&nbsp;0);<br>
+&emsp;int r = run_apply(patch);<br>
+&emsp;CHECK(r == 0);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;lines&nbsp;=&nbsp;read_lines(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;REQUIRE(lines.size()&nbsp;==&nbsp;5);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[0]&nbsp;==&nbsp;&quot;AAA&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[1]&nbsp;==&nbsp;&quot;X&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[2]&nbsp;==&nbsp;&quot;Y&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[3]&nbsp;==&nbsp;&quot;BBB&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[4]&nbsp;==&nbsp;&quot;CCC&quot;);<br>
+&emsp;auto lines = read_lines(f);<br>
+&emsp;REQUIRE(lines.size() == 5);<br>
+&emsp;CHECK(lines[0] == &quot;AAA&quot;);<br>
+&emsp;CHECK(lines[1] == &quot;X&quot;);<br>
+&emsp;CHECK(lines[2] == &quot;Y&quot;);<br>
+&emsp;CHECK(lines[3] == &quot;BBB&quot;);<br>
+&emsp;CHECK(lines[4] == &quot;CCC&quot;);<br>
 }<br>
 <br>
-TEST_CASE(&quot;apply_chunk_main:&nbsp;replace-text&quot;)<br>
+TEST_CASE(&quot;apply_chunk_main: replace-text&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;chunk_test_replace_text&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(tmp);<br>
+&emsp;fs::path tmp = fs::temp_directory_path() / &quot;chunk_test_replace_text&quot;;<br>
+&emsp;fs::remove_all(tmp);<br>
+&emsp;fs::create_directories(tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;f&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;c.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;alpha\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;beta\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;gamma\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;fs::path f = tmp / &quot;c.txt&quot;;<br>
+&emsp;{<br>
+&emsp;&emsp;std::ofstream out(f);<br>
+&emsp;&emsp;out &lt;&lt; &quot;alpha\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;beta\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;gamma\n&quot;;<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;patch&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;patch.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(patch);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;===&nbsp;file:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;f.string()<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;===\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;replace-text\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;beta\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;BETA1\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;BETA2\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;fs::path patch = tmp / &quot;patch.txt&quot;;<br>
+&emsp;{<br>
+&emsp;&emsp;std::ofstream out(patch);<br>
+&emsp;&emsp;out &lt;&lt; &quot;=== file: &quot; &lt;&lt; f.string()<br>
+&emsp;&emsp;&emsp;&lt;&lt; &quot; ===\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;--- replace-text\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;beta\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;---\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;BETA1\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;BETA2\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;=END=\n&quot;;<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;r&nbsp;=&nbsp;run_apply(patch);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r&nbsp;==&nbsp;0);<br>
+&emsp;int r = run_apply(patch);<br>
+&emsp;CHECK(r == 0);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;lines&nbsp;=&nbsp;read_lines(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;REQUIRE(lines.size()&nbsp;==&nbsp;4);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[0]&nbsp;==&nbsp;&quot;alpha&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[1]&nbsp;==&nbsp;&quot;BETA1&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[2]&nbsp;==&nbsp;&quot;BETA2&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[3]&nbsp;==&nbsp;&quot;gamma&quot;);<br>
+&emsp;auto lines = read_lines(f);<br>
+&emsp;REQUIRE(lines.size() == 4);<br>
+&emsp;CHECK(lines[0] == &quot;alpha&quot;);<br>
+&emsp;CHECK(lines[1] == &quot;BETA1&quot;);<br>
+&emsp;CHECK(lines[2] == &quot;BETA2&quot;);<br>
+&emsp;CHECK(lines[3] == &quot;gamma&quot;);<br>
 }<br>
 <br>
-TEST_CASE(&quot;apply_chunk_main:&nbsp;delete-text&quot;)<br>
+TEST_CASE(&quot;apply_chunk_main: delete-text&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;chunk_test_delete_text&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(tmp);<br>
+&emsp;fs::path tmp = fs::temp_directory_path() / &quot;chunk_test_delete_text&quot;;<br>
+&emsp;fs::remove_all(tmp);<br>
+&emsp;fs::create_directories(tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;f&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;d.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;one\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;two\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;three\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;four\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;fs::path f = tmp / &quot;d.txt&quot;;<br>
+&emsp;{<br>
+&emsp;&emsp;std::ofstream out(f);<br>
+&emsp;&emsp;out &lt;&lt; &quot;one\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;two\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;three\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;four\n&quot;;<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;patch&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;patch.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(patch);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;===&nbsp;file:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;f.string()<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;===\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;delete-text\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;two\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;three\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;fs::path patch = tmp / &quot;patch.txt&quot;;<br>
+&emsp;{<br>
+&emsp;&emsp;std::ofstream out(patch);<br>
+&emsp;&emsp;out &lt;&lt; &quot;=== file: &quot; &lt;&lt; f.string()<br>
+&emsp;&emsp;&emsp;&lt;&lt; &quot; ===\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;--- delete-text\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;two\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;three\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;---\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;=END=\n&quot;;<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;r&nbsp;=&nbsp;run_apply(patch);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r&nbsp;==&nbsp;0);<br>
+&emsp;int r = run_apply(patch);<br>
+&emsp;CHECK(r == 0);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;lines&nbsp;=&nbsp;read_lines(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;REQUIRE(lines.size()&nbsp;==&nbsp;2);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[0]&nbsp;==&nbsp;&quot;one&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[1]&nbsp;==&nbsp;&quot;four&quot;);<br>
+&emsp;auto lines = read_lines(f);<br>
+&emsp;REQUIRE(lines.size() == 2);<br>
+&emsp;CHECK(lines[0] == &quot;one&quot;);<br>
+&emsp;CHECK(lines[1] == &quot;four&quot;);<br>
 }<br>
 <br>
-TEST_CASE(&quot;apply_chunk_main:&nbsp;apply-stdin&quot;)<br>
+TEST_CASE(&quot;apply_chunk_main: apply-stdin&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;namespace&nbsp;fs&nbsp;=&nbsp;std::filesystem;<br>
+&emsp;namespace fs = std::filesystem;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;chunk_test_stdin&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(tmp);<br>
+&emsp;fs::path tmp = fs::temp_directory_path() / &quot;chunk_test_stdin&quot;;<br>
+&emsp;fs::remove_all(tmp);<br>
+&emsp;fs::create_directories(tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;f&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;stdin.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;A\nB\nC\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;fs::path f = tmp / &quot;stdin.txt&quot;;<br>
+&emsp;{<br>
+&emsp;&emsp;std::ofstream out(f);<br>
+&emsp;&emsp;out &lt;&lt; &quot;A\nB\nC\n&quot;;<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;patch&nbsp;=&nbsp;&quot;===&nbsp;file:&nbsp;&quot;&nbsp;+&nbsp;f.string()&nbsp;+<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;===\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;replace-text\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;B\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;XXX\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;;<br>
+&emsp;std::string patch = &quot;=== file: &quot; + f.string() +<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot; ===\n&quot;<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;--- replace-text\n&quot;<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;B\n&quot;<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;---\n&quot;<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;XXX\n&quot;<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&quot;=END=\n&quot;;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::istringstream&nbsp;fake_stdin(patch);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;*old_stdin&nbsp;=&nbsp;std::cin.rdbuf(fake_stdin.rdbuf());<br>
+&emsp;std::istringstream fake_stdin(patch);<br>
+&emsp;auto *old_stdin = std::cin.rdbuf(fake_stdin.rdbuf());<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;char&nbsp;*argv[]&nbsp;=&nbsp;{&quot;scat&quot;,&nbsp;&quot;--apply-stdin&quot;};<br>
-&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;r&nbsp;=&nbsp;scat_main(2,&nbsp;(char&nbsp;**)argv);<br>
+&emsp;const char *argv[] = {&quot;scat&quot;, &quot;--apply-stdin&quot;};<br>
+&emsp;int r = scat_main(2, (char **)argv);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::cin.rdbuf(old_stdin);<br>
+&emsp;std::cin.rdbuf(old_stdin);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r&nbsp;==&nbsp;0);<br>
+&emsp;CHECK(r == 0);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;lines&nbsp;=&nbsp;read_lines(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;REQUIRE(lines.size()&nbsp;==&nbsp;3);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[0]&nbsp;==&nbsp;&quot;A&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[1]&nbsp;==&nbsp;&quot;XXX&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[2]&nbsp;==&nbsp;&quot;C&quot;);<br>
+&emsp;auto lines = read_lines(f);<br>
+&emsp;REQUIRE(lines.size() == 3);<br>
+&emsp;CHECK(lines[0] == &quot;A&quot;);<br>
+&emsp;CHECK(lines[1] == &quot;XXX&quot;);<br>
+&emsp;CHECK(lines[2] == &quot;C&quot;);<br>
 }<br>
-TEST_CASE(&quot;apply_chunk_main:&nbsp;delete-file&nbsp;then&nbsp;create-file&quot;)<br>
+TEST_CASE(&quot;apply_chunk_main: delete-file then create-file&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;namespace&nbsp;fs&nbsp;=&nbsp;std::filesystem;<br>
+&emsp;namespace fs = std::filesystem;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;chunk_test_del_create&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(tmp);<br>
+&emsp;fs::path tmp = fs::temp_directory_path() / &quot;chunk_test_del_create&quot;;<br>
+&emsp;fs::remove_all(tmp);<br>
+&emsp;fs::create_directories(tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;f&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;x.txt&quot;;<br>
+&emsp;fs::path f = tmp / &quot;x.txt&quot;;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Исходный&nbsp;файл<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;OLD&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;// Исходный файл<br>
+&emsp;{<br>
+&emsp;&emsp;std::ofstream out(f);<br>
+&emsp;&emsp;out &lt;&lt; &quot;OLD&quot;;<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Патч:&nbsp;удалить&nbsp;→&nbsp;создать&nbsp;заново<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;patch&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;patch.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(patch);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;===&nbsp;file:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;f.string()<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;===\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;delete-file\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;===&nbsp;file:&nbsp;&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;f.string()<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;===\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;create-file\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;NEW1\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;NEW2\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&emsp;// Патч: удалить → создать заново<br>
+&emsp;fs::path patch = tmp / &quot;patch.txt&quot;;<br>
+&emsp;{<br>
+&emsp;&emsp;std::ofstream out(patch);<br>
+&emsp;&emsp;out &lt;&lt; &quot;=== file: &quot; &lt;&lt; f.string()<br>
+&emsp;&emsp;&emsp;&lt;&lt; &quot; ===\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;--- delete-file\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;=END=\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;=== file: &quot;<br>
+&emsp;&emsp;&emsp;&lt;&lt; f.string()<br>
+&emsp;&emsp;&emsp;&lt;&lt; &quot; ===\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;--- create-file\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;NEW1\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;NEW2\n&quot;<br>
+&emsp;&emsp;&emsp;&quot;=END=\n&quot;;<br>
+&emsp;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;r&nbsp;=&nbsp;run_apply(patch);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r&nbsp;==&nbsp;0);<br>
+&emsp;int r = run_apply(patch);<br>
+&emsp;CHECK(r == 0);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;REQUIRE(fs::exists(f));<br>
+&emsp;REQUIRE(fs::exists(f));<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;lines&nbsp;=&nbsp;read_lines(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;REQUIRE(lines.size()&nbsp;==&nbsp;2);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[0]&nbsp;==&nbsp;&quot;NEW1&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[1]&nbsp;==&nbsp;&quot;NEW2&quot;);<br>
+&emsp;auto lines = read_lines(f);<br>
+&emsp;REQUIRE(lines.size() == 2);<br>
+&emsp;CHECK(lines[0] == &quot;NEW1&quot;);<br>
+&emsp;CHECK(lines[1] == &quot;NEW2&quot;);<br>
 }<br>
 <!-- END SCAT CODE -->
 </body>

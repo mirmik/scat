@@ -6,336 +6,336 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#include&nbsp;&quot;collector.h&quot;<br>
-#include&nbsp;&quot;doctest/doctest.h&quot;<br>
-#include&nbsp;&quot;glob.h&quot;<br>
-#include&nbsp;&quot;options.h&quot;<br>
-#include&nbsp;&quot;rules.h&quot;<br>
+#include &quot;collector.h&quot;<br>
+#include &quot;doctest/doctest.h&quot;<br>
+#include &quot;glob.h&quot;<br>
+#include &quot;options.h&quot;<br>
+#include &quot;rules.h&quot;<br>
 <br>
-#include&nbsp;&lt;algorithm&gt;<br>
-#include&nbsp;&lt;filesystem&gt;<br>
-#include&nbsp;&lt;fstream&gt;<br>
-#include&nbsp;&lt;vector&gt;<br>
+#include &lt;algorithm&gt;<br>
+#include &lt;filesystem&gt;<br>
+#include &lt;fstream&gt;<br>
+#include &lt;vector&gt;<br>
 <br>
-namespace&nbsp;fs&nbsp;=&nbsp;std::filesystem;<br>
+namespace fs = std::filesystem;<br>
 <br>
-//&nbsp;-----------------------------------------------------------------------------<br>
-//&nbsp;Helpers<br>
-//&nbsp;-----------------------------------------------------------------------------<br>
+// -----------------------------------------------------------------------------<br>
+// Helpers<br>
+// -----------------------------------------------------------------------------<br>
 <br>
-static&nbsp;void&nbsp;write_file(const&nbsp;fs::path&nbsp;&amp;p,&nbsp;const&nbsp;std::string&nbsp;&amp;text)<br>
+static void write_file(const fs::path &amp;p, const std::string &amp;text)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(p.parent_path());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(p);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;text;<br>
+&emsp;fs::create_directories(p.parent_path());<br>
+&emsp;std::ofstream out(p);<br>
+&emsp;out &lt;&lt; text;<br>
 }<br>
 <br>
-static&nbsp;std::vector&lt;std::string&gt;&nbsp;to_rel(const&nbsp;std::vector&lt;fs::path&gt;&nbsp;&amp;v,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;fs::path&nbsp;&amp;root)<br>
+static std::vector&lt;std::string&gt; to_rel(const std::vector&lt;fs::path&gt; &amp;v,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;const fs::path &amp;root)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;out;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(auto&nbsp;&amp;p&nbsp;:&nbsp;v)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.push_back(fs::relative(p,&nbsp;root).generic_string());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::sort(out.begin(),&nbsp;out.end());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;out;<br>
+&emsp;std::vector&lt;std::string&gt; out;<br>
+&emsp;for (auto &amp;p : v)<br>
+&emsp;&emsp;out.push_back(fs::relative(p, root).generic_string());<br>
+&emsp;std::sort(out.begin(), out.end());<br>
+&emsp;return out;<br>
 }<br>
 <br>
-static&nbsp;void&nbsp;check_paths(const&nbsp;std::vector&lt;std::string&gt;&nbsp;&amp;actual,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::initializer_list&lt;const&nbsp;char&nbsp;*&gt;&nbsp;expected)<br>
+static void check_paths(const std::vector&lt;std::string&gt; &amp;actual,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;std::initializer_list&lt;const char *&gt; expected)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;exp_vec;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;exp_vec.reserve(expected.size());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(auto&nbsp;*e&nbsp;:&nbsp;expected)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exp_vec.emplace_back(e);<br>
+&emsp;std::vector&lt;std::string&gt; exp_vec;<br>
+&emsp;exp_vec.reserve(expected.size());<br>
+&emsp;for (auto *e : expected)<br>
+&emsp;&emsp;exp_vec.emplace_back(e);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;act&nbsp;=&nbsp;actual;<br>
+&emsp;std::vector&lt;std::string&gt; act = actual;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::sort(exp_vec.begin(),&nbsp;exp_vec.end());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::sort(act.begin(),&nbsp;act.end());<br>
+&emsp;std::sort(exp_vec.begin(), exp_vec.end());<br>
+&emsp;std::sort(act.begin(), act.end());<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(act.size()&nbsp;==&nbsp;exp_vec.size());<br>
+&emsp;CHECK(act.size() == exp_vec.size());<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(act.size()&nbsp;!=&nbsp;exp_vec.size())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;&nbsp;//&nbsp;предотвратить&nbsp;каскад&nbsp;ошибок<br>
+&emsp;if (act.size() != exp_vec.size())<br>
+&emsp;&emsp;return; // предотвратить каскад ошибок<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(size_t&nbsp;i&nbsp;=&nbsp;0;&nbsp;i&nbsp;&lt;&nbsp;act.size();&nbsp;++i)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK(act[i]&nbsp;==&nbsp;exp_vec[i]);<br>
+&emsp;for (size_t i = 0; i &lt; act.size(); ++i)<br>
+&emsp;&emsp;CHECK(act[i] == exp_vec[i]);<br>
 }<br>
 <br>
-//&nbsp;============================================================================<br>
-//&nbsp;glob&nbsp;tests&nbsp;—&nbsp;как&nbsp;раньше,&nbsp;без&nbsp;смены&nbsp;current_path<br>
-//&nbsp;============================================================================<br>
+// ============================================================================<br>
+// glob tests — как раньше, без смены current_path<br>
+// ============================================================================<br>
 <br>
-TEST_CASE(&quot;glob:&nbsp;basic&nbsp;*&quot;)<br>
+TEST_CASE(&quot;glob: basic *&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;glob_test_a2&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
+&emsp;fs::path tmp = fs::temp_directory_path() / &quot;glob_test_a2&quot;;<br>
+&emsp;fs::remove_all(tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;a.txt&quot;,&nbsp;&quot;A&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;b.cpp&quot;,&nbsp;&quot;B&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;c.txt&quot;,&nbsp;&quot;C&quot;);<br>
+&emsp;write_file(tmp / &quot;a.txt&quot;, &quot;A&quot;);<br>
+&emsp;write_file(tmp / &quot;b.cpp&quot;, &quot;B&quot;);<br>
+&emsp;write_file(tmp / &quot;c.txt&quot;, &quot;C&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;out&nbsp;=&nbsp;expand_glob((tmp&nbsp;/&nbsp;&quot;*.txt&quot;).generic_string());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;rel&nbsp;=&nbsp;to_rel(out,&nbsp;tmp);<br>
+&emsp;auto out = expand_glob((tmp / &quot;*.txt&quot;).generic_string());<br>
+&emsp;auto rel = to_rel(out, tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;check_paths(rel,&nbsp;{&quot;a.txt&quot;,&nbsp;&quot;c.txt&quot;});<br>
+&emsp;check_paths(rel, {&quot;a.txt&quot;, &quot;c.txt&quot;});<br>
 }<br>
 <br>
-TEST_CASE(&quot;glob:&nbsp;recursive&nbsp;**&quot;)<br>
+TEST_CASE(&quot;glob: recursive **&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;glob_test_b2&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
+&emsp;fs::path tmp = fs::temp_directory_path() / &quot;glob_test_b2&quot;;<br>
+&emsp;fs::remove_all(tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;1.txt&quot;,&nbsp;&quot;A&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;x/2.txt&quot;,&nbsp;&quot;B&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;x/y/3.txt&quot;,&nbsp;&quot;C&quot;);<br>
+&emsp;write_file(tmp / &quot;1.txt&quot;, &quot;A&quot;);<br>
+&emsp;write_file(tmp / &quot;x/2.txt&quot;, &quot;B&quot;);<br>
+&emsp;write_file(tmp / &quot;x/y/3.txt&quot;, &quot;C&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;out&nbsp;=&nbsp;expand_glob((tmp&nbsp;/&nbsp;&quot;**&quot;).generic_string());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;rel&nbsp;=&nbsp;to_rel(out,&nbsp;tmp);<br>
+&emsp;auto out = expand_glob((tmp / &quot;**&quot;).generic_string());<br>
+&emsp;auto rel = to_rel(out, tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;check_paths(rel,&nbsp;{&quot;1.txt&quot;,&nbsp;&quot;x/2.txt&quot;,&nbsp;&quot;x/y/3.txt&quot;});<br>
+&emsp;check_paths(rel, {&quot;1.txt&quot;, &quot;x/2.txt&quot;, &quot;x/y/3.txt&quot;});<br>
 }<br>
 <br>
-TEST_CASE(&quot;glob:&nbsp;**/*.cpp&quot;)<br>
+TEST_CASE(&quot;glob: **/*.cpp&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;glob_test_c2&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
+&emsp;fs::path tmp = fs::temp_directory_path() / &quot;glob_test_c2&quot;;<br>
+&emsp;fs::remove_all(tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;a.cpp&quot;,&nbsp;&quot;A&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;b.h&quot;,&nbsp;&quot;B&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;x/c.cpp&quot;,&nbsp;&quot;C&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;x/y/z.cpp&quot;,&nbsp;&quot;Z&quot;);<br>
+&emsp;write_file(tmp / &quot;a.cpp&quot;, &quot;A&quot;);<br>
+&emsp;write_file(tmp / &quot;b.h&quot;, &quot;B&quot;);<br>
+&emsp;write_file(tmp / &quot;x/c.cpp&quot;, &quot;C&quot;);<br>
+&emsp;write_file(tmp / &quot;x/y/z.cpp&quot;, &quot;Z&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;out&nbsp;=&nbsp;expand_glob((tmp&nbsp;/&nbsp;&quot;**/*.cpp&quot;).generic_string());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;rel&nbsp;=&nbsp;to_rel(out,&nbsp;tmp);<br>
+&emsp;auto out = expand_glob((tmp / &quot;**/*.cpp&quot;).generic_string());<br>
+&emsp;auto rel = to_rel(out, tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;check_paths(rel,&nbsp;{&quot;a.cpp&quot;,&nbsp;&quot;x/c.cpp&quot;,&nbsp;&quot;x/y/z.cpp&quot;});<br>
+&emsp;check_paths(rel, {&quot;a.cpp&quot;, &quot;x/c.cpp&quot;, &quot;x/y/z.cpp&quot;});<br>
 }<br>
 <br>
-TEST_CASE(&quot;glob:&nbsp;foo/*/bar/**/*.txt&quot;)<br>
+TEST_CASE(&quot;glob: foo/*/bar/**/*.txt&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;glob_test_d2&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
+&emsp;fs::path tmp = fs::temp_directory_path() / &quot;glob_test_d2&quot;;<br>
+&emsp;fs::remove_all(tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;foo/K/bar/a.txt&quot;,&nbsp;&quot;A&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;foo/K/bar/x/b.txt&quot;,&nbsp;&quot;B&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;foo/X/bar/c.bin&quot;,&nbsp;&quot;C&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;foo/Z/bar/y/z.txt&quot;,&nbsp;&quot;Z&quot;);<br>
+&emsp;write_file(tmp / &quot;foo/K/bar/a.txt&quot;, &quot;A&quot;);<br>
+&emsp;write_file(tmp / &quot;foo/K/bar/x/b.txt&quot;, &quot;B&quot;);<br>
+&emsp;write_file(tmp / &quot;foo/X/bar/c.bin&quot;, &quot;C&quot;);<br>
+&emsp;write_file(tmp / &quot;foo/Z/bar/y/z.txt&quot;, &quot;Z&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;pat&nbsp;=&nbsp;(tmp&nbsp;/&nbsp;&quot;foo/*/bar/**/*.txt&quot;).generic_string();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;out&nbsp;=&nbsp;expand_glob(pat);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;rel&nbsp;=&nbsp;to_rel(out,&nbsp;tmp);<br>
+&emsp;auto pat = (tmp / &quot;foo/*/bar/**/*.txt&quot;).generic_string();<br>
+&emsp;auto out = expand_glob(pat);<br>
+&emsp;auto rel = to_rel(out, tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;check_paths(rel,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{&quot;foo/K/bar/a.txt&quot;,&nbsp;&quot;foo/K/bar/x/b.txt&quot;,&nbsp;&quot;foo/Z/bar/y/z.txt&quot;});<br>
+&emsp;check_paths(rel,<br>
+&emsp;&emsp;&emsp;&emsp;{&quot;foo/K/bar/a.txt&quot;, &quot;foo/K/bar/x/b.txt&quot;, &quot;foo/Z/bar/y/z.txt&quot;});<br>
 }<br>
 <br>
-TEST_CASE(&quot;glob:&nbsp;no&nbsp;matches&quot;)<br>
+TEST_CASE(&quot;glob: no matches&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;glob_test_e2&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
+&emsp;fs::path tmp = fs::temp_directory_path() / &quot;glob_test_e2&quot;;<br>
+&emsp;fs::remove_all(tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;file.cpp&quot;,&nbsp;&quot;A&quot;);<br>
+&emsp;write_file(tmp / &quot;file.cpp&quot;, &quot;A&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;out&nbsp;=&nbsp;expand_glob((tmp&nbsp;/&nbsp;&quot;**/*.txt&quot;).generic_string());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(out.empty());<br>
+&emsp;auto out = expand_glob((tmp / &quot;**/*.txt&quot;).generic_string());<br>
+&emsp;CHECK(out.empty());<br>
 }<br>
 <br>
-//&nbsp;============================================================================<br>
-//&nbsp;collector&nbsp;tests&nbsp;—&nbsp;тоже&nbsp;на&nbsp;абсолютных&nbsp;путях<br>
-//&nbsp;============================================================================<br>
+// ============================================================================<br>
+// collector tests — тоже на абсолютных путях<br>
+// ============================================================================<br>
 <br>
-TEST_CASE(&quot;collector:&nbsp;include&nbsp;then&nbsp;exclude&nbsp;subdir&quot;)<br>
+TEST_CASE(&quot;collector: include then exclude subdir&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;collector_test_1&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
+&emsp;fs::path tmp = fs::temp_directory_path() / &quot;collector_test_1&quot;;<br>
+&emsp;fs::remove_all(tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;src/a.cpp&quot;,&nbsp;&quot;A&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;src/b.cpp&quot;,&nbsp;&quot;B&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;src/tests/c.cpp&quot;,&nbsp;&quot;C&quot;);<br>
+&emsp;write_file(tmp / &quot;src/a.cpp&quot;, &quot;A&quot;);<br>
+&emsp;write_file(tmp / &quot;src/b.cpp&quot;, &quot;B&quot;);<br>
+&emsp;write_file(tmp / &quot;src/tests/c.cpp&quot;, &quot;C&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;Rule&gt;&nbsp;rules&nbsp;=&nbsp;{{(tmp&nbsp;/&nbsp;&quot;src/**/*.cpp&quot;).generic_string(),&nbsp;false},<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{(tmp&nbsp;/&nbsp;&quot;src/tests/**&quot;).generic_string(),&nbsp;true}};<br>
+&emsp;std::vector&lt;Rule&gt; rules = {{(tmp / &quot;src/**/*.cpp&quot;).generic_string(), false},<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;{(tmp / &quot;src/tests/**&quot;).generic_string(), true}};<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;Options&nbsp;opt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;out&nbsp;=&nbsp;collect_from_rules(rules,&nbsp;opt);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;rel&nbsp;=&nbsp;to_rel(out,&nbsp;tmp);<br>
+&emsp;Options opt;<br>
+&emsp;auto out = collect_from_rules(rules, opt);<br>
+&emsp;auto rel = to_rel(out, tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;check_paths(rel,&nbsp;{&quot;src/a.cpp&quot;,&nbsp;&quot;src/b.cpp&quot;});<br>
+&emsp;check_paths(rel, {&quot;src/a.cpp&quot;, &quot;src/b.cpp&quot;});<br>
 }<br>
 <br>
-TEST_CASE(&quot;collector:&nbsp;exclude&nbsp;*.cpp&nbsp;top&nbsp;level&quot;)<br>
+TEST_CASE(&quot;collector: exclude *.cpp top level&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;collector_test_2&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
+&emsp;fs::path tmp = fs::temp_directory_path() / &quot;collector_test_2&quot;;<br>
+&emsp;fs::remove_all(tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;a.cpp&quot;,&nbsp;&quot;A&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;b.h&quot;,&nbsp;&quot;B&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;sub/c.cpp&quot;,&nbsp;&quot;C&quot;);<br>
+&emsp;write_file(tmp / &quot;a.cpp&quot;, &quot;A&quot;);<br>
+&emsp;write_file(tmp / &quot;b.h&quot;, &quot;B&quot;);<br>
+&emsp;write_file(tmp / &quot;sub/c.cpp&quot;, &quot;C&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;Rule&gt;&nbsp;rules&nbsp;=&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{(tmp&nbsp;/&nbsp;&quot;**&quot;).generic_string(),&nbsp;false},<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{(tmp&nbsp;/&nbsp;&quot;*.cpp&quot;).generic_string(),&nbsp;true},<br>
-&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+&emsp;std::vector&lt;Rule&gt; rules = {<br>
+&emsp;&emsp;{(tmp / &quot;**&quot;).generic_string(), false},<br>
+&emsp;&emsp;{(tmp / &quot;*.cpp&quot;).generic_string(), true},<br>
+&emsp;};<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;Options&nbsp;opt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;out&nbsp;=&nbsp;collect_from_rules(rules,&nbsp;opt);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;rel&nbsp;=&nbsp;to_rel(out,&nbsp;tmp);<br>
+&emsp;Options opt;<br>
+&emsp;auto out = collect_from_rules(rules, opt);<br>
+&emsp;auto rel = to_rel(out, tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;check_paths(rel,&nbsp;{&quot;b.h&quot;,&nbsp;&quot;sub/c.cpp&quot;});<br>
+&emsp;check_paths(rel, {&quot;b.h&quot;, &quot;sub/c.cpp&quot;});<br>
 }<br>
 <br>
-TEST_CASE(&quot;collector:&nbsp;exclude&nbsp;all&nbsp;cpp&nbsp;recursively&quot;)<br>
+TEST_CASE(&quot;collector: exclude all cpp recursively&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;collector_test_3&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
+&emsp;fs::path tmp = fs::temp_directory_path() / &quot;collector_test_3&quot;;<br>
+&emsp;fs::remove_all(tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;a.cpp&quot;,&nbsp;&quot;A&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;x/b.cpp&quot;,&nbsp;&quot;B&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;x/y/c.cpp&quot;,&nbsp;&quot;C&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;ok.txt&quot;,&nbsp;&quot;D&quot;);<br>
+&emsp;write_file(tmp / &quot;a.cpp&quot;, &quot;A&quot;);<br>
+&emsp;write_file(tmp / &quot;x/b.cpp&quot;, &quot;B&quot;);<br>
+&emsp;write_file(tmp / &quot;x/y/c.cpp&quot;, &quot;C&quot;);<br>
+&emsp;write_file(tmp / &quot;ok.txt&quot;, &quot;D&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;Rule&gt;&nbsp;rules&nbsp;=&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{(tmp&nbsp;/&nbsp;&quot;**&quot;).generic_string(),&nbsp;false},<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{(tmp&nbsp;/&nbsp;&quot;**/*.cpp&quot;).generic_string(),&nbsp;true},<br>
-&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+&emsp;std::vector&lt;Rule&gt; rules = {<br>
+&emsp;&emsp;{(tmp / &quot;**&quot;).generic_string(), false},<br>
+&emsp;&emsp;{(tmp / &quot;**/*.cpp&quot;).generic_string(), true},<br>
+&emsp;};<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;Options&nbsp;opt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;out&nbsp;=&nbsp;collect_from_rules(rules,&nbsp;opt);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;rel&nbsp;=&nbsp;to_rel(out,&nbsp;tmp);<br>
+&emsp;Options opt;<br>
+&emsp;auto out = collect_from_rules(rules, opt);<br>
+&emsp;auto rel = to_rel(out, tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;check_paths(rel,&nbsp;{&quot;ok.txt&quot;});<br>
+&emsp;check_paths(rel, {&quot;ok.txt&quot;});<br>
 }<br>
 <br>
-TEST_CASE(&quot;collector:&nbsp;include-exclude-include&nbsp;chain&quot;)<br>
+TEST_CASE(&quot;collector: include-exclude-include chain&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;collector_test_4&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
+&emsp;fs::path tmp = fs::temp_directory_path() / &quot;collector_test_4&quot;;<br>
+&emsp;fs::remove_all(tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;data/keep/a.txt&quot;,&nbsp;&quot;A&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;data/keep/b.cpp&quot;,&nbsp;&quot;B&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;data/drop/c.txt&quot;,&nbsp;&quot;C&quot;);<br>
+&emsp;write_file(tmp / &quot;data/keep/a.txt&quot;, &quot;A&quot;);<br>
+&emsp;write_file(tmp / &quot;data/keep/b.cpp&quot;, &quot;B&quot;);<br>
+&emsp;write_file(tmp / &quot;data/drop/c.txt&quot;, &quot;C&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;Rule&gt;&nbsp;rules&nbsp;=&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{(tmp&nbsp;/&nbsp;&quot;data/**&quot;).generic_string(),&nbsp;false},<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{(tmp&nbsp;/&nbsp;&quot;data/drop/**&quot;).generic_string(),&nbsp;true},<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{(tmp&nbsp;/&nbsp;&quot;data/keep/*.txt&quot;).generic_string(),&nbsp;false},<br>
-&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+&emsp;std::vector&lt;Rule&gt; rules = {<br>
+&emsp;&emsp;{(tmp / &quot;data/**&quot;).generic_string(), false},<br>
+&emsp;&emsp;{(tmp / &quot;data/drop/**&quot;).generic_string(), true},<br>
+&emsp;&emsp;{(tmp / &quot;data/keep/*.txt&quot;).generic_string(), false},<br>
+&emsp;};<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;Options&nbsp;opt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;out&nbsp;=&nbsp;collect_from_rules(rules,&nbsp;opt);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;rel&nbsp;=&nbsp;to_rel(out,&nbsp;tmp);<br>
+&emsp;Options opt;<br>
+&emsp;auto out = collect_from_rules(rules, opt);<br>
+&emsp;auto rel = to_rel(out, tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;check_paths(rel,&nbsp;{&quot;data/keep/a.txt&quot;,&nbsp;&quot;data/keep/b.cpp&quot;});<br>
+&emsp;check_paths(rel, {&quot;data/keep/a.txt&quot;, &quot;data/keep/b.cpp&quot;});<br>
 }<br>
 <br>
-TEST_CASE(&quot;collector:&nbsp;empty&nbsp;after&nbsp;exclude&quot;)<br>
+TEST_CASE(&quot;collector: empty after exclude&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;collector_test_5&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
+&emsp;fs::path tmp = fs::temp_directory_path() / &quot;collector_test_5&quot;;<br>
+&emsp;fs::remove_all(tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;a.txt&quot;,&nbsp;&quot;A&quot;);<br>
+&emsp;write_file(tmp / &quot;a.txt&quot;, &quot;A&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;Rule&gt;&nbsp;rules&nbsp;=&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{(tmp&nbsp;/&nbsp;&quot;*.txt&quot;).generic_string(),&nbsp;false},<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{(tmp&nbsp;/&nbsp;&quot;*.txt&quot;).generic_string(),&nbsp;true},<br>
-&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+&emsp;std::vector&lt;Rule&gt; rules = {<br>
+&emsp;&emsp;{(tmp / &quot;*.txt&quot;).generic_string(), false},<br>
+&emsp;&emsp;{(tmp / &quot;*.txt&quot;).generic_string(), true},<br>
+&emsp;};<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;Options&nbsp;opt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;out&nbsp;=&nbsp;collect_from_rules(rules,&nbsp;opt);<br>
+&emsp;Options opt;<br>
+&emsp;auto out = collect_from_rules(rules, opt);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(out.empty());<br>
+&emsp;CHECK(out.empty());<br>
 }<br>
 <br>
-TEST_CASE(&quot;collector:&nbsp;complex&nbsp;structure&nbsp;with&nbsp;5&nbsp;rules&quot;)<br>
+TEST_CASE(&quot;collector: complex structure with 5 rules&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;collector_complex_test&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
+&emsp;fs::path tmp = fs::temp_directory_path() / &quot;collector_complex_test&quot;;<br>
+&emsp;fs::remove_all(tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;----------------------------<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;создаём&nbsp;структуру&nbsp;на&nbsp;15&nbsp;файлов<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;----------------------------<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;root.txt&quot;,&nbsp;&quot;R&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;root.bin&quot;,&nbsp;&quot;RB&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;readme.md&quot;,&nbsp;&quot;MD&quot;);<br>
+&emsp;// ----------------------------<br>
+&emsp;// создаём структуру на 15 файлов<br>
+&emsp;// ----------------------------<br>
+&emsp;write_file(tmp / &quot;root.txt&quot;, &quot;R&quot;);<br>
+&emsp;write_file(tmp / &quot;root.bin&quot;, &quot;RB&quot;);<br>
+&emsp;write_file(tmp / &quot;readme.md&quot;, &quot;MD&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;src/a.cpp&quot;,&nbsp;&quot;A&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;src/b.cpp&quot;,&nbsp;&quot;B&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;src/c.log&quot;,&nbsp;&quot;CLOG&quot;);<br>
+&emsp;write_file(tmp / &quot;src/a.cpp&quot;, &quot;A&quot;);<br>
+&emsp;write_file(tmp / &quot;src/b.cpp&quot;, &quot;B&quot;);<br>
+&emsp;write_file(tmp / &quot;src/c.log&quot;, &quot;CLOG&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;src/tools/t1.txt&quot;,&nbsp;&quot;T1&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;src/tools/t2.txt&quot;,&nbsp;&quot;T2&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;src/tools/helper.cpp&quot;,&nbsp;&quot;HC&quot;);<br>
+&emsp;write_file(tmp / &quot;src/tools/t1.txt&quot;, &quot;T1&quot;);<br>
+&emsp;write_file(tmp / &quot;src/tools/t2.txt&quot;, &quot;T2&quot;);<br>
+&emsp;write_file(tmp / &quot;src/tools/helper.cpp&quot;, &quot;HC&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;data/info.txt&quot;,&nbsp;&quot;INFO&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;data/raw/raw1.bin&quot;,&nbsp;&quot;BIN1&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;data/raw/raw2.bin&quot;,&nbsp;&quot;BIN2&quot;);<br>
+&emsp;write_file(tmp / &quot;data/info.txt&quot;, &quot;INFO&quot;);<br>
+&emsp;write_file(tmp / &quot;data/raw/raw1.bin&quot;, &quot;BIN1&quot;);<br>
+&emsp;write_file(tmp / &quot;data/raw/raw2.bin&quot;, &quot;BIN2&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;build/tmp1.log&quot;,&nbsp;&quot;TMP1&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;build/tmp2.log&quot;,&nbsp;&quot;TMP2&quot;);<br>
+&emsp;write_file(tmp / &quot;build/tmp1.log&quot;, &quot;TMP1&quot;);<br>
+&emsp;write_file(tmp / &quot;build/tmp2.log&quot;, &quot;TMP2&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;misc/x.cpp&quot;,&nbsp;&quot;X&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;write_file(tmp&nbsp;/&nbsp;&quot;misc/y.txt&quot;,&nbsp;&quot;Y&quot;);<br>
+&emsp;write_file(tmp / &quot;misc/x.cpp&quot;, &quot;X&quot;);<br>
+&emsp;write_file(tmp / &quot;misc/y.txt&quot;, &quot;Y&quot;);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;----------------------------<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;ПРАВИЛА<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;----------------------------<br>
+&emsp;// ----------------------------<br>
+&emsp;// ПРАВИЛА<br>
+&emsp;// ----------------------------<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;Rule&gt;&nbsp;rules&nbsp;=&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;1)&nbsp;собрать&nbsp;всё<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{(tmp&nbsp;/&nbsp;&quot;**&quot;).generic_string(),&nbsp;false},<br>
+&emsp;std::vector&lt;Rule&gt; rules = {<br>
+&emsp;&emsp;// 1) собрать всё<br>
+&emsp;&emsp;{(tmp / &quot;**&quot;).generic_string(), false},<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;2)&nbsp;исключить&nbsp;data/raw/**<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{(tmp&nbsp;/&nbsp;&quot;data/raw/**&quot;).generic_string(),&nbsp;true},<br>
+&emsp;&emsp;// 2) исключить data/raw/**<br>
+&emsp;&emsp;{(tmp / &quot;data/raw/**&quot;).generic_string(), true},<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;3)&nbsp;исключить&nbsp;все&nbsp;*.log<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{(tmp&nbsp;/&nbsp;&quot;**/*.log&quot;).generic_string(),&nbsp;true},<br>
+&emsp;&emsp;// 3) исключить все *.log<br>
+&emsp;&emsp;{(tmp / &quot;**/*.log&quot;).generic_string(), true},<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;4)&nbsp;добавить&nbsp;текстовые&nbsp;файлы&nbsp;только&nbsp;в&nbsp;tools<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{(tmp&nbsp;/&nbsp;&quot;src/tools/*.txt&quot;).generic_string(),&nbsp;false},<br>
+&emsp;&emsp;// 4) добавить текстовые файлы только в tools<br>
+&emsp;&emsp;{(tmp / &quot;src/tools/*.txt&quot;).generic_string(), false},<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;5)&nbsp;исключить&nbsp;бинарники&nbsp;только&nbsp;в&nbsp;корне&nbsp;(root.bin)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{(tmp&nbsp;/&nbsp;&quot;*.bin&quot;).generic_string(),&nbsp;true}};<br>
+&emsp;&emsp;// 5) исключить бинарники только в корне (root.bin)<br>
+&emsp;&emsp;{(tmp / &quot;*.bin&quot;).generic_string(), true}};<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;Options&nbsp;opt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;out&nbsp;=&nbsp;collect_from_rules(rules,&nbsp;opt);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;rel&nbsp;=&nbsp;to_rel(out,&nbsp;tmp);<br>
+&emsp;Options opt;<br>
+&emsp;auto out = collect_from_rules(rules, opt);<br>
+&emsp;auto rel = to_rel(out, tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;----------------------------<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;ОЖИДАЕМЫЙ&nbsp;РЕЗУЛЬТАТ<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;----------------------------<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Файлы,&nbsp;которые&nbsp;должны&nbsp;остаться:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;root.txt<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;readme.md<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;src/a.cpp<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;src/b.cpp<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;src/tools/t1.txt<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;src/tools/t2.txt<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;src/tools/helper.cpp<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;data/info.txt<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;misc/x.cpp<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;misc/y.txt<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;НЕ&nbsp;должно&nbsp;быть:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;data/raw/*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(правило&nbsp;#2)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;*.log&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(правило&nbsp;#3)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;root.bin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(правило&nbsp;#5)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//<br>
-&nbsp;&nbsp;&nbsp;&nbsp;check_paths(rel,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;root.txt&quot;,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;readme.md&quot;,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;src/a.cpp&quot;,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;src/b.cpp&quot;,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;src/tools/t1.txt&quot;,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;src/tools/t2.txt&quot;,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;src/tools/helper.cpp&quot;,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;data/info.txt&quot;,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;misc/x.cpp&quot;,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;misc/y.txt&quot;,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;});<br>
+&emsp;// ----------------------------<br>
+&emsp;// ОЖИДАЕМЫЙ РЕЗУЛЬТАТ<br>
+&emsp;// ----------------------------<br>
+&emsp;//<br>
+&emsp;// Файлы, которые должны остаться:<br>
+&emsp;//<br>
+&emsp;//   root.txt<br>
+&emsp;//   readme.md<br>
+&emsp;//   src/a.cpp<br>
+&emsp;//   src/b.cpp<br>
+&emsp;//   src/tools/t1.txt<br>
+&emsp;//   src/tools/t2.txt<br>
+&emsp;//   src/tools/helper.cpp<br>
+&emsp;//   data/info.txt<br>
+&emsp;//   misc/x.cpp<br>
+&emsp;//   misc/y.txt<br>
+&emsp;//<br>
+&emsp;// НЕ должно быть:<br>
+&emsp;//   data/raw/*        (правило #2)<br>
+&emsp;//   *.log             (правило #3)<br>
+&emsp;//   root.bin          (правило #5)<br>
+&emsp;//<br>
+&emsp;check_paths(rel,<br>
+&emsp;&emsp;&emsp;&emsp;{<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&quot;root.txt&quot;,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&quot;readme.md&quot;,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&quot;src/a.cpp&quot;,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&quot;src/b.cpp&quot;,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&quot;src/tools/t1.txt&quot;,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&quot;src/tools/t2.txt&quot;,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&quot;src/tools/helper.cpp&quot;,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&quot;data/info.txt&quot;,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&quot;misc/x.cpp&quot;,<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&quot;misc/y.txt&quot;,<br>
+&emsp;&emsp;&emsp;&emsp;});<br>
 }<br>
 <!-- END SCAT CODE -->
 </body>
