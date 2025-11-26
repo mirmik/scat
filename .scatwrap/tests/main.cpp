@@ -6,65 +6,65 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#define&nbsp;DOCTEST_CONFIG_IMPLEMENT<br>
-#include&nbsp;&quot;doctest/doctest.h&quot;<br>
-#include&nbsp;&lt;string&gt;<br>
-#include&nbsp;&lt;vector&gt;<br>
-#if&nbsp;defined(__WIN32__)&nbsp;||&nbsp;defined(_MSC_VER)<br>
-#include&nbsp;&lt;winsock2.h&gt;<br>
-WSADATA&nbsp;wsaData;<br>
+#define &#20;DOCTEST_CONFIG_IMPLEMENT<br>
+#include &#20;&quot;doctest/doctest.h&quot;<br>
+#include &#20;&lt;string&gt;<br>
+#include &#20;&lt;vector&gt;<br>
+#if &#20;defined(__WIN32__) &#20;|| &#20;defined(_MSC_VER)<br>
+#include &#20;&lt;winsock2.h&gt;<br>
+WSADATA &#20;wsaData;<br>
 #endif<br>
 <br>
-int&nbsp;main(int&nbsp;argc,&nbsp;char&nbsp;**argv)<br>
+int &#20;main(int &#20;argc, &#20;char &#20;**argv)<br>
 {<br>
-#if&nbsp;defined(__WIN32__)&nbsp;||&nbsp;defined(_MSC_VER)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;iResult;<br>
+#if &#20;defined(__WIN32__) &#20;|| &#20;defined(_MSC_VER)<br>
+ &#20; &#20; &#20; &#20;int &#20;iResult;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Initialize&nbsp;Winsock<br>
-&nbsp;&nbsp;&nbsp;&nbsp;iResult&nbsp;=&nbsp;WSAStartup(MAKEWORD(2,&nbsp;2),&nbsp;&amp;wsaData);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(iResult&nbsp;!=&nbsp;0)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(&quot;WSAStartup&nbsp;failed:&nbsp;%d\n&quot;,&nbsp;iResult);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;// &#20;Initialize &#20;Winsock<br>
+ &#20; &#20; &#20; &#20;iResult &#20;= &#20;WSAStartup(MAKEWORD(2, &#20;2), &#20;&amp;wsaData);<br>
+ &#20; &#20; &#20; &#20;if &#20;(iResult &#20;!= &#20;0)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;printf(&quot;WSAStartup &#20;failed: &#20;%d\n&quot;, &#20;iResult);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;1;<br>
+ &#20; &#20; &#20; &#20;}<br>
 #endif<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;adjusted_args;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;adjusted_args.reserve(argc);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(int&nbsp;i&nbsp;=&nbsp;0;&nbsp;i&nbsp;&lt;&nbsp;argc;&nbsp;++i)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;current(argv[i]);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;((current&nbsp;==&nbsp;&quot;--test-case&quot;&nbsp;||&nbsp;current&nbsp;==&nbsp;&quot;-tc&quot;)&nbsp;&amp;&amp;&nbsp;i&nbsp;+&nbsp;1&nbsp;&lt;&nbsp;argc)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;pattern(argv[i&nbsp;+&nbsp;1]);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(pattern.find('*')&nbsp;==&nbsp;std::string::npos)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pattern&nbsp;=&nbsp;&quot;*&quot;&nbsp;+&nbsp;pattern&nbsp;+&nbsp;&quot;*&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adjusted_args.push_back(current&nbsp;+&nbsp;&quot;=&quot;&nbsp;+&nbsp;pattern);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++i;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;adjusted_args.push_back(std::move(current));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;std::vector&lt;std::string&gt; &#20;adjusted_args;<br>
+ &#20; &#20; &#20; &#20;adjusted_args.reserve(argc);<br>
+ &#20; &#20; &#20; &#20;for &#20;(int &#20;i &#20;= &#20;0; &#20;i &#20;&lt; &#20;argc; &#20;++i)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::string &#20;current(argv[i]);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;((current &#20;== &#20;&quot;--test-case&quot; &#20;|| &#20;current &#20;== &#20;&quot;-tc&quot;) &#20;&amp;&amp; &#20;i &#20;+ &#20;1 &#20;&lt; &#20;argc)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::string &#20;pattern(argv[i &#20;+ &#20;1]);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(pattern.find('*') &#20;== &#20;std::string::npos)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;pattern &#20;= &#20;&quot;*&quot; &#20;+ &#20;pattern &#20;+ &#20;&quot;*&quot;;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;adjusted_args.push_back(current &#20;+ &#20;&quot;=&quot; &#20;+ &#20;pattern);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;++i;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;else<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;adjusted_args.push_back(std::move(current));<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;char&nbsp;*&gt;&nbsp;argv_adjusted;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;argv_adjusted.reserve(adjusted_args.size());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(auto&nbsp;&amp;arg&nbsp;:&nbsp;adjusted_args)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;argv_adjusted.push_back(arg.data());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;std::vector&lt;char &#20;*&gt; &#20;argv_adjusted;<br>
+ &#20; &#20; &#20; &#20;argv_adjusted.reserve(adjusted_args.size());<br>
+ &#20; &#20; &#20; &#20;for &#20;(auto &#20;&amp;arg &#20;: &#20;adjusted_args)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;argv_adjusted.push_back(arg.data());<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;doctest::Context&nbsp;context;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;context.applyCommandLine(static_cast&lt;int&gt;(argv_adjusted.size()),<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;argv_adjusted.data());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;res&nbsp;=&nbsp;context.run();&nbsp;&nbsp;//&nbsp;run<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(context.shouldExit())&nbsp;//&nbsp;important&nbsp;-&nbsp;query&nbsp;flags&nbsp;(and&nbsp;--exit)&nbsp;rely&nbsp;on<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;the&nbsp;user&nbsp;doing&nbsp;this<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;res;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;propagate&nbsp;the&nbsp;result&nbsp;of&nbsp;the&nbsp;tests<br>
-&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;client_stuff_return_code&nbsp;=&nbsp;0;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;res&nbsp;+&nbsp;client_stuff_return_code;&nbsp;//&nbsp;the&nbsp;result&nbsp;from&nbsp;doctest&nbsp;is<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;propagated&nbsp;here&nbsp;as&nbsp;well<br>
+ &#20; &#20; &#20; &#20;doctest::Context &#20;context;<br>
+ &#20; &#20; &#20; &#20;context.applyCommandLine(static_cast&lt;int&gt;(argv_adjusted.size()),<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;argv_adjusted.data());<br>
+ &#20; &#20; &#20; &#20;int &#20;res &#20;= &#20;context.run(); &#20; &#20;// &#20;run<br>
+ &#20; &#20; &#20; &#20;if &#20;(context.shouldExit()) &#20;// &#20;important &#20;- &#20;query &#20;flags &#20;(and &#20;--exit) &#20;rely &#20;on<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;the &#20;user &#20;doing &#20;this<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;res; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;propagate &#20;the &#20;result &#20;of &#20;the &#20;tests<br>
+ &#20; &#20; &#20; &#20;int &#20;client_stuff_return_code &#20;= &#20;0;<br>
+ &#20; &#20; &#20; &#20;return &#20;res &#20;+ &#20;client_stuff_return_code; &#20;// &#20;the &#20;result &#20;from &#20;doctest &#20;is<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;propagated &#20;here &#20;as &#20;well<br>
 }<br>
 <!-- END SCAT CODE -->
 </body>

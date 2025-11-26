@@ -151,7 +151,7 @@ std::string wrap_cpp_as_html(std::string_view cpp_code,
         for (char ch : escaped)
         {
             if (ch == ' ')
-                html += "&nbsp;";
+                html += " &#20;";
             else
                 html.push_back(ch);
         }

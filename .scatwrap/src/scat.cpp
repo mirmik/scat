@@ -6,663 +6,663 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#include&nbsp;&quot;scat.h&quot;<br>
-#include&nbsp;&quot;clipboard.h&quot;<br>
-#include&nbsp;&quot;collector.h&quot;<br>
-#include&nbsp;&quot;git_info.h&quot;<br>
-#include&nbsp;&quot;options.h&quot;<br>
-#include&nbsp;&quot;parser.h&quot;<br>
-#include&nbsp;&quot;rules.h&quot;<br>
-#include&nbsp;&quot;util.h&quot;<br>
-#include&nbsp;&lt;cstdio&gt;<br>
-#include&nbsp;&lt;exception&gt;<br>
-#include&nbsp;&lt;filesystem&gt;<br>
-#include&nbsp;&lt;fstream&gt;<br>
-#include&nbsp;&lt;functional&gt;<br>
-#include&nbsp;&lt;iostream&gt;<br>
-#include&nbsp;&lt;map&gt;<br>
-#include&nbsp;&lt;set&gt;<br>
-#include&nbsp;&lt;sstream&gt;<br>
+#include &#20;&quot;scat.h&quot;<br>
+#include &#20;&quot;clipboard.h&quot;<br>
+#include &#20;&quot;collector.h&quot;<br>
+#include &#20;&quot;git_info.h&quot;<br>
+#include &#20;&quot;options.h&quot;<br>
+#include &#20;&quot;parser.h&quot;<br>
+#include &#20;&quot;rules.h&quot;<br>
+#include &#20;&quot;util.h&quot;<br>
+#include &#20;&lt;cstdio&gt;<br>
+#include &#20;&lt;exception&gt;<br>
+#include &#20;&lt;filesystem&gt;<br>
+#include &#20;&lt;fstream&gt;<br>
+#include &#20;&lt;functional&gt;<br>
+#include &#20;&lt;iostream&gt;<br>
+#include &#20;&lt;map&gt;<br>
+#include &#20;&lt;set&gt;<br>
+#include &#20;&lt;sstream&gt;<br>
 <br>
-#ifndef&nbsp;_WIN32<br>
-#include&nbsp;&lt;sys/stat.h&gt;<br>
-#include&nbsp;&lt;sys/types.h&gt;<br>
+#ifndef &#20;_WIN32<br>
+#include &#20;&lt;sys/stat.h&gt;<br>
+#include &#20;&lt;sys/types.h&gt;<br>
 #endif<br>
 <br>
-int&nbsp;wrap_files_to_html(const&nbsp;std::vector&lt;std::filesystem::path&gt;&nbsp;&amp;files,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;Options&nbsp;&amp;opt);<br>
+int &#20;wrap_files_to_html(const &#20;std::vector&lt;std::filesystem::path&gt; &#20;&amp;files,<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;const &#20;Options &#20;&amp;opt);<br>
 <br>
-namespace&nbsp;fs&nbsp;=&nbsp;std::filesystem;<br>
+namespace &#20;fs &#20;= &#20;std::filesystem;<br>
 <br>
-bool&nbsp;g_use_absolute_paths&nbsp;=&nbsp;false;<br>
+bool &#20;g_use_absolute_paths &#20;= &#20;false;<br>
 <br>
-int&nbsp;apply_chunk_main(int&nbsp;argc,&nbsp;char&nbsp;**argv);<br>
+int &#20;apply_chunk_main(int &#20;argc, &#20;char &#20;**argv);<br>
 <br>
-void&nbsp;print_tree(const&nbsp;std::vector&lt;std::filesystem::path&gt;&nbsp;&amp;files)<br>
+void &#20;print_tree(const &#20;std::vector&lt;std::filesystem::path&gt; &#20;&amp;files)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Собираем&nbsp;относительные&nbsp;пути<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;rels;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;rels.reserve(files.size());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(auto&nbsp;&amp;p&nbsp;:&nbsp;files)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rels.push_back(make_display_path(p));<br>
+ &#20; &#20; &#20; &#20;// &#20;Собираем &#20;относительные &#20;пути<br>
+ &#20; &#20; &#20; &#20;std::vector&lt;std::string&gt; &#20;rels;<br>
+ &#20; &#20; &#20; &#20;rels.reserve(files.size());<br>
+ &#20; &#20; &#20; &#20;for &#20;(auto &#20;&amp;p &#20;: &#20;files)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;rels.push_back(make_display_path(p));<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::sort(rels.begin(),&nbsp;rels.end());<br>
+ &#20; &#20; &#20; &#20;std::sort(rels.begin(), &#20;rels.end());<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;struct&nbsp;Node<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::map&lt;std::string,&nbsp;Node&nbsp;*&gt;&nbsp;children;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;is_file&nbsp;=&nbsp;false;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+ &#20; &#20; &#20; &#20;struct &#20;Node<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::map&lt;std::string, &#20;Node &#20;*&gt; &#20;children;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;bool &#20;is_file &#20;= &#20;false;<br>
+ &#20; &#20; &#20; &#20;};<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;Node&nbsp;root;<br>
+ &#20; &#20; &#20; &#20;Node &#20;root;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;----------------------------<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;Построение&nbsp;дерева<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;----------------------------<br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(auto&nbsp;&amp;r&nbsp;:&nbsp;rels)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;p&nbsp;=&nbsp;r;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Node&nbsp;*cur&nbsp;=&nbsp;&amp;root;<br>
+ &#20; &#20; &#20; &#20;// &#20;----------------------------<br>
+ &#20; &#20; &#20; &#20;// &#20; &#20;Построение &#20;дерева<br>
+ &#20; &#20; &#20; &#20;// &#20;----------------------------<br>
+ &#20; &#20; &#20; &#20;for &#20;(auto &#20;&amp;r &#20;: &#20;rels)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;fs::path &#20;p &#20;= &#20;r;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;Node &#20;*cur &#20;= &#20;&amp;root;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;вытаскиваем&nbsp;компоненты&nbsp;p&nbsp;в&nbsp;список<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;parts;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(auto&nbsp;&amp;part&nbsp;:&nbsp;p)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;parts.push_back(part.string());<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;вытаскиваем &#20;компоненты &#20;p &#20;в &#20;список<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::vector&lt;std::string&gt; &#20;parts;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;for &#20;(auto &#20;&amp;part &#20;: &#20;p)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;parts.push_back(part.string());<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;total&nbsp;=&nbsp;(int)parts.size();<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;int &#20;total &#20;= &#20;(int)parts.size();<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(int&nbsp;i&nbsp;=&nbsp;0;&nbsp;i&nbsp;&lt;&nbsp;total;&nbsp;++i)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;&amp;name&nbsp;=&nbsp;parts[i];<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;last&nbsp;=&nbsp;(i&nbsp;==&nbsp;total&nbsp;-&nbsp;1);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;for &#20;(int &#20;i &#20;= &#20;0; &#20;i &#20;&lt; &#20;total; &#20;++i)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;const &#20;std::string &#20;&amp;name &#20;= &#20;parts[i];<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;bool &#20;last &#20;= &#20;(i &#20;== &#20;total &#20;- &#20;1);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!cur-&gt;children.count(name))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cur-&gt;children[name]&nbsp;=&nbsp;new&nbsp;Node();<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(!cur-&gt;children.count(name))<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;cur-&gt;children[name] &#20;= &#20;new &#20;Node();<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cur&nbsp;=&nbsp;cur-&gt;children[name];<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(last)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cur-&gt;is_file&nbsp;=&nbsp;true;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;cur &#20;= &#20;cur-&gt;children[name];<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(last)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;cur-&gt;is_file &#20;= &#20;true;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;----------------------------<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;Рекурсивная&nbsp;печать<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;----------------------------<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::function&lt;void(Node&nbsp;*,&nbsp;const&nbsp;std::string&nbsp;&amp;,&nbsp;bool,&nbsp;const&nbsp;std::string&nbsp;&amp;)&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;go;<br>
+ &#20; &#20; &#20; &#20;// &#20;----------------------------<br>
+ &#20; &#20; &#20; &#20;// &#20; &#20;Рекурсивная &#20;печать<br>
+ &#20; &#20; &#20; &#20;// &#20;----------------------------<br>
+ &#20; &#20; &#20; &#20;std::function&lt;void(Node &#20;*, &#20;const &#20;std::string &#20;&amp;, &#20;bool, &#20;const &#20;std::string &#20;&amp;)&gt;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;go;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;go&nbsp;=&nbsp;[&amp;](Node&nbsp;*node,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;&amp;name,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;last,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;&amp;prefix)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!name.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout&nbsp;&lt;&lt;&nbsp;prefix&nbsp;&lt;&lt;&nbsp;(last&nbsp;?&nbsp;&quot;└──&nbsp;&quot;&nbsp;:&nbsp;&quot;├──&nbsp;&quot;)&nbsp;&lt;&lt;&nbsp;name;<br>
+ &#20; &#20; &#20; &#20;go &#20;= &#20;[&amp;](Node &#20;*node,<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;const &#20;std::string &#20;&amp;name,<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;bool &#20;last,<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;const &#20;std::string &#20;&amp;prefix)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(!name.empty())<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::cout &#20;&lt;&lt; &#20;prefix &#20;&lt;&lt; &#20;(last &#20;? &#20;&quot;└── &#20;&quot; &#20;: &#20;&quot;├── &#20;&quot;) &#20;&lt;&lt; &#20;name;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!node-&gt;is_file)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout&nbsp;&lt;&lt;&nbsp;&quot;/&quot;;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(!node-&gt;is_file)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::cout &#20;&lt;&lt; &#20;&quot;/&quot;;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout&nbsp;&lt;&lt;&nbsp;&quot;\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::cout &#20;&lt;&lt; &#20;&quot;\n&quot;;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;сортируем&nbsp;детей&nbsp;по&nbsp;имени<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;keys;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;keys.reserve(node-&gt;children.size());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(auto&nbsp;&amp;[k,&nbsp;_]&nbsp;:&nbsp;node-&gt;children)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;keys.push_back(k);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::sort(keys.begin(),&nbsp;keys.end());<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;сортируем &#20;детей &#20;по &#20;имени<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::vector&lt;std::string&gt; &#20;keys;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;keys.reserve(node-&gt;children.size());<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;for &#20;(auto &#20;&amp;[k, &#20;_] &#20;: &#20;node-&gt;children)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;keys.push_back(k);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::sort(keys.begin(), &#20;keys.end());<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(size_t&nbsp;i&nbsp;=&nbsp;0;&nbsp;i&nbsp;&lt;&nbsp;keys.size();&nbsp;++i)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;is_last&nbsp;=&nbsp;(i&nbsp;+&nbsp;1&nbsp;==&nbsp;keys.size());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Node&nbsp;*child&nbsp;=&nbsp;node-&gt;children[keys[i]];<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;for &#20;(size_t &#20;i &#20;= &#20;0; &#20;i &#20;&lt; &#20;keys.size(); &#20;++i)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;bool &#20;is_last &#20;= &#20;(i &#20;+ &#20;1 &#20;== &#20;keys.size());<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;Node &#20;*child &#20;= &#20;node-&gt;children[keys[i]];<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;go(child,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;keys[i],<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_last,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;prefix&nbsp;+&nbsp;(name.empty()&nbsp;?&nbsp;&quot;&quot;&nbsp;:&nbsp;(last&nbsp;?&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;:&nbsp;&quot;│&nbsp;&nbsp;&nbsp;&quot;)));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;go(child,<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;keys[i],<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;is_last,<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;prefix &#20;+ &#20;(name.empty() &#20;? &#20;&quot;&quot; &#20;: &#20;(last &#20;? &#20;&quot; &#20; &#20; &#20; &#20;&quot; &#20;: &#20;&quot;│ &#20; &#20; &#20;&quot;)));<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20;};<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::cout&nbsp;&lt;&lt;&nbsp;&quot;=====&nbsp;PROJECT&nbsp;TREE&nbsp;=====\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;go(&amp;root,&nbsp;&quot;&quot;,&nbsp;true,&nbsp;&quot;&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::cout&nbsp;&lt;&lt;&nbsp;&quot;========================\n\n&quot;;<br>
+ &#20; &#20; &#20; &#20;std::cout &#20;&lt;&lt; &#20;&quot;===== &#20;PROJECT &#20;TREE &#20;=====\n&quot;;<br>
+ &#20; &#20; &#20; &#20;go(&amp;root, &#20;&quot;&quot;, &#20;true, &#20;&quot;&quot;);<br>
+ &#20; &#20; &#20; &#20;std::cout &#20;&lt;&lt; &#20;&quot;========================\n\n&quot;;<br>
 }<br>
 <br>
-static&nbsp;void<br>
-print_list_with_sizes_to(const&nbsp;std::vector&lt;std::filesystem::path&gt;&nbsp;&amp;files,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;Options&nbsp;&amp;opt,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ostream&nbsp;&amp;os)<br>
+static &#20;void<br>
+print_list_with_sizes_to(const &#20;std::vector&lt;std::filesystem::path&gt; &#20;&amp;files,<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;const &#20;Options &#20;&amp;opt,<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ostream &#20;&amp;os)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;namespace&nbsp;fs&nbsp;=&nbsp;std::filesystem;<br>
+ &#20; &#20; &#20; &#20;namespace &#20;fs &#20;= &#20;std::filesystem;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;struct&nbsp;Item<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;path;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;display;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::uintmax_t&nbsp;size;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+ &#20; &#20; &#20; &#20;struct &#20;Item<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;fs::path &#20;path;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::string &#20;display;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::uintmax_t &#20;size;<br>
+ &#20; &#20; &#20; &#20;};<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;Item&gt;&nbsp;items;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;items.reserve(files.size());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::uintmax_t&nbsp;total&nbsp;=&nbsp;0;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;max_len&nbsp;=&nbsp;0;<br>
+ &#20; &#20; &#20; &#20;std::vector&lt;Item&gt; &#20;items;<br>
+ &#20; &#20; &#20; &#20;items.reserve(files.size());<br>
+ &#20; &#20; &#20; &#20;std::uintmax_t &#20;total &#20;= &#20;0;<br>
+ &#20; &#20; &#20; &#20;std::size_t &#20;max_len &#20;= &#20;0;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(auto&nbsp;&amp;f&nbsp;:&nbsp;files)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;disp&nbsp;=&nbsp;make_display_path(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;sz&nbsp;=&nbsp;get_file_size(f);<br>
+ &#20; &#20; &#20; &#20;for &#20;(auto &#20;&amp;f &#20;: &#20;files)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;auto &#20;disp &#20;= &#20;make_display_path(f);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;auto &#20;sz &#20;= &#20;get_file_size(f);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;total&nbsp;+=&nbsp;sz;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;total &#20;+= &#20;sz;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;shown_len&nbsp;=&nbsp;opt.path_prefix.size()&nbsp;+&nbsp;disp.size();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(shown_len&nbsp;&gt;&nbsp;max_len)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max_len&nbsp;=&nbsp;shown_len;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::size_t &#20;shown_len &#20;= &#20;opt.path_prefix.size() &#20;+ &#20;disp.size();<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(shown_len &#20;&gt; &#20;max_len)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;max_len &#20;= &#20;shown_len;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;items.push_back(Item{f,&nbsp;std::move(disp),&nbsp;sz});<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;items.push_back(Item{f, &#20;std::move(disp), &#20;sz});<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(opt.sorted)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::sort(items.begin(),<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;items.end(),<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[](const&nbsp;Item&nbsp;&amp;a,&nbsp;const&nbsp;Item&nbsp;&amp;b)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(a.size&nbsp;!=&nbsp;b.size)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;a.size&nbsp;&gt;&nbsp;b.size;&nbsp;//&nbsp;по&nbsp;убыванию<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;a.display&nbsp;&lt;&nbsp;b.display;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;});<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;if &#20;(opt.sorted)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::sort(items.begin(),<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;items.end(),<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;[](const &#20;Item &#20;&amp;a, &#20;const &#20;Item &#20;&amp;b)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(a.size &#20;!= &#20;b.size)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;a.size &#20;&gt; &#20;b.size; &#20;// &#20;по &#20;убыванию<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;a.display &#20;&lt; &#20;b.display;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;});<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;bool&nbsp;show_size&nbsp;=&nbsp;opt.show_size;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(const&nbsp;auto&nbsp;&amp;it&nbsp;:&nbsp;items)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;shown&nbsp;=&nbsp;opt.path_prefix&nbsp;+&nbsp;it.display;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;os&nbsp;&lt;&lt;&nbsp;shown;<br>
+ &#20; &#20; &#20; &#20;const &#20;bool &#20;show_size &#20;= &#20;opt.show_size;<br>
+ &#20; &#20; &#20; &#20;for &#20;(const &#20;auto &#20;&amp;it &#20;: &#20;items)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::string &#20;shown &#20;= &#20;opt.path_prefix &#20;+ &#20;it.display;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;os &#20;&lt;&lt; &#20;shown;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(show_size)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(max_len&nbsp;&gt;&nbsp;shown.size())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;pad&nbsp;=&nbsp;max_len&nbsp;-&nbsp;shown.size();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(std::size_t&nbsp;i&nbsp;=&nbsp;0;&nbsp;i&nbsp;&lt;&nbsp;pad;&nbsp;++i)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;os&nbsp;&lt;&lt;&nbsp;'&nbsp;';<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;os&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;(&quot;&nbsp;&lt;&lt;&nbsp;it.size&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;bytes)&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(show_size)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(max_len &#20;&gt; &#20;shown.size())<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::size_t &#20;pad &#20;= &#20;max_len &#20;- &#20;shown.size();<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;for &#20;(std::size_t &#20;i &#20;= &#20;0; &#20;i &#20;&lt; &#20;pad; &#20;++i)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;os &#20;&lt;&lt; &#20;' &#20;';<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;os &#20;&lt;&lt; &#20;&quot; &#20;(&quot; &#20;&lt;&lt; &#20;it.size &#20;&lt;&lt; &#20;&quot; &#20;bytes)&quot;;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;os&nbsp;&lt;&lt;&nbsp;&quot;\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;os &#20;&lt;&lt; &#20;&quot;\n&quot;;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(show_size)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;os&nbsp;&lt;&lt;&nbsp;&quot;Total&nbsp;size:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;total&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;bytes\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;if &#20;(show_size)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;os &#20;&lt;&lt; &#20;&quot;Total &#20;size: &#20;&quot; &#20;&lt;&lt; &#20;total &#20;&lt;&lt; &#20;&quot; &#20;bytes\n&quot;;<br>
+ &#20; &#20; &#20; &#20;}<br>
 }<br>
 <br>
-//&nbsp;старая&nbsp;функция&nbsp;теперь&nbsp;просто&nbsp;обёртка&nbsp;вокруг&nbsp;новой<br>
-static&nbsp;void<br>
-print_list_with_sizes(const&nbsp;std::vector&lt;std::filesystem::path&gt;&nbsp;&amp;files,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;Options&nbsp;&amp;opt)<br>
+// &#20;старая &#20;функция &#20;теперь &#20;просто &#20;обёртка &#20;вокруг &#20;новой<br>
+static &#20;void<br>
+print_list_with_sizes(const &#20;std::vector&lt;std::filesystem::path&gt; &#20;&amp;files,<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;const &#20;Options &#20;&amp;opt)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;print_list_with_sizes_to(files,&nbsp;opt,&nbsp;std::cout);<br>
+ &#20; &#20; &#20; &#20;print_list_with_sizes_to(files, &#20;opt, &#20;std::cout);<br>
 }<br>
 <br>
-//&nbsp;Вывод&nbsp;всех&nbsp;файлов&nbsp;и&nbsp;подсчёт&nbsp;суммарного&nbsp;размера<br>
-static&nbsp;std::uintmax_t<br>
-dump_files_and_total(const&nbsp;std::vector&lt;std::filesystem::path&gt;&nbsp;&amp;files,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;Options&nbsp;&amp;opt)<br>
+// &#20;Вывод &#20;всех &#20;файлов &#20;и &#20;подсчёт &#20;суммарного &#20;размера<br>
+static &#20;std::uintmax_t<br>
+dump_files_and_total(const &#20;std::vector&lt;std::filesystem::path&gt; &#20;&amp;files,<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;const &#20;Options &#20;&amp;opt)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::uintmax_t&nbsp;total&nbsp;=&nbsp;0;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;first&nbsp;=&nbsp;true;<br>
+ &#20; &#20; &#20; &#20;std::uintmax_t &#20;total &#20;= &#20;0;<br>
+ &#20; &#20; &#20; &#20;bool &#20;first &#20;= &#20;true;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(auto&nbsp;&amp;f&nbsp;:&nbsp;files)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dump_file(f,&nbsp;first,&nbsp;opt);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;first&nbsp;=&nbsp;false;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;total&nbsp;+=&nbsp;get_file_size(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;for &#20;(auto &#20;&amp;f &#20;: &#20;files)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;dump_file(f, &#20;first, &#20;opt);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;first &#20;= &#20;false;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;total &#20;+= &#20;get_file_size(f);<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;total;<br>
+ &#20; &#20; &#20; &#20;return &#20;total;<br>
 }<br>
 <br>
-int&nbsp;run_server(const&nbsp;Options&nbsp;&amp;opt);<br>
+int &#20;run_server(const &#20;Options &#20;&amp;opt);<br>
 <br>
-//&nbsp;общий&nbsp;каркас&nbsp;обработки&nbsp;списка&nbsp;файлов<br>
-static&nbsp;int&nbsp;process_files(const&nbsp;std::vector&lt;std::filesystem::path&gt;&nbsp;&amp;files,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;Options&nbsp;&amp;opt,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::function&lt;void(std::uintmax_t)&gt;&nbsp;&amp;after_dump)<br>
+// &#20;общий &#20;каркас &#20;обработки &#20;списка &#20;файлов<br>
+static &#20;int &#20;process_files(const &#20;std::vector&lt;std::filesystem::path&gt; &#20;&amp;files,<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;const &#20;Options &#20;&amp;opt,<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;const &#20;std::function&lt;void(std::uintmax_t)&gt; &#20;&amp;after_dump)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(files.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cerr&nbsp;&lt;&lt;&nbsp;&quot;No&nbsp;files&nbsp;collected.\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;0;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;if &#20;(files.empty())<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::cerr &#20;&lt;&lt; &#20;&quot;No &#20;files &#20;collected.\n&quot;;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;0;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!opt.wrap_root.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;wrap_files_to_html(files,&nbsp;opt);<br>
+ &#20; &#20; &#20; &#20;if &#20;(!opt.wrap_root.empty())<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;wrap_files_to_html(files, &#20;opt);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(opt.list_only)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print_list_with_sizes(files,&nbsp;opt);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;0;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;if &#20;(opt.list_only)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;print_list_with_sizes(files, &#20;opt);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;0;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::uintmax_t&nbsp;total&nbsp;=&nbsp;dump_files_and_total(files,&nbsp;opt);<br>
+ &#20; &#20; &#20; &#20;std::uintmax_t &#20;total &#20;= &#20;dump_files_and_total(files, &#20;opt);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(after_dump)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;after_dump(total);<br>
+ &#20; &#20; &#20; &#20;if &#20;(after_dump)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;after_dump(total);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;0;<br>
+ &#20; &#20; &#20; &#20;return &#20;0;<br>
 }<br>
 <br>
-//&nbsp;=========================<br>
-//&nbsp;CONFIG&nbsp;MODE<br>
-//&nbsp;=========================<br>
+// &#20;=========================<br>
+// &#20;CONFIG &#20;MODE<br>
+// &#20;=========================<br>
 <br>
-static&nbsp;int&nbsp;run_config_mode(const&nbsp;Options&nbsp;&amp;opt)<br>
+static &#20;int &#20;run_config_mode(const &#20;Options &#20;&amp;opt)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Config&nbsp;cfg;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;try<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cfg&nbsp;=&nbsp;parse_config(opt.config_file);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;catch&nbsp;(const&nbsp;std::exception&nbsp;&amp;e)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cerr&nbsp;&lt;&lt;&nbsp;e.what()&nbsp;&lt;&lt;&nbsp;&quot;\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;Config &#20;cfg;<br>
+ &#20; &#20; &#20; &#20;try<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;cfg &#20;= &#20;parse_config(opt.config_file);<br>
+ &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20;catch &#20;(const &#20;std::exception &#20;&amp;e)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::cerr &#20;&lt;&lt; &#20;e.what() &#20;&lt;&lt; &#20;&quot;\n&quot;;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;1;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;text_files&nbsp;=&nbsp;collect_from_rules(cfg.text_rules,&nbsp;opt);<br>
+ &#20; &#20; &#20; &#20;auto &#20;text_files &#20;= &#20;collect_from_rules(cfg.text_rules, &#20;opt);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;after_dump&nbsp;=&nbsp;[&amp;](std::uintmax_t&nbsp;total)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;TREE&nbsp;rules&nbsp;(если&nbsp;есть)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!cfg.tree_rules.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;tree_files&nbsp;=&nbsp;collect_from_rules(cfg.tree_rules,&nbsp;opt);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!tree_files.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout&nbsp;&lt;&lt;&nbsp;&quot;\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print_tree(tree_files);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;auto &#20;after_dump &#20;= &#20;[&amp;](std::uintmax_t &#20;total)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;TREE &#20;rules &#20;(если &#20;есть)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(!cfg.tree_rules.empty())<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;auto &#20;tree_files &#20;= &#20;collect_from_rules(cfg.tree_rules, &#20;opt);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(!tree_files.empty())<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::cout &#20;&lt;&lt; &#20;&quot;\n&quot;;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;print_tree(tree_files);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(opt.chunk_trailer)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout&nbsp;&lt;&lt;&nbsp;&quot;\n=====&nbsp;CHUNK&nbsp;FORMAT&nbsp;HELP&nbsp;=====\n\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print_chunk_help();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(opt.chunk_trailer)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::cout &#20;&lt;&lt; &#20;&quot;\n===== &#20;CHUNK &#20;FORMAT &#20;HELP &#20;=====\n\n&quot;;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;print_chunk_help();<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout&nbsp;&lt;&lt;&nbsp;&quot;\nTotal&nbsp;size:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;total&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;bytes\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::cout &#20;&lt;&lt; &#20;&quot;\nTotal &#20;size: &#20;&quot; &#20;&lt;&lt; &#20;total &#20;&lt;&lt; &#20;&quot; &#20;bytes\n&quot;;<br>
+ &#20; &#20; &#20; &#20;};<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;process_files(text_files,&nbsp;opt,&nbsp;after_dump);<br>
+ &#20; &#20; &#20; &#20;return &#20;process_files(text_files, &#20;opt, &#20;after_dump);<br>
 }<br>
 <br>
-//&nbsp;=========================<br>
-//&nbsp;NORMAL&nbsp;MODE<br>
-//&nbsp;=========================<br>
+// &#20;=========================<br>
+// &#20;NORMAL &#20;MODE<br>
+// &#20;=========================<br>
 <br>
-static&nbsp;int&nbsp;run_normal_mode(const&nbsp;Options&nbsp;&amp;opt)<br>
+static &#20;int &#20;run_normal_mode(const &#20;Options &#20;&amp;opt)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::filesystem::path&gt;&nbsp;files&nbsp;=<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;collect_from_paths(opt.paths,&nbsp;opt);<br>
+ &#20; &#20; &#20; &#20;std::vector&lt;std::filesystem::path&gt; &#20;files &#20;=<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;collect_from_paths(opt.paths, &#20;opt);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;after_dump&nbsp;=&nbsp;[&amp;](std::uintmax_t&nbsp;total)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;В&nbsp;обычном&nbsp;режиме&nbsp;дерево&nbsp;не&nbsp;печатаем<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(opt.chunk_trailer)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout&nbsp;&lt;&lt;&nbsp;&quot;\n=====&nbsp;CHUNK&nbsp;FORMAT&nbsp;HELP&nbsp;=====\n\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print_chunk_help();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;auto &#20;after_dump &#20;= &#20;[&amp;](std::uintmax_t &#20;total)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;В &#20;обычном &#20;режиме &#20;дерево &#20;не &#20;печатаем<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(opt.chunk_trailer)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::cout &#20;&lt;&lt; &#20;&quot;\n===== &#20;CHUNK &#20;FORMAT &#20;HELP &#20;=====\n\n&quot;;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;print_chunk_help();<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout&nbsp;&lt;&lt;&nbsp;&quot;\nTotal&nbsp;size:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;total&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;bytes\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;};<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::cout &#20;&lt;&lt; &#20;&quot;\nTotal &#20;size: &#20;&quot; &#20;&lt;&lt; &#20;total &#20;&lt;&lt; &#20;&quot; &#20;bytes\n&quot;;<br>
+ &#20; &#20; &#20; &#20;};<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;process_files(files,&nbsp;opt,&nbsp;after_dump);<br>
+ &#20; &#20; &#20; &#20;return &#20;process_files(files, &#20;opt, &#20;after_dump);<br>
 }<br>
 <br>
-static&nbsp;std::string&nbsp;substitute_rawmap(const&nbsp;std::string&nbsp;&amp;tmpl,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;&amp;rawmap)<br>
+static &#20;std::string &#20;substitute_rawmap(const &#20;std::string &#20;&amp;tmpl,<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;const &#20;std::string &#20;&amp;rawmap)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;token&nbsp;=&nbsp;&quot;{RAWMAP}&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(tmpl.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;rawmap;<br>
+ &#20; &#20; &#20; &#20;const &#20;std::string &#20;token &#20;= &#20;&quot;{RAWMAP}&quot;;<br>
+ &#20; &#20; &#20; &#20;if &#20;(tmpl.empty())<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;rawmap;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;out;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;out.reserve(tmpl.size()&nbsp;+&nbsp;rawmap.size()&nbsp;+&nbsp;16);<br>
+ &#20; &#20; &#20; &#20;std::string &#20;out;<br>
+ &#20; &#20; &#20; &#20;out.reserve(tmpl.size() &#20;+ &#20;rawmap.size() &#20;+ &#20;16);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;pos&nbsp;=&nbsp;0;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(true)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;p&nbsp;=&nbsp;tmpl.find(token,&nbsp;pos);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(p&nbsp;==&nbsp;std::string::npos)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.append(tmpl,&nbsp;pos,&nbsp;std::string::npos);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.append(tmpl,&nbsp;pos,&nbsp;p&nbsp;-&nbsp;pos);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.append(rawmap);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pos&nbsp;=&nbsp;p&nbsp;+&nbsp;token.size();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;out;<br>
+ &#20; &#20; &#20; &#20;std::size_t &#20;pos &#20;= &#20;0;<br>
+ &#20; &#20; &#20; &#20;while &#20;(true)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::size_t &#20;p &#20;= &#20;tmpl.find(token, &#20;pos);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(p &#20;== &#20;std::string::npos)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out.append(tmpl, &#20;pos, &#20;std::string::npos);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;break;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out.append(tmpl, &#20;pos, &#20;p &#20;- &#20;pos);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out.append(rawmap);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;pos &#20;= &#20;p &#20;+ &#20;token.size();<br>
+ &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20;return &#20;out;<br>
 }<br>
 <br>
-static&nbsp;int&nbsp;install_pre_commit_hook()<br>
+static &#20;int &#20;install_pre_commit_hook()<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Узнаём&nbsp;.git-директорию&nbsp;через&nbsp;git<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;git_dir&nbsp;=&nbsp;detect_git_dir();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(git_dir.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cerr<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;--hook-install:&nbsp;not&nbsp;a&nbsp;git&nbsp;repository&nbsp;or&nbsp;git&nbsp;not&nbsp;available\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;// &#20;Узнаём &#20;.git-директорию &#20;через &#20;git<br>
+ &#20; &#20; &#20; &#20;std::string &#20;git_dir &#20;= &#20;detect_git_dir();<br>
+ &#20; &#20; &#20; &#20;if &#20;(git_dir.empty())<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::cerr<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&lt;&lt; &#20;&quot;--hook-install: &#20;not &#20;a &#20;git &#20;repository &#20;or &#20;git &#20;not &#20;available\n&quot;;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;1;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;git_path&nbsp;=&nbsp;fs::path(git_dir);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;hooks_dir&nbsp;=&nbsp;git_path&nbsp;/&nbsp;&quot;hooks&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::error_code&nbsp;ec;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(hooks_dir,&nbsp;ec);<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;git_path &#20;= &#20;fs::path(git_dir);<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;hooks_dir &#20;= &#20;git_path &#20;/ &#20;&quot;hooks&quot;;<br>
+ &#20; &#20; &#20; &#20;std::error_code &#20;ec;<br>
+ &#20; &#20; &#20; &#20;fs::create_directories(hooks_dir, &#20;ec);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;hook_path&nbsp;=&nbsp;hooks_dir&nbsp;/&nbsp;&quot;pre-commit&quot;;<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;hook_path &#20;= &#20;hooks_dir &#20;/ &#20;&quot;pre-commit&quot;;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::cout&nbsp;&lt;&lt;&nbsp;&quot;=====&nbsp;.git/hooks/pre-commit&nbsp;=====\n&quot;;<br>
+ &#20; &#20; &#20; &#20;std::cout &#20;&lt;&lt; &#20;&quot;===== &#20;.git/hooks/pre-commit &#20;=====\n&quot;;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;existing;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(fs::exists(hook_path))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ifstream&nbsp;in(hook_path);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(in)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ostringstream&nbsp;ss;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ss&nbsp;&lt;&lt;&nbsp;in.rdbuf();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;existing&nbsp;=&nbsp;ss.str();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;std::string &#20;existing;<br>
+ &#20; &#20; &#20; &#20;if &#20;(fs::exists(hook_path))<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ifstream &#20;in(hook_path);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(in)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ostringstream &#20;ss;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;ss &#20;&lt;&lt; &#20;in.rdbuf();<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;existing &#20;= &#20;ss.str();<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;marker&nbsp;=&nbsp;&quot;#&nbsp;pre-commit&nbsp;hook&nbsp;for&nbsp;scat&nbsp;wrapping&quot;;<br>
+ &#20; &#20; &#20; &#20;const &#20;std::string &#20;marker &#20;= &#20;&quot;# &#20;pre-commit &#20;hook &#20;for &#20;scat &#20;wrapping&quot;;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Если&nbsp;наш&nbsp;хук&nbsp;уже&nbsp;есть&nbsp;—&nbsp;ничего&nbsp;не&nbsp;делаем<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!existing.empty()&nbsp;&amp;&amp;&nbsp;existing.find(marker)&nbsp;!=&nbsp;std::string::npos)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout&nbsp;&lt;&lt;&nbsp;&quot;scat:&nbsp;pre-commit&nbsp;hook&nbsp;already&nbsp;contains&nbsp;scat&nbsp;wrapper\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;0;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;// &#20;Если &#20;наш &#20;хук &#20;уже &#20;есть &#20;— &#20;ничего &#20;не &#20;делаем<br>
+ &#20; &#20; &#20; &#20;if &#20;(!existing.empty() &#20;&amp;&amp; &#20;existing.find(marker) &#20;!= &#20;std::string::npos)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::cout &#20;&lt;&lt; &#20;&quot;scat: &#20;pre-commit &#20;hook &#20;already &#20;contains &#20;scat &#20;wrapper\n&quot;;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;0;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(existing.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Создаём&nbsp;новый&nbsp;pre-commit&nbsp;с&nbsp;твоим&nbsp;скриптом<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(hook_path,&nbsp;std::ios::trunc);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!out)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cerr&nbsp;&lt;&lt;&nbsp;&quot;scat:&nbsp;cannot&nbsp;write&nbsp;hook&nbsp;file:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;hook_path&nbsp;&lt;&lt;&nbsp;&quot;\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;if &#20;(existing.empty())<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;Создаём &#20;новый &#20;pre-commit &#20;с &#20;твоим &#20;скриптом<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ofstream &#20;out(hook_path, &#20;std::ios::trunc);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(!out)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::cerr &#20;&lt;&lt; &#20;&quot;scat: &#20;cannot &#20;write &#20;hook &#20;file: &#20;&quot; &#20;&lt;&lt; &#20;hook_path &#20;&lt;&lt; &#20;&quot;\n&quot;;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;1;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;#!/bin/sh\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;#&nbsp;pre-commit&nbsp;hook&nbsp;for&nbsp;scat&nbsp;wrapping\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;set&nbsp;-e&nbsp;&nbsp;#&nbsp;если&nbsp;любая&nbsp;команда&nbsp;упадёт&nbsp;—&nbsp;прерываем&nbsp;коммит\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;#&nbsp;Опционально:&nbsp;не&nbsp;мешаемся,&nbsp;если&nbsp;scat&nbsp;не&nbsp;установлен\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;if&nbsp;!&nbsp;command&nbsp;-v&nbsp;scat&nbsp;&gt;/dev/null&nbsp;2&gt;&amp;1;&nbsp;then\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;echo&nbsp;\&quot;pre-commit:&nbsp;'scat'&nbsp;not&nbsp;found&nbsp;in&nbsp;PATH,&nbsp;skipping&nbsp;&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;wrap\&quot;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;exit&nbsp;0\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;fi\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;echo&nbsp;\&quot;pre-commit:&nbsp;running&nbsp;'scat&nbsp;--wrap&nbsp;wrapped'...\&quot;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;#&nbsp;Рабочая&nbsp;директория&nbsp;хуков&nbsp;по&nbsp;умолчанию&nbsp;—&nbsp;корень&nbsp;репозитория,\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;#&nbsp;так&nbsp;что&nbsp;можно&nbsp;просто&nbsp;дернуть&nbsp;scat.\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;scat&nbsp;--wrap&nbsp;.scatwrap\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;#&nbsp;Добавляем&nbsp;всё&nbsp;из&nbsp;wrapped&nbsp;в&nbsp;индекс&nbsp;(новые,&nbsp;изменённые,&nbsp;&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;удалённые)\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;git&nbsp;add&nbsp;-A&nbsp;.scatwrap\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;echo&nbsp;\&quot;pre-commit:&nbsp;wrapped/&nbsp;updated&nbsp;and&nbsp;added&nbsp;to&nbsp;commit\&quot;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;exit&nbsp;0\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;else<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Уже&nbsp;есть&nbsp;какой-то&nbsp;хук&nbsp;—&nbsp;аккуратно&nbsp;добавляем&nbsp;наш&nbsp;блок&nbsp;в&nbsp;конец<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(hook_path,&nbsp;std::ios::app);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!out)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cerr&nbsp;&lt;&lt;&nbsp;&quot;scat:&nbsp;cannot&nbsp;append&nbsp;to&nbsp;hook&nbsp;file:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;hook_path<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out &#20;&lt;&lt; &#20;&quot;#!/bin/sh\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;# &#20;pre-commit &#20;hook &#20;for &#20;scat &#20;wrapping\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;set &#20;-e &#20; &#20;# &#20;если &#20;любая &#20;команда &#20;упадёт &#20;— &#20;прерываем &#20;коммит\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;# &#20;Опционально: &#20;не &#20;мешаемся, &#20;если &#20;scat &#20;не &#20;установлен\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;if &#20;! &#20;command &#20;-v &#20;scat &#20;&gt;/dev/null &#20;2&gt;&amp;1; &#20;then\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;echo &#20;\&quot;pre-commit: &#20;'scat' &#20;not &#20;found &#20;in &#20;PATH, &#20;skipping &#20;&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;wrap\&quot;\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;exit &#20;0\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;fi\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;echo &#20;\&quot;pre-commit: &#20;running &#20;'scat &#20;--wrap &#20;wrapped'...\&quot;\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;# &#20;Рабочая &#20;директория &#20;хуков &#20;по &#20;умолчанию &#20;— &#20;корень &#20;репозитория,\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;# &#20;так &#20;что &#20;можно &#20;просто &#20;дернуть &#20;scat.\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;scat &#20;--wrap &#20;.scatwrap\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;# &#20;Добавляем &#20;всё &#20;из &#20;wrapped &#20;в &#20;индекс &#20;(новые, &#20;изменённые, &#20;&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;удалённые)\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;git &#20;add &#20;-A &#20;.scatwrap\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;echo &#20;\&quot;pre-commit: &#20;wrapped/ &#20;updated &#20;and &#20;added &#20;to &#20;commit\&quot;\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;exit &#20;0\n&quot;;<br>
+ &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20;else<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;Уже &#20;есть &#20;какой-то &#20;хук &#20;— &#20;аккуратно &#20;добавляем &#20;наш &#20;блок &#20;в &#20;конец<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ofstream &#20;out(hook_path, &#20;std::ios::app);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(!out)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::cerr &#20;&lt;&lt; &#20;&quot;scat: &#20;cannot &#20;append &#20;to &#20;hook &#20;file: &#20;&quot; &#20;&lt;&lt; &#20;hook_path<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&lt;&lt; &#20;&quot;\n&quot;;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;1;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!existing.empty()&nbsp;&amp;&amp;&nbsp;existing.back()&nbsp;!=&nbsp;'\n')<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;\n&quot;;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(!existing.empty() &#20;&amp;&amp; &#20;existing.back() &#20;!= &#20;'\n')<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out &#20;&lt;&lt; &#20;&quot;\n&quot;;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;\n#&nbsp;-----&nbsp;added&nbsp;by&nbsp;scat&nbsp;--hook-install&nbsp;-----\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;if&nbsp;command&nbsp;-v&nbsp;scat&nbsp;&gt;/dev/null&nbsp;2&gt;&amp;1;&nbsp;then\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;echo&nbsp;\&quot;pre-commit:&nbsp;running&nbsp;'scat&nbsp;--wrap&nbsp;wrapped'...\&quot;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;scat&nbsp;--wrap&nbsp;.scatwrap\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;git&nbsp;add&nbsp;-A&nbsp;.scatwrap\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;echo&nbsp;\&quot;pre-commit:&nbsp;wrapped/&nbsp;updated&nbsp;and&nbsp;added&nbsp;to&nbsp;commit\&quot;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;fi\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;#&nbsp;-----&nbsp;end&nbsp;scat&nbsp;hook&nbsp;-----\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out &#20;&lt;&lt; &#20;&quot;\n# &#20;----- &#20;added &#20;by &#20;scat &#20;--hook-install &#20;-----\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;if &#20;command &#20;-v &#20;scat &#20;&gt;/dev/null &#20;2&gt;&amp;1; &#20;then\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;echo &#20;\&quot;pre-commit: &#20;running &#20;'scat &#20;--wrap &#20;wrapped'...\&quot;\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;scat &#20;--wrap &#20;.scatwrap\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;git &#20;add &#20;-A &#20;.scatwrap\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;echo &#20;\&quot;pre-commit: &#20;wrapped/ &#20;updated &#20;and &#20;added &#20;to &#20;commit\&quot;\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;fi\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;# &#20;----- &#20;end &#20;scat &#20;hook &#20;-----\n&quot;;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-#ifndef&nbsp;_WIN32<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;chmod&nbsp;+x&nbsp;на&nbsp;Unix-подобных<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;hp&nbsp;=&nbsp;hook_path.string();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;struct&nbsp;stat&nbsp;st;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(::stat(hp.c_str(),&nbsp;&amp;st)&nbsp;==&nbsp;0)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mode_t&nbsp;mode&nbsp;=&nbsp;st.st_mode&nbsp;|&nbsp;S_IXUSR&nbsp;|&nbsp;S_IXGRP&nbsp;|&nbsp;S_IXOTH;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;::chmod(hp.c_str(),&nbsp;mode);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+#ifndef &#20;_WIN32<br>
+ &#20; &#20; &#20; &#20;// &#20;chmod &#20;+x &#20;на &#20;Unix-подобных<br>
+ &#20; &#20; &#20; &#20;std::string &#20;hp &#20;= &#20;hook_path.string();<br>
+ &#20; &#20; &#20; &#20;struct &#20;stat &#20;st;<br>
+ &#20; &#20; &#20; &#20;if &#20;(::stat(hp.c_str(), &#20;&amp;st) &#20;== &#20;0)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;mode_t &#20;mode &#20;= &#20;st.st_mode &#20;| &#20;S_IXUSR &#20;| &#20;S_IXGRP &#20;| &#20;S_IXOTH;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;::chmod(hp.c_str(), &#20;mode);<br>
+ &#20; &#20; &#20; &#20;}<br>
 #endif<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;0;<br>
+ &#20; &#20; &#20; &#20;return &#20;0;<br>
 }<br>
 <br>
-int&nbsp;scat_main(int&nbsp;argc,&nbsp;char&nbsp;**argv)<br>
+int &#20;scat_main(int &#20;argc, &#20;char &#20;**argv)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Options&nbsp;opt&nbsp;=&nbsp;parse_options(argc,&nbsp;argv);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;g_use_absolute_paths&nbsp;=&nbsp;opt.abs_paths;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CopyGuard&nbsp;copy_guard(opt.copy_out);<br>
+ &#20; &#20; &#20; &#20;Options &#20;opt &#20;= &#20;parse_options(argc, &#20;argv);<br>
+ &#20; &#20; &#20; &#20;g_use_absolute_paths &#20;= &#20;opt.abs_paths;<br>
+ &#20; &#20; &#20; &#20;CopyGuard &#20;copy_guard(opt.copy_out);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Установка&nbsp;git&nbsp;pre-commit&nbsp;hook'а&nbsp;и&nbsp;выход<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(opt.hook_install)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;install_pre_commit_hook();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;// &#20;Установка &#20;git &#20;pre-commit &#20;hook'а &#20;и &#20;выход<br>
+ &#20; &#20; &#20; &#20;if &#20;(opt.hook_install)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;install_pre_commit_hook();<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Git&nbsp;info&nbsp;mode:&nbsp;print&nbsp;repository&nbsp;metadata&nbsp;and&nbsp;exit<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(opt.git_info)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GitInfo&nbsp;info&nbsp;=&nbsp;detect_git_info();<br>
+ &#20; &#20; &#20; &#20;// &#20;Git &#20;info &#20;mode: &#20;print &#20;repository &#20;metadata &#20;and &#20;exit<br>
+ &#20; &#20; &#20; &#20;if &#20;(opt.git_info)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;GitInfo &#20;info &#20;= &#20;detect_git_info();<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!info.has_commit&nbsp;&amp;&amp;&nbsp;!info.has_remote)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout&nbsp;&lt;&lt;&nbsp;&quot;Git:&nbsp;not&nbsp;a&nbsp;repository&nbsp;or&nbsp;git&nbsp;is&nbsp;not&nbsp;available\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(info.has_commit)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout&nbsp;&lt;&lt;&nbsp;&quot;Git&nbsp;commit:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;info.commit&nbsp;&lt;&lt;&nbsp;&quot;\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(info.has_remote)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout&nbsp;&lt;&lt;&nbsp;&quot;Git&nbsp;remote:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;info.remote&nbsp;&lt;&lt;&nbsp;&quot;\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(!info.has_commit &#20;&amp;&amp; &#20;!info.has_remote)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::cout &#20;&lt;&lt; &#20;&quot;Git: &#20;not &#20;a &#20;repository &#20;or &#20;git &#20;is &#20;not &#20;available\n&quot;;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;else<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(info.has_commit)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::cout &#20;&lt;&lt; &#20;&quot;Git &#20;commit: &#20;&quot; &#20;&lt;&lt; &#20;info.commit &#20;&lt;&lt; &#20;&quot;\n&quot;;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(info.has_remote)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::cout &#20;&lt;&lt; &#20;&quot;Git &#20;remote: &#20;&quot; &#20;&lt;&lt; &#20;info.remote &#20;&lt;&lt; &#20;&quot;\n&quot;;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;0;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;0;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;GH&nbsp;map&nbsp;mode:&nbsp;построить&nbsp;prefix&nbsp;=&nbsp;raw.githubusercontent/...&nbsp;и&nbsp;дальше<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;работать&nbsp;как&nbsp;-l&nbsp;--prefix<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(opt.gh_map)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GitHubInfo&nbsp;gh&nbsp;=&nbsp;detect_github_info();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!gh.ok)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cerr&nbsp;&lt;&lt;&nbsp;&quot;--ghmap:&nbsp;unable&nbsp;to&nbsp;detect&nbsp;GitHub&nbsp;remote/commit\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;// &#20;GH &#20;map &#20;mode: &#20;построить &#20;prefix &#20;= &#20;raw.githubusercontent/... &#20;и &#20;дальше<br>
+ &#20; &#20; &#20; &#20;// &#20;работать &#20;как &#20;-l &#20;--prefix<br>
+ &#20; &#20; &#20; &#20;if &#20;(opt.gh_map)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;GitHubInfo &#20;gh &#20;= &#20;detect_github_info();<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(!gh.ok)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::cerr &#20;&lt;&lt; &#20;&quot;--ghmap: &#20;unable &#20;to &#20;detect &#20;GitHub &#20;remote/commit\n&quot;;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;1;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;prefix&nbsp;=&nbsp;&quot;https://raw.githubusercontent.com/&quot;&nbsp;+&nbsp;gh.user&nbsp;+<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;/&quot;&nbsp;+&nbsp;gh.repo&nbsp;+&nbsp;&quot;/&quot;&nbsp;+&nbsp;gh.commit&nbsp;+&nbsp;&quot;/.scatwrap/&quot;;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::string &#20;prefix &#20;= &#20;&quot;https://raw.githubusercontent.com/&quot; &#20;+ &#20;gh.user &#20;+<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;/&quot; &#20;+ &#20;gh.repo &#20;+ &#20;&quot;/&quot; &#20;+ &#20;gh.commit &#20;+ &#20;&quot;/.scatwrap/&quot;;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!opt.config_file.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Config&nbsp;cfg;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;try&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cfg&nbsp;=&nbsp;parse_config(opt.config_file);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;catch&nbsp;(const&nbsp;std::exception&amp;&nbsp;e)&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cerr&nbsp;&lt;&lt;&nbsp;e.what()&nbsp;&lt;&lt;&nbsp;&quot;\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(!opt.config_file.empty())<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;Config &#20;cfg;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;try &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;cfg &#20;= &#20;parse_config(opt.config_file);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;} &#20;catch &#20;(const &#20;std::exception&amp; &#20;e) &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::cerr &#20;&lt;&lt; &#20;e.what() &#20;&lt;&lt; &#20;&quot;\n&quot;;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;1;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;text_files&nbsp;=&nbsp;collect_from_rules(cfg.text_rules,&nbsp;opt);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(text_files.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cerr&nbsp;&lt;&lt;&nbsp;&quot;No&nbsp;files&nbsp;collected.\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;0;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;auto &#20;text_files &#20;= &#20;collect_from_rules(cfg.text_rules, &#20;opt);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(text_files.empty())<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::cerr &#20;&lt;&lt; &#20;&quot;No &#20;files &#20;collected.\n&quot;;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;0;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Собираем&nbsp;&quot;сырой&quot;&nbsp;список&nbsp;ссылок&nbsp;в&nbsp;строку&nbsp;—&nbsp;это&nbsp;и&nbsp;есть&nbsp;{RAWMAP}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Options&nbsp;list_opt&nbsp;=&nbsp;opt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;list_opt.path_prefix&nbsp;=&nbsp;prefix;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;Собираем &#20;&quot;сырой&quot; &#20;список &#20;ссылок &#20;в &#20;строку &#20;— &#20;это &#20;и &#20;есть &#20;{RAWMAP}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;Options &#20;list_opt &#20;= &#20;opt;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;list_opt.path_prefix &#20;= &#20;prefix;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ostringstream&nbsp;oss;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print_list_with_sizes_to(text_files,&nbsp;list_opt,&nbsp;oss);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;rawmap&nbsp;=&nbsp;oss.str();<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ostringstream &#20;oss;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;print_list_with_sizes_to(text_files, &#20;list_opt, &#20;oss);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::string &#20;rawmap &#20;= &#20;oss.str();<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;output;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!cfg.map_format.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;output&nbsp;=&nbsp;substitute_rawmap(cfg.map_format,&nbsp;rawmap);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;output&nbsp;=&nbsp;rawmap;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::string &#20;output;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(!cfg.map_format.empty())<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;output &#20;= &#20;substitute_rawmap(cfg.map_format, &#20;rawmap);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;else<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;output &#20;= &#20;rawmap;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout&nbsp;&lt;&lt;&nbsp;output;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;0;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;opt.list_only&nbsp;=&nbsp;true;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;opt.wrap_root.clear();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;opt.path_prefix&nbsp;=&nbsp;prefix;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::cout &#20;&lt;&lt; &#20;output;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;0;<br>
+ &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;else<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;opt.list_only &#20;= &#20;true;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;opt.wrap_root.clear();<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;opt.path_prefix &#20;= &#20;prefix;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;HTTP&nbsp;server&nbsp;mode<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(opt.server_port&nbsp;!=&nbsp;0)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;run_server(opt);<br>
+ &#20; &#20; &#20; &#20;// &#20;HTTP &#20;server &#20;mode<br>
+ &#20; &#20; &#20; &#20;if &#20;(opt.server_port &#20;!= &#20;0)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;run_server(opt);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;------------------------------------------------------------<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Chunk&nbsp;help<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;------------------------------------------------------------<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(opt.chunk_help)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print_chunk_help();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;0;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;// &#20;------------------------------------------------------------<br>
+ &#20; &#20; &#20; &#20;// &#20;Chunk &#20;help<br>
+ &#20; &#20; &#20; &#20;// &#20;------------------------------------------------------------<br>
+ &#20; &#20; &#20; &#20;if &#20;(opt.chunk_help)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;print_chunk_help();<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;0;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;------------------------------------------------------------<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Apply&nbsp;patch&nbsp;mode<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;------------------------------------------------------------<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!opt.apply_file.empty()&nbsp;||&nbsp;opt.apply_stdin)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(opt.apply_stdin)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;namespace&nbsp;fs&nbsp;=&nbsp;std::filesystem;<br>
+ &#20; &#20; &#20; &#20;// &#20;------------------------------------------------------------<br>
+ &#20; &#20; &#20; &#20;// &#20;Apply &#20;patch &#20;mode<br>
+ &#20; &#20; &#20; &#20;// &#20;------------------------------------------------------------<br>
+ &#20; &#20; &#20; &#20;if &#20;(!opt.apply_file.empty() &#20;|| &#20;opt.apply_stdin)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(opt.apply_stdin)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;namespace &#20;fs &#20;= &#20;std::filesystem;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::stringstream&nbsp;ss;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ss&nbsp;&lt;&lt;&nbsp;std::cin.rdbuf();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;scat_stdin_patch.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(tmp);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;ss.str();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::stringstream &#20;ss;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;ss &#20;&lt;&lt; &#20;std::cin.rdbuf();<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;fs::path &#20;tmp &#20;= &#20;fs::temp_directory_path() &#20;/ &#20;&quot;scat_stdin_patch.txt&quot;;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ofstream &#20;out(tmp);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out &#20;&lt;&lt; &#20;ss.str();<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;tmp_str&nbsp;=&nbsp;tmp.string();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;char&nbsp;*args[]&nbsp;=&nbsp;{&quot;apply&quot;,&nbsp;tmp_str.c_str()};<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;r&nbsp;=&nbsp;apply_chunk_main(2,&nbsp;const_cast&lt;char&nbsp;**&gt;(args));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fs::remove(tmp);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;r;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;file&nbsp;=&nbsp;opt.apply_file;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;char&nbsp;*args[]&nbsp;=&nbsp;{&quot;apply&quot;,&nbsp;file.c_str()};<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;apply_chunk_main(2,&nbsp;const_cast&lt;char&nbsp;**&gt;(args));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::string &#20;tmp_str &#20;= &#20;tmp.string();<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;const &#20;char &#20;*args[] &#20;= &#20;{&quot;apply&quot;, &#20;tmp_str.c_str()};<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;int &#20;r &#20;= &#20;apply_chunk_main(2, &#20;const_cast&lt;char &#20;**&gt;(args));<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;fs::remove(tmp);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;r;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;else<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::string &#20;file &#20;= &#20;opt.apply_file;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;const &#20;char &#20;*args[] &#20;= &#20;{&quot;apply&quot;, &#20;file.c_str()};<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;apply_chunk_main(2, &#20;const_cast&lt;char &#20;**&gt;(args));<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;------------------------------------------------------------<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;CONFIG&nbsp;MODE&nbsp;—&nbsp;uses&nbsp;scat.txt&nbsp;or&nbsp;--config&nbsp;F<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;------------------------------------------------------------<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!opt.config_file.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;run_config_mode(opt);<br>
+ &#20; &#20; &#20; &#20;// &#20;------------------------------------------------------------<br>
+ &#20; &#20; &#20; &#20;// &#20;CONFIG &#20;MODE &#20;— &#20;uses &#20;scat.txt &#20;or &#20;--config &#20;F<br>
+ &#20; &#20; &#20; &#20;// &#20;------------------------------------------------------------<br>
+ &#20; &#20; &#20; &#20;if &#20;(!opt.config_file.empty())<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;run_config_mode(opt);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;------------------------------------------------------------<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;NORMAL&nbsp;MODE&nbsp;—&nbsp;user&nbsp;provided&nbsp;paths<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;------------------------------------------------------------<br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;run_normal_mode(opt);<br>
+ &#20; &#20; &#20; &#20;// &#20;------------------------------------------------------------<br>
+ &#20; &#20; &#20; &#20;// &#20;NORMAL &#20;MODE &#20;— &#20;user &#20;provided &#20;paths<br>
+ &#20; &#20; &#20; &#20;// &#20;------------------------------------------------------------<br>
+ &#20; &#20; &#20; &#20;return &#20;run_normal_mode(opt);<br>
 }<br>
 <br>
-int&nbsp;wrap_files_to_html(const&nbsp;std::vector&lt;std::filesystem::path&gt;&nbsp;&amp;files,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;Options&nbsp;&amp;opt)<br>
+int &#20;wrap_files_to_html(const &#20;std::vector&lt;std::filesystem::path&gt; &#20;&amp;files,<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;const &#20;Options &#20;&amp;opt)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;namespace&nbsp;fs&nbsp;=&nbsp;std::filesystem;<br>
+ &#20; &#20; &#20; &#20;namespace &#20;fs &#20;= &#20;std::filesystem;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(opt.wrap_root.empty())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;0;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;if &#20;(opt.wrap_root.empty())<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;0;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;root&nbsp;=&nbsp;opt.wrap_root;<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;root &#20;= &#20;opt.wrap_root;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::error_code&nbsp;ec;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(root,&nbsp;ec);<br>
+ &#20; &#20; &#20; &#20;std::error_code &#20;ec;<br>
+ &#20; &#20; &#20; &#20;fs::create_directories(root, &#20;ec);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(const&nbsp;auto&nbsp;&amp;f&nbsp;:&nbsp;files)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;считаем&nbsp;относительный&nbsp;путь&nbsp;относительно&nbsp;текущего&nbsp;каталога<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::error_code&nbsp;rec;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;rel&nbsp;=&nbsp;fs::relative(f,&nbsp;fs::current_path(),&nbsp;rec);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(rec)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;если&nbsp;не&nbsp;получилось&nbsp;—&nbsp;хотя&nbsp;бы&nbsp;имя&nbsp;файла<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rel&nbsp;=&nbsp;f.filename();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;for &#20;(const &#20;auto &#20;&amp;f &#20;: &#20;files)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;считаем &#20;относительный &#20;путь &#20;относительно &#20;текущего &#20;каталога<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::error_code &#20;rec;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;fs::path &#20;rel &#20;= &#20;fs::relative(f, &#20;fs::current_path(), &#20;rec);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(rec)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;если &#20;не &#20;получилось &#20;— &#20;хотя &#20;бы &#20;имя &#20;файла<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;rel &#20;= &#20;f.filename();<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;dst&nbsp;=&nbsp;root&nbsp;/&nbsp;rel;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(dst.parent_path(),&nbsp;ec);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;fs::path &#20;dst &#20;= &#20;root &#20;/ &#20;rel;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;fs::create_directories(dst.parent_path(), &#20;ec);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ifstream&nbsp;in(f,&nbsp;std::ios::binary);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!in)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cerr&nbsp;&lt;&lt;&nbsp;&quot;Cannot&nbsp;open&nbsp;for&nbsp;wrap:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;f&nbsp;&lt;&lt;&nbsp;&quot;\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ifstream &#20;in(f, &#20;std::ios::binary);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(!in)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::cerr &#20;&lt;&lt; &#20;&quot;Cannot &#20;open &#20;for &#20;wrap: &#20;&quot; &#20;&lt;&lt; &#20;f &#20;&lt;&lt; &#20;&quot;\n&quot;;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;continue;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ostringstream&nbsp;ss;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ss&nbsp;&lt;&lt;&nbsp;in.rdbuf();<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ostringstream &#20;ss;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;ss &#20;&lt;&lt; &#20;in.rdbuf();<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;title&nbsp;=&nbsp;rel.generic_string();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;html&nbsp;=&nbsp;wrap_cpp_as_html(ss.str(),&nbsp;title);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::string &#20;title &#20;= &#20;rel.generic_string();<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::string &#20;html &#20;= &#20;wrap_cpp_as_html(ss.str(), &#20;title);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(dst,&nbsp;std::ios::binary);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!out)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cerr&nbsp;&lt;&lt;&nbsp;&quot;Cannot&nbsp;write&nbsp;wrapped&nbsp;file:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;dst&nbsp;&lt;&lt;&nbsp;&quot;\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ofstream &#20;out(dst, &#20;std::ios::binary);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(!out)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::cerr &#20;&lt;&lt; &#20;&quot;Cannot &#20;write &#20;wrapped &#20;file: &#20;&quot; &#20;&lt;&lt; &#20;dst &#20;&lt;&lt; &#20;&quot;\n&quot;;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;continue;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;html;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out &#20;&lt;&lt; &#20;html;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;0;<br>
+ &#20; &#20; &#20; &#20;return &#20;0;<br>
 }<br>
 <!-- END SCAT CODE -->
 </body>

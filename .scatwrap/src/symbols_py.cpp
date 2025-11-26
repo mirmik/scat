@@ -6,299 +6,299 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#include&nbsp;&quot;symbols.h&quot;<br>
+#include &#20;&quot;symbols.h&quot;<br>
 <br>
-#include&nbsp;&lt;cctype&gt;<br>
+#include &#20;&lt;cctype&gt;<br>
 <br>
-PythonSymbolFinder::PythonSymbolFinder(const&nbsp;std::string&nbsp;&amp;text)<br>
+PythonSymbolFinder::PythonSymbolFinder(const &#20;std::string &#20;&amp;text)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;m_lines.clear();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;current;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;current.reserve(80);<br>
+ &#20; &#20; &#20; &#20;m_lines.clear();<br>
+ &#20; &#20; &#20; &#20;std::string &#20;current;<br>
+ &#20; &#20; &#20; &#20;current.reserve(80);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(char&nbsp;c&nbsp;:&nbsp;text)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(c&nbsp;==&nbsp;'\n')<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;m_lines.push_back(current);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;current.clear();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(c&nbsp;!=&nbsp;'\r')<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;current.push_back(c);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;m_lines.push_back(current);<br>
+ &#20; &#20; &#20; &#20;for &#20;(char &#20;c &#20;: &#20;text)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(c &#20;== &#20;'\n')<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;m_lines.push_back(current);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;current.clear();<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;else &#20;if &#20;(c &#20;!= &#20;'\r')<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;current.push_back(c);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20;m_lines.push_back(current);<br>
 }<br>
 <br>
-int&nbsp;PythonSymbolFinder::calc_indent(const&nbsp;std::string&nbsp;&amp;line)<br>
+int &#20;PythonSymbolFinder::calc_indent(const &#20;std::string &#20;&amp;line)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;indent&nbsp;=&nbsp;0;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(char&nbsp;c&nbsp;:&nbsp;line)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(c&nbsp;==&nbsp;'&nbsp;')<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++indent;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(c&nbsp;==&nbsp;'\t')<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;indent&nbsp;+=&nbsp;4;&nbsp;//&nbsp;грубая&nbsp;оценка,&nbsp;но&nbsp;устойчиво&nbsp;для&nbsp;сравнения<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;indent;<br>
+ &#20; &#20; &#20; &#20;int &#20;indent &#20;= &#20;0;<br>
+ &#20; &#20; &#20; &#20;for &#20;(char &#20;c &#20;: &#20;line)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(c &#20;== &#20;' &#20;')<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;++indent;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;else &#20;if &#20;(c &#20;== &#20;'\t')<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;indent &#20;+= &#20;4; &#20;// &#20;грубая &#20;оценка, &#20;но &#20;устойчиво &#20;для &#20;сравнения<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;else<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;break;<br>
+ &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20;return &#20;indent;<br>
 }<br>
 <br>
-std::size_t&nbsp;PythonSymbolFinder::first_code_pos(const&nbsp;std::string&nbsp;&amp;line)<br>
+std::size_t &#20;PythonSymbolFinder::first_code_pos(const &#20;std::string &#20;&amp;line)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;i&nbsp;=&nbsp;0;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(i&nbsp;&lt;&nbsp;line.size()&nbsp;&amp;&amp;&nbsp;(line[i]&nbsp;==&nbsp;'&nbsp;'&nbsp;||&nbsp;line[i]&nbsp;==&nbsp;'\t'))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++i;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;i;<br>
+ &#20; &#20; &#20; &#20;std::size_t &#20;i &#20;= &#20;0;<br>
+ &#20; &#20; &#20; &#20;while &#20;(i &#20;&lt; &#20;line.size() &#20;&amp;&amp; &#20;(line[i] &#20;== &#20;' &#20;' &#20;|| &#20;line[i] &#20;== &#20;'\t'))<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;++i;<br>
+ &#20; &#20; &#20; &#20;return &#20;i;<br>
 }<br>
 <br>
-bool&nbsp;PythonSymbolFinder::find_class_internal(const&nbsp;std::string&nbsp;&amp;class_name,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;&amp;out,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;&amp;class_indent)&nbsp;const<br>
+bool &#20;PythonSymbolFinder::find_class_internal(const &#20;std::string &#20;&amp;class_name,<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;Region &#20;&amp;out,<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;int &#20;&amp;class_indent) &#20;const<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;int&nbsp;n&nbsp;=&nbsp;static_cast&lt;int&gt;(m_lines.size());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(int&nbsp;i&nbsp;=&nbsp;0;&nbsp;i&nbsp;&lt;&nbsp;n;&nbsp;++i)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;&amp;line&nbsp;=&nbsp;m_lines[static_cast&lt;std::size_t&gt;(i)];<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;pos&nbsp;=&nbsp;first_code_pos(line);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(pos&nbsp;&gt;=&nbsp;line.size())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+ &#20; &#20; &#20; &#20;const &#20;int &#20;n &#20;= &#20;static_cast&lt;int&gt;(m_lines.size());<br>
+ &#20; &#20; &#20; &#20;for &#20;(int &#20;i &#20;= &#20;0; &#20;i &#20;&lt; &#20;n; &#20;++i)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;const &#20;std::string &#20;&amp;line &#20;= &#20;m_lines[static_cast&lt;std::size_t&gt;(i)];<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::size_t &#20;pos &#20;= &#20;first_code_pos(line);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(pos &#20;&gt;= &#20;line.size())<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;continue;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;комментарии&nbsp;/&nbsp;shebang<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(line[pos]&nbsp;==&nbsp;'#')<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;комментарии &#20;/ &#20;shebang<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(line[pos] &#20;== &#20;'#')<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;continue;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(line.compare(pos,&nbsp;5,&nbsp;&quot;class&quot;)&nbsp;!=&nbsp;0)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(line.compare(pos, &#20;5, &#20;&quot;class&quot;) &#20;!= &#20;0)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;continue;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;char&nbsp;after&nbsp;=&nbsp;(pos&nbsp;+&nbsp;5&nbsp;&lt;&nbsp;line.size())&nbsp;?&nbsp;line[pos&nbsp;+&nbsp;5]&nbsp;:&nbsp;'\0';<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!(after&nbsp;==&nbsp;'\0'&nbsp;||<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::isspace(static_cast&lt;unsigned&nbsp;char&gt;(after))&nbsp;||&nbsp;after&nbsp;==&nbsp;'('&nbsp;||<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;after&nbsp;==&nbsp;':'))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;char &#20;after &#20;= &#20;(pos &#20;+ &#20;5 &#20;&lt; &#20;line.size()) &#20;? &#20;line[pos &#20;+ &#20;5] &#20;: &#20;'\0';<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(!(after &#20;== &#20;'\0' &#20;||<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::isspace(static_cast&lt;unsigned &#20;char&gt;(after)) &#20;|| &#20;after &#20;== &#20;'(' &#20;||<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;after &#20;== &#20;':'))<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;continue;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;p&nbsp;=&nbsp;pos&nbsp;+&nbsp;5;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(p&nbsp;&lt;&nbsp;line.size()&nbsp;&amp;&amp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::isspace(static_cast&lt;unsigned&nbsp;char&gt;(line[p])))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++p;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::size_t &#20;p &#20;= &#20;pos &#20;+ &#20;5;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;while &#20;(p &#20;&lt; &#20;line.size() &#20;&amp;&amp;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::isspace(static_cast&lt;unsigned &#20;char&gt;(line[p])))<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;++p;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;name_start&nbsp;=&nbsp;p;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(p&nbsp;&lt;&nbsp;line.size()&nbsp;&amp;&amp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(std::isalnum(static_cast&lt;unsigned&nbsp;char&gt;(line[p]))&nbsp;||<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;line[p]&nbsp;==&nbsp;'_'))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++p;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::size_t &#20;name_start &#20;= &#20;p;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;while &#20;(p &#20;&lt; &#20;line.size() &#20;&amp;&amp;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;(std::isalnum(static_cast&lt;unsigned &#20;char&gt;(line[p])) &#20;||<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;line[p] &#20;== &#20;'_'))<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;++p;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(name_start&nbsp;==&nbsp;p)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(name_start &#20;== &#20;p)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;continue;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;name&nbsp;=&nbsp;line.substr(name_start,&nbsp;p&nbsp;-&nbsp;name_start);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(name&nbsp;!=&nbsp;class_name)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::string &#20;name &#20;= &#20;line.substr(name_start, &#20;p &#20;- &#20;name_start);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(name &#20;!= &#20;class_name)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;continue;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;class_indent&nbsp;=&nbsp;calc_indent(line);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;last_body&nbsp;=&nbsp;i;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;class_indent &#20;= &#20;calc_indent(line);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;int &#20;last_body &#20;= &#20;i;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(int&nbsp;k&nbsp;=&nbsp;i&nbsp;+&nbsp;1;&nbsp;k&nbsp;&lt;&nbsp;n;&nbsp;++k)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;&amp;l2&nbsp;=&nbsp;m_lines[static_cast&lt;std::size_t&gt;(k)];<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;pos2&nbsp;=&nbsp;first_code_pos(l2);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(pos2&nbsp;&gt;=&nbsp;l2.size())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;&nbsp;//&nbsp;пустая&nbsp;строка&nbsp;в&nbsp;теле<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;for &#20;(int &#20;k &#20;= &#20;i &#20;+ &#20;1; &#20;k &#20;&lt; &#20;n; &#20;++k)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;const &#20;std::string &#20;&amp;l2 &#20;= &#20;m_lines[static_cast&lt;std::size_t&gt;(k)];<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::size_t &#20;pos2 &#20;= &#20;first_code_pos(l2);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(pos2 &#20;&gt;= &#20;l2.size())<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;continue; &#20;// &#20;пустая &#20;строка &#20;в &#20;теле<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;ind2&nbsp;=&nbsp;calc_indent(l2);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(ind2&nbsp;&lt;=&nbsp;class_indent)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;&nbsp;//&nbsp;dedent&nbsp;—&nbsp;выходим&nbsp;из&nbsp;класса<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;int &#20;ind2 &#20;= &#20;calc_indent(l2);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(ind2 &#20;&lt;= &#20;class_indent)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;break; &#20;// &#20;dedent &#20;— &#20;выходим &#20;из &#20;класса<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;last_body&nbsp;=&nbsp;k;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;last_body &#20;= &#20;k;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.start_line&nbsp;=&nbsp;i;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.end_line&nbsp;=&nbsp;last_body;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;true;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out.start_line &#20;= &#20;i;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out.end_line &#20;= &#20;last_body;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;true;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;false;<br>
+ &#20; &#20; &#20; &#20;return &#20;false;<br>
 }<br>
 <br>
-bool&nbsp;PythonSymbolFinder::find_class(const&nbsp;std::string&nbsp;&amp;class_name,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;&amp;out)&nbsp;const<br>
+bool &#20;PythonSymbolFinder::find_class(const &#20;std::string &#20;&amp;class_name,<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;Region &#20;&amp;out) &#20;const<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;indent&nbsp;=&nbsp;0;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;find_class_internal(class_name,&nbsp;out,&nbsp;indent);<br>
+ &#20; &#20; &#20; &#20;int &#20;indent &#20;= &#20;0;<br>
+ &#20; &#20; &#20; &#20;return &#20;find_class_internal(class_name, &#20;out, &#20;indent);<br>
 }<br>
 <br>
-bool&nbsp;PythonSymbolFinder::find_method(const&nbsp;std::string&nbsp;&amp;class_name,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;&amp;method_name,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;&amp;out)&nbsp;const<br>
+bool &#20;PythonSymbolFinder::find_method(const &#20;std::string &#20;&amp;class_name,<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;const &#20;std::string &#20;&amp;method_name,<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;Region &#20;&amp;out) &#20;const<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;class_region;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;class_indent&nbsp;=&nbsp;0;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!find_class_internal(class_name,&nbsp;class_region,&nbsp;class_indent))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;false;<br>
+ &#20; &#20; &#20; &#20;Region &#20;class_region;<br>
+ &#20; &#20; &#20; &#20;int &#20;class_indent &#20;= &#20;0;<br>
+ &#20; &#20; &#20; &#20;if &#20;(!find_class_internal(class_name, &#20;class_region, &#20;class_indent))<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;false;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;int&nbsp;start&nbsp;=&nbsp;class_region.start_line;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;int&nbsp;end&nbsp;=&nbsp;class_region.end_line;<br>
+ &#20; &#20; &#20; &#20;const &#20;int &#20;start &#20;= &#20;class_region.start_line;<br>
+ &#20; &#20; &#20; &#20;const &#20;int &#20;end &#20;= &#20;class_region.end_line;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Определяем&nbsp;базовый&nbsp;уровень&nbsp;отступа&nbsp;для&nbsp;членов&nbsp;класса<br>
-&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;member_indent&nbsp;=&nbsp;-1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(int&nbsp;i&nbsp;=&nbsp;start&nbsp;+&nbsp;1;&nbsp;i&nbsp;&lt;=&nbsp;end;&nbsp;++i)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;&amp;line&nbsp;=&nbsp;m_lines[static_cast&lt;std::size_t&gt;(i)];<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;pos&nbsp;=&nbsp;first_code_pos(line);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(pos&nbsp;&gt;=&nbsp;line.size())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(line[pos]&nbsp;==&nbsp;'#')<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+ &#20; &#20; &#20; &#20;// &#20;Определяем &#20;базовый &#20;уровень &#20;отступа &#20;для &#20;членов &#20;класса<br>
+ &#20; &#20; &#20; &#20;int &#20;member_indent &#20;= &#20;-1;<br>
+ &#20; &#20; &#20; &#20;for &#20;(int &#20;i &#20;= &#20;start &#20;+ &#20;1; &#20;i &#20;&lt;= &#20;end; &#20;++i)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;const &#20;std::string &#20;&amp;line &#20;= &#20;m_lines[static_cast&lt;std::size_t&gt;(i)];<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::size_t &#20;pos &#20;= &#20;first_code_pos(line);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(pos &#20;&gt;= &#20;line.size())<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;continue;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(line[pos] &#20;== &#20;'#')<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;continue;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;ind&nbsp;=&nbsp;calc_indent(line);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(ind&nbsp;&lt;=&nbsp;class_indent)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;int &#20;ind &#20;= &#20;calc_indent(line);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(ind &#20;&lt;= &#20;class_indent)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;continue;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;member_indent&nbsp;=&nbsp;ind;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;member_indent &#20;= &#20;ind;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;break;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(member_indent&nbsp;&lt;&nbsp;0)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;false;&nbsp;//&nbsp;пустой&nbsp;класс<br>
+ &#20; &#20; &#20; &#20;if &#20;(member_indent &#20;&lt; &#20;0)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;false; &#20;// &#20;пустой &#20;класс<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;int&nbsp;n&nbsp;=&nbsp;static_cast&lt;int&gt;(m_lines.size());<br>
+ &#20; &#20; &#20; &#20;const &#20;int &#20;n &#20;= &#20;static_cast&lt;int&gt;(m_lines.size());<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(int&nbsp;i&nbsp;=&nbsp;start&nbsp;+&nbsp;1;&nbsp;i&nbsp;&lt;=&nbsp;end&nbsp;&amp;&amp;&nbsp;i&nbsp;&lt;&nbsp;n;&nbsp;++i)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;&amp;line&nbsp;=&nbsp;m_lines[static_cast&lt;std::size_t&gt;(i)];<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;pos&nbsp;=&nbsp;first_code_pos(line);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(pos&nbsp;&gt;=&nbsp;line.size())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+ &#20; &#20; &#20; &#20;for &#20;(int &#20;i &#20;= &#20;start &#20;+ &#20;1; &#20;i &#20;&lt;= &#20;end &#20;&amp;&amp; &#20;i &#20;&lt; &#20;n; &#20;++i)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;const &#20;std::string &#20;&amp;line &#20;= &#20;m_lines[static_cast&lt;std::size_t&gt;(i)];<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::size_t &#20;pos &#20;= &#20;first_code_pos(line);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(pos &#20;&gt;= &#20;line.size())<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;continue;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;ind&nbsp;=&nbsp;calc_indent(line);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(ind&nbsp;!=&nbsp;member_indent)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;int &#20;ind &#20;= &#20;calc_indent(line);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(ind &#20;!= &#20;member_indent)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;continue;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(line[pos]&nbsp;==&nbsp;'#')<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(line[pos] &#20;== &#20;'#')<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;continue;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;def&nbsp;/&nbsp;async&nbsp;def<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;p&nbsp;=&nbsp;pos;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;is_async&nbsp;=&nbsp;false;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;def &#20;/ &#20;async &#20;def<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::size_t &#20;p &#20;= &#20;pos;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;bool &#20;is_async &#20;= &#20;false;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(line.compare(p,&nbsp;5,&nbsp;&quot;async&quot;)&nbsp;==&nbsp;0&nbsp;&amp;&amp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(p&nbsp;+&nbsp;5&nbsp;&gt;=&nbsp;line.size()&nbsp;||<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::isspace(static_cast&lt;unsigned&nbsp;char&gt;(line[p&nbsp;+&nbsp;5]))))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_async&nbsp;=&nbsp;true;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p&nbsp;+=&nbsp;5;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(p&nbsp;&lt;&nbsp;line.size()&nbsp;&amp;&amp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::isspace(static_cast&lt;unsigned&nbsp;char&gt;(line[p])))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++p;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(line.compare(p, &#20;5, &#20;&quot;async&quot;) &#20;== &#20;0 &#20;&amp;&amp;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;(p &#20;+ &#20;5 &#20;&gt;= &#20;line.size() &#20;||<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::isspace(static_cast&lt;unsigned &#20;char&gt;(line[p &#20;+ &#20;5]))))<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;is_async &#20;= &#20;true;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;p &#20;+= &#20;5;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;while &#20;(p &#20;&lt; &#20;line.size() &#20;&amp;&amp;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::isspace(static_cast&lt;unsigned &#20;char&gt;(line[p])))<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;++p;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(line.compare(p,&nbsp;3,&nbsp;&quot;def&quot;)&nbsp;!=&nbsp;0&nbsp;||<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(p&nbsp;+&nbsp;3&nbsp;&lt;&nbsp;line.size()&nbsp;&amp;&amp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;!std::isspace(static_cast&lt;unsigned&nbsp;char&gt;(line[p&nbsp;+&nbsp;3]))))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(line.compare(p, &#20;3, &#20;&quot;def&quot;) &#20;!= &#20;0 &#20;||<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;(p &#20;+ &#20;3 &#20;&lt; &#20;line.size() &#20;&amp;&amp;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;!std::isspace(static_cast&lt;unsigned &#20;char&gt;(line[p &#20;+ &#20;3]))))<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;continue;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p&nbsp;+=&nbsp;3;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(p&nbsp;&lt;&nbsp;line.size()&nbsp;&amp;&amp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::isspace(static_cast&lt;unsigned&nbsp;char&gt;(line[p])))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++p;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;p &#20;+= &#20;3;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;while &#20;(p &#20;&lt; &#20;line.size() &#20;&amp;&amp;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::isspace(static_cast&lt;unsigned &#20;char&gt;(line[p])))<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;++p;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;name_start&nbsp;=&nbsp;p;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(p&nbsp;&lt;&nbsp;line.size()&nbsp;&amp;&amp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(std::isalnum(static_cast&lt;unsigned&nbsp;char&gt;(line[p]))&nbsp;||<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;line[p]&nbsp;==&nbsp;'_'))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++p;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::size_t &#20;name_start &#20;= &#20;p;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;while &#20;(p &#20;&lt; &#20;line.size() &#20;&amp;&amp;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;(std::isalnum(static_cast&lt;unsigned &#20;char&gt;(line[p])) &#20;||<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;line[p] &#20;== &#20;'_'))<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;++p;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(name_start&nbsp;==&nbsp;p)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(name_start &#20;== &#20;p)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;continue;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;name&nbsp;=&nbsp;line.substr(name_start,&nbsp;p&nbsp;-&nbsp;name_start);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(name&nbsp;!=&nbsp;method_name)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::string &#20;name &#20;= &#20;line.substr(name_start, &#20;p &#20;- &#20;name_start);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(name &#20;!= &#20;method_name)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;continue;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Нашли&nbsp;нужный&nbsp;метод<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;decl_start&nbsp;=&nbsp;i;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;Нашли &#20;нужный &#20;метод<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;int &#20;decl_start &#20;= &#20;i;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Захватываем&nbsp;декораторы&nbsp;над&nbsp;методом&nbsp;(тем&nbsp;же&nbsp;отступом)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(int&nbsp;j&nbsp;=&nbsp;i&nbsp;-&nbsp;1;&nbsp;j&nbsp;&gt;&nbsp;start;&nbsp;--j)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;&amp;pline&nbsp;=&nbsp;m_lines[static_cast&lt;std::size_t&gt;(j)];<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;ppos&nbsp;=&nbsp;first_code_pos(pline);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(ppos&nbsp;&gt;=&nbsp;pline.size())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;Захватываем &#20;декораторы &#20;над &#20;методом &#20;(тем &#20;же &#20;отступом)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;for &#20;(int &#20;j &#20;= &#20;i &#20;- &#20;1; &#20;j &#20;&gt; &#20;start; &#20;--j)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;const &#20;std::string &#20;&amp;pline &#20;= &#20;m_lines[static_cast&lt;std::size_t&gt;(j)];<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::size_t &#20;ppos &#20;= &#20;first_code_pos(pline);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(ppos &#20;&gt;= &#20;pline.size())<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;break;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;pind&nbsp;=&nbsp;calc_indent(pline);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(pind&nbsp;!=&nbsp;member_indent)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(pline[ppos]&nbsp;!=&nbsp;'@')<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;int &#20;pind &#20;= &#20;calc_indent(pline);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(pind &#20;!= &#20;member_indent)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;break;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(pline[ppos] &#20;!= &#20;'@')<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;break;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;decl_start&nbsp;=&nbsp;j;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;decl_start &#20;= &#20;j;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;last_body&nbsp;=&nbsp;i;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(int&nbsp;k&nbsp;=&nbsp;i&nbsp;+&nbsp;1;&nbsp;k&nbsp;&lt;=&nbsp;end&nbsp;&amp;&amp;&nbsp;k&nbsp;&lt;&nbsp;n;&nbsp;++k)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;&amp;l2&nbsp;=&nbsp;m_lines[static_cast&lt;std::size_t&gt;(k)];<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;pos2&nbsp;=&nbsp;first_code_pos(l2);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(pos2&nbsp;&gt;=&nbsp;l2.size())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;int &#20;last_body &#20;= &#20;i;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;for &#20;(int &#20;k &#20;= &#20;i &#20;+ &#20;1; &#20;k &#20;&lt;= &#20;end &#20;&amp;&amp; &#20;k &#20;&lt; &#20;n; &#20;++k)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;const &#20;std::string &#20;&amp;l2 &#20;= &#20;m_lines[static_cast&lt;std::size_t&gt;(k)];<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::size_t &#20;pos2 &#20;= &#20;first_code_pos(l2);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(pos2 &#20;&gt;= &#20;l2.size())<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;continue;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;ind2&nbsp;=&nbsp;calc_indent(l2);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;int &#20;ind2 &#20;= &#20;calc_indent(l2);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(ind2&nbsp;&lt;=&nbsp;class_indent)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;&nbsp;//&nbsp;вышли&nbsp;из&nbsp;класса<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(ind2&nbsp;&lt;&nbsp;member_indent)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;&nbsp;//&nbsp;вышли&nbsp;из&nbsp;метода<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(ind2 &#20;&lt;= &#20;class_indent)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;break; &#20;// &#20;вышли &#20;из &#20;класса<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(ind2 &#20;&lt; &#20;member_indent)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;break; &#20;// &#20;вышли &#20;из &#20;метода<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Новый&nbsp;метод&nbsp;/&nbsp;класс&nbsp;на&nbsp;том&nbsp;же&nbsp;уровне&nbsp;—&nbsp;заканчиваем&nbsp;текущий<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(ind2&nbsp;==&nbsp;member_indent)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;is_new_block&nbsp;=&nbsp;false;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;Новый &#20;метод &#20;/ &#20;класс &#20;на &#20;том &#20;же &#20;уровне &#20;— &#20;заканчиваем &#20;текущий<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(ind2 &#20;== &#20;member_indent)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;bool &#20;is_new_block &#20;= &#20;false;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(l2.compare(pos2,&nbsp;5,&nbsp;&quot;class&quot;)&nbsp;==&nbsp;0&nbsp;&amp;&amp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(pos2&nbsp;+&nbsp;5&nbsp;&gt;=&nbsp;l2.size()&nbsp;||<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::isspace(static_cast&lt;unsigned&nbsp;char&gt;(l2[pos2&nbsp;+&nbsp;5]))))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_new_block&nbsp;=&nbsp;true;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(l2.compare(pos2,&nbsp;3,&nbsp;&quot;def&quot;)&nbsp;==&nbsp;0&nbsp;&amp;&amp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(pos2&nbsp;+&nbsp;3&nbsp;&gt;=&nbsp;l2.size()&nbsp;||<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::isspace(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;static_cast&lt;unsigned&nbsp;char&gt;(l2[pos2&nbsp;+&nbsp;3]))))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_new_block&nbsp;=&nbsp;true;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;if&nbsp;(l2.compare(pos2,&nbsp;5,&nbsp;&quot;async&quot;)&nbsp;==&nbsp;0)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t&nbsp;q&nbsp;=&nbsp;pos2&nbsp;+&nbsp;5;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(q&nbsp;&lt;&nbsp;l2.size()&nbsp;&amp;&amp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::isspace(static_cast&lt;unsigned&nbsp;char&gt;(l2[q])))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++q;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(l2.compare(q,&nbsp;3,&nbsp;&quot;def&quot;)&nbsp;==&nbsp;0&nbsp;&amp;&amp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(q&nbsp;+&nbsp;3&nbsp;&gt;=&nbsp;l2.size()&nbsp;||<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::isspace(static_cast&lt;unsigned&nbsp;char&gt;(l2[q&nbsp;+&nbsp;3]))))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_new_block&nbsp;=&nbsp;true;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(l2.compare(pos2, &#20;5, &#20;&quot;class&quot;) &#20;== &#20;0 &#20;&amp;&amp;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;(pos2 &#20;+ &#20;5 &#20;&gt;= &#20;l2.size() &#20;||<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::isspace(static_cast&lt;unsigned &#20;char&gt;(l2[pos2 &#20;+ &#20;5]))))<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;is_new_block &#20;= &#20;true;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;else &#20;if &#20;(l2.compare(pos2, &#20;3, &#20;&quot;def&quot;) &#20;== &#20;0 &#20;&amp;&amp;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;(pos2 &#20;+ &#20;3 &#20;&gt;= &#20;l2.size() &#20;||<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::isspace(<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;static_cast&lt;unsigned &#20;char&gt;(l2[pos2 &#20;+ &#20;3]))))<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;is_new_block &#20;= &#20;true;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;else &#20;if &#20;(l2.compare(pos2, &#20;5, &#20;&quot;async&quot;) &#20;== &#20;0)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::size_t &#20;q &#20;= &#20;pos2 &#20;+ &#20;5;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;while &#20;(q &#20;&lt; &#20;l2.size() &#20;&amp;&amp;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::isspace(static_cast&lt;unsigned &#20;char&gt;(l2[q])))<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;++q;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(l2.compare(q, &#20;3, &#20;&quot;def&quot;) &#20;== &#20;0 &#20;&amp;&amp;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;(q &#20;+ &#20;3 &#20;&gt;= &#20;l2.size() &#20;||<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::isspace(static_cast&lt;unsigned &#20;char&gt;(l2[q &#20;+ &#20;3]))))<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;is_new_block &#20;= &#20;true;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(is_new_block)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(is_new_block)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;break;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;last_body&nbsp;=&nbsp;k;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;last_body &#20;= &#20;k;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.start_line&nbsp;=&nbsp;decl_start;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.end_line&nbsp;=&nbsp;last_body;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;true;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out.start_line &#20;= &#20;decl_start;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out.end_line &#20;= &#20;last_body;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;true;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;false;<br>
+ &#20; &#20; &#20; &#20;return &#20;false;<br>
 }<br>
 <!-- END SCAT CODE -->
 </body>

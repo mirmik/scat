@@ -6,66 +6,66 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-Окей,&nbsp;делаем&nbsp;компактную&nbsp;версию,&nbsp;но&nbsp;с&nbsp;описанием&nbsp;нового&nbsp;symbol&nbsp;API.&nbsp;Вот&nbsp;целиком&nbsp;новый&nbsp;`README.md`&nbsp;(без&nbsp;chunk_v2-патча,&nbsp;просто&nbsp;файл):<br>
+Окей, &#20;делаем &#20;компактную &#20;версию, &#20;но &#20;с &#20;описанием &#20;нового &#20;symbol &#20;API. &#20;Вот &#20;целиком &#20;новый &#20;`README.md` &#20;(без &#20;chunk_v2-патча, &#20;просто &#20;файл):<br>
 <br>
 ````markdown<br>
-#&nbsp;scat<br>
+# &#20;scat<br>
 <br>
-`scat`&nbsp;is&nbsp;a&nbsp;small&nbsp;cross-platform&nbsp;utility&nbsp;for:<br>
+`scat` &#20;is &#20;a &#20;small &#20;cross-platform &#20;utility &#20;for:<br>
 <br>
-*&nbsp;printing&nbsp;multiple&nbsp;files&nbsp;with&nbsp;clear&nbsp;headers&nbsp;(for&nbsp;copy-paste&nbsp;into&nbsp;chats),<br>
-*&nbsp;listing&nbsp;files&nbsp;with&nbsp;sizes,<br>
-*&nbsp;applying&nbsp;structured&nbsp;patches&nbsp;(chunk_v2),<br>
-*&nbsp;replacing&nbsp;C++&nbsp;/&nbsp;Python&nbsp;classes&nbsp;and&nbsp;methods&nbsp;by&nbsp;name&nbsp;(symbol&nbsp;API).<br>
+* &#20;printing &#20;multiple &#20;files &#20;with &#20;clear &#20;headers &#20;(for &#20;copy-paste &#20;into &#20;chats),<br>
+* &#20;listing &#20;files &#20;with &#20;sizes,<br>
+* &#20;applying &#20;structured &#20;patches &#20;(chunk_v2),<br>
+* &#20;replacing &#20;C++ &#20;/ &#20;Python &#20;classes &#20;and &#20;methods &#20;by &#20;name &#20;(symbol &#20;API).<br>
 <br>
 ---<br>
 <br>
-##&nbsp;Basic&nbsp;usage<br>
+## &#20;Basic &#20;usage<br>
 <br>
-Print&nbsp;files:<br>
+Print &#20;files:<br>
 <br>
 ```bash<br>
-scat&nbsp;file1.cpp&nbsp;dir/file2.h<br>
-scat&nbsp;src&nbsp;-r&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;recursive<br>
-scat&nbsp;src&nbsp;-r&nbsp;--abs&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;absolute&nbsp;paths<br>
-scat&nbsp;src&nbsp;-r&nbsp;-l&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;list&nbsp;with&nbsp;sizes<br>
-scat&nbsp;src&nbsp;-r&nbsp;-l&nbsp;--sorted&nbsp;&nbsp;#&nbsp;list,&nbsp;sorted&nbsp;by&nbsp;size&nbsp;(descending)<br>
+scat &#20;file1.cpp &#20;dir/file2.h<br>
+scat &#20;src &#20;-r &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;# &#20;recursive<br>
+scat &#20;src &#20;-r &#20;--abs &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;# &#20;absolute &#20;paths<br>
+scat &#20;src &#20;-r &#20;-l &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;# &#20;list &#20;with &#20;sizes<br>
+scat &#20;src &#20;-r &#20;-l &#20;--sorted &#20; &#20;# &#20;list, &#20;sorted &#20;by &#20;size &#20;(descending)<br>
 ````<br>
 <br>
-Output&nbsp;looks&nbsp;like:<br>
+Output &#20;looks &#20;like:<br>
 <br>
 ```text<br>
-=====&nbsp;path/to/file.cpp&nbsp;=====<br>
-&lt;file&nbsp;content&gt;<br>
+===== &#20;path/to/file.cpp &#20;=====<br>
+&lt;file &#20;content&gt;<br>
 ```<br>
 <br>
-You&nbsp;can&nbsp;pipe&nbsp;into&nbsp;clipboard&nbsp;tools:<br>
+You &#20;can &#20;pipe &#20;into &#20;clipboard &#20;tools:<br>
 <br>
 ```bash<br>
-scat&nbsp;src&nbsp;-r&nbsp;|&nbsp;clip.exe&nbsp;&nbsp;&nbsp;#&nbsp;Windows&nbsp;/&nbsp;WSL<br>
-scat&nbsp;src&nbsp;-r&nbsp;|&nbsp;wl-copy&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;Linux&nbsp;/&nbsp;WSL<br>
+scat &#20;src &#20;-r &#20;| &#20;clip.exe &#20; &#20; &#20;# &#20;Windows &#20;/ &#20;WSL<br>
+scat &#20;src &#20;-r &#20;| &#20;wl-copy &#20; &#20; &#20; &#20;# &#20;Linux &#20;/ &#20;WSL<br>
 ```<br>
 <br>
 ---<br>
 <br>
-##&nbsp;Config&nbsp;file&nbsp;mode&nbsp;(`scat.txt`&nbsp;/&nbsp;`--config`)<br>
+## &#20;Config &#20;file &#20;mode &#20;(`scat.txt` &#20;/ &#20;`--config`)<br>
 <br>
-If&nbsp;you&nbsp;run&nbsp;`scat`&nbsp;**without&nbsp;positional&nbsp;arguments**,&nbsp;it&nbsp;reads&nbsp;rules&nbsp;from&nbsp;`scat.txt`&nbsp;in&nbsp;the&nbsp;current&nbsp;directory:<br>
+If &#20;you &#20;run &#20;`scat` &#20;**without &#20;positional &#20;arguments**, &#20;it &#20;reads &#20;rules &#20;from &#20;`scat.txt` &#20;in &#20;the &#20;current &#20;directory:<br>
 <br>
 ```bash<br>
-scat&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;uses&nbsp;scat.txt<br>
-scat&nbsp;--config&nbsp;myrules.txt<br>
+scat &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;# &#20;uses &#20;scat.txt<br>
+scat &#20;--config &#20;myrules.txt<br>
 ```<br>
 <br>
-Each&nbsp;non-empty&nbsp;line&nbsp;is&nbsp;a&nbsp;rule:<br>
+Each &#20;non-empty &#20;line &#20;is &#20;a &#20;rule:<br>
 <br>
-*&nbsp;include:&nbsp;`src/*`,&nbsp;`tests/**`,&nbsp;`CMakeLists.txt`<br>
-*&nbsp;exclude:&nbsp;starts&nbsp;with&nbsp;`!`,&nbsp;e.g.&nbsp;`!tests/doctest/**`<br>
+* &#20;include: &#20;`src/*`, &#20;`tests/**`, &#20;`CMakeLists.txt`<br>
+* &#20;exclude: &#20;starts &#20;with &#20;`!`, &#20;e.g. &#20;`!tests/doctest/**`<br>
 <br>
 Patterns:<br>
 <br>
-*&nbsp;`*`&nbsp;—&nbsp;match&nbsp;inside&nbsp;one&nbsp;directory<br>
-*&nbsp;`**`&nbsp;—&nbsp;recursive&nbsp;directory&nbsp;traversal<br>
+* &#20;`*` &#20;— &#20;match &#20;inside &#20;one &#20;directory<br>
+* &#20;`**` &#20;— &#20;recursive &#20;directory &#20;traversal<br>
 <br>
 Example:<br>
 <br>
@@ -77,9 +77,9 @@ CMakeLists.txt<br>
 scat.txt<br>
 ```<br>
 <br>
-###&nbsp;Project&nbsp;tree&nbsp;(`[TREE]`&nbsp;section)<br>
+### &#20;Project &#20;tree &#20;(`[TREE]` &#20;section)<br>
 <br>
-Optional&nbsp;second&nbsp;rule&nbsp;set&nbsp;used&nbsp;only&nbsp;for&nbsp;a&nbsp;tree&nbsp;view&nbsp;at&nbsp;the&nbsp;end:<br>
+Optional &#20;second &#20;rule &#20;set &#20;used &#20;only &#20;for &#20;a &#20;tree &#20;view &#20;at &#20;the &#20;end:<br>
 <br>
 ```text<br>
 src/*<br>
@@ -89,188 +89,188 @@ src/**<br>
 tests/**<br>
 ```<br>
 <br>
-Running&nbsp;`scat`&nbsp;will&nbsp;print&nbsp;files&nbsp;first,&nbsp;then:<br>
+Running &#20;`scat` &#20;will &#20;print &#20;files &#20;first, &#20;then:<br>
 <br>
 ```text<br>
-=====&nbsp;PROJECT&nbsp;TREE&nbsp;=====<br>
-├──&nbsp;src/...<br>
-└──&nbsp;tests/...<br>
+===== &#20;PROJECT &#20;TREE &#20;=====<br>
+├── &#20;src/...<br>
+└── &#20;tests/...<br>
 ========================<br>
 ```<br>
 <br>
 ---<br>
 <br>
-##&nbsp;Patch&nbsp;mode&nbsp;(chunk_v2)<br>
+## &#20;Patch &#20;mode &#20;(chunk_v2)<br>
 <br>
-`scat`&nbsp;can&nbsp;apply&nbsp;patches&nbsp;in&nbsp;the&nbsp;chunk_v2&nbsp;format.<br>
+`scat` &#20;can &#20;apply &#20;patches &#20;in &#20;the &#20;chunk_v2 &#20;format.<br>
 <br>
 ```bash<br>
-scat&nbsp;--apply&nbsp;patch.txt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;apply&nbsp;from&nbsp;file<br>
-wl-paste&nbsp;|&nbsp;scat&nbsp;--apply-stdin&nbsp;&nbsp;#&nbsp;apply&nbsp;from&nbsp;stdin<br>
+scat &#20;--apply &#20;patch.txt &#20; &#20; &#20; &#20; &#20; &#20;# &#20;apply &#20;from &#20;file<br>
+wl-paste &#20;| &#20;scat &#20;--apply-stdin &#20; &#20;# &#20;apply &#20;from &#20;stdin<br>
 ```<br>
 <br>
-Patch&nbsp;structure:<br>
+Patch &#20;structure:<br>
 <br>
 ```text<br>
-===&nbsp;file:&nbsp;path/to/file.cpp&nbsp;===<br>
----&nbsp;&lt;command&gt;&nbsp;[args...]<br>
-&lt;payload&nbsp;lines...&gt;<br>
+=== &#20;file: &#20;path/to/file.cpp &#20;===<br>
+--- &#20;&lt;command&gt; &#20;[args...]<br>
+&lt;payload &#20;lines...&gt;<br>
 =END=<br>
 ```<br>
 <br>
 Commands:<br>
 <br>
-*&nbsp;text-based:<br>
+* &#20;text-based:<br>
 <br>
-&nbsp;&nbsp;*&nbsp;`insert-after-text`<br>
-&nbsp;&nbsp;*&nbsp;`insert-before-text`<br>
-&nbsp;&nbsp;*&nbsp;`replace-text`<br>
-&nbsp;&nbsp;*&nbsp;`delete-text`<br>
-*&nbsp;file-level:<br>
+ &#20; &#20;* &#20;`insert-after-text`<br>
+ &#20; &#20;* &#20;`insert-before-text`<br>
+ &#20; &#20;* &#20;`replace-text`<br>
+ &#20; &#20;* &#20;`delete-text`<br>
+* &#20;file-level:<br>
 <br>
-&nbsp;&nbsp;*&nbsp;`create-file`<br>
-&nbsp;&nbsp;*&nbsp;`delete-file`<br>
-*&nbsp;symbol-based:<br>
+ &#20; &#20;* &#20;`create-file`<br>
+ &#20; &#20;* &#20;`delete-file`<br>
+* &#20;symbol-based:<br>
 <br>
-&nbsp;&nbsp;*&nbsp;`replace-cpp-class`<br>
-&nbsp;&nbsp;*&nbsp;`replace-cpp-method`<br>
-&nbsp;&nbsp;*&nbsp;`replace-py-class`<br>
-&nbsp;&nbsp;*&nbsp;`replace-py-method`<br>
+ &#20; &#20;* &#20;`replace-cpp-class`<br>
+ &#20; &#20;* &#20;`replace-cpp-method`<br>
+ &#20; &#20;* &#20;`replace-py-class`<br>
+ &#20; &#20;* &#20;`replace-py-method`<br>
 <br>
-Text&nbsp;commands&nbsp;support:<br>
+Text &#20;commands &#20;support:<br>
 <br>
-*&nbsp;legacy&nbsp;format:&nbsp;`marker`&nbsp;then&nbsp;`---`&nbsp;then&nbsp;payload<br>
-*&nbsp;YAML-style&nbsp;context&nbsp;with&nbsp;`BEFORE:`,&nbsp;`MARKER:`,&nbsp;`AFTER:`&nbsp;blocks&nbsp;(strict&nbsp;match&nbsp;by&nbsp;trimmed&nbsp;lines)<br>
+* &#20;legacy &#20;format: &#20;`marker` &#20;then &#20;`---` &#20;then &#20;payload<br>
+* &#20;YAML-style &#20;context &#20;with &#20;`BEFORE:`, &#20;`MARKER:`, &#20;`AFTER:` &#20;blocks &#20;(strict &#20;match &#20;by &#20;trimmed &#20;lines)<br>
 <br>
-Patch&nbsp;application&nbsp;is&nbsp;transactional:&nbsp;if&nbsp;any&nbsp;section&nbsp;fails&nbsp;(marker&nbsp;not&nbsp;found,&nbsp;ambiguous,&nbsp;symbol&nbsp;not&nbsp;found,&nbsp;I/O&nbsp;error),&nbsp;all&nbsp;touched&nbsp;files&nbsp;are&nbsp;rolled&nbsp;back.<br>
+Patch &#20;application &#20;is &#20;transactional: &#20;if &#20;any &#20;section &#20;fails &#20;(marker &#20;not &#20;found, &#20;ambiguous, &#20;symbol &#20;not &#20;found, &#20;I/O &#20;error), &#20;all &#20;touched &#20;files &#20;are &#20;rolled &#20;back.<br>
 <br>
 ---<br>
 <br>
-##&nbsp;Symbol&nbsp;API&nbsp;(C++&nbsp;/&nbsp;Python)<br>
+## &#20;Symbol &#20;API &#20;(C++ &#20;/ &#20;Python)<br>
 <br>
-Symbol&nbsp;commands&nbsp;work&nbsp;**without**&nbsp;raw&nbsp;text&nbsp;markers:&nbsp;they&nbsp;parse&nbsp;the&nbsp;file&nbsp;and&nbsp;locate&nbsp;classes&nbsp;/&nbsp;methods.<br>
+Symbol &#20;commands &#20;work &#20;**without** &#20;raw &#20;text &#20;markers: &#20;they &#20;parse &#20;the &#20;file &#20;and &#20;locate &#20;classes &#20;/ &#20;methods.<br>
 <br>
-Available&nbsp;commands:<br>
+Available &#20;commands:<br>
 <br>
 ```text<br>
-replace-cpp-class&nbsp;&nbsp;&lt;ClassName&gt;<br>
-replace-cpp-method&nbsp;&lt;ClassName&gt;&nbsp;&lt;methodName&gt;<br>
-replace-cpp-method&nbsp;&lt;ClassName::methodName&gt;<br>
+replace-cpp-class &#20; &#20;&lt;ClassName&gt;<br>
+replace-cpp-method &#20;&lt;ClassName&gt; &#20;&lt;methodName&gt;<br>
+replace-cpp-method &#20;&lt;ClassName::methodName&gt;<br>
 <br>
-replace-py-class&nbsp;&nbsp;&nbsp;&lt;ClassName&gt;<br>
-replace-py-method&nbsp;&nbsp;&lt;ClassName&gt;&nbsp;&lt;methodName&gt;<br>
-replace-py-method&nbsp;&nbsp;&lt;ClassName.methodName&gt;<br>
+replace-py-class &#20; &#20; &#20;&lt;ClassName&gt;<br>
+replace-py-method &#20; &#20;&lt;ClassName&gt; &#20;&lt;methodName&gt;<br>
+replace-py-method &#20; &#20;&lt;ClassName.methodName&gt;<br>
 ```<br>
 <br>
-###&nbsp;C++&nbsp;examples<br>
+### &#20;C++ &#20;examples<br>
 <br>
-Replace&nbsp;a&nbsp;whole&nbsp;class:<br>
+Replace &#20;a &#20;whole &#20;class:<br>
 <br>
 ```text<br>
-===&nbsp;file:&nbsp;src/TEST.h&nbsp;===<br>
----&nbsp;replace-cpp-class&nbsp;TargetClass<br>
-class&nbsp;TargetClass<br>
+=== &#20;file: &#20;src/TEST.h &#20;===<br>
+--- &#20;replace-cpp-class &#20;TargetClass<br>
+class &#20;TargetClass<br>
 {<br>
-&nbsp;&nbsp;public:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;TargetClass()&nbsp;=&nbsp;default;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;~TargetClass()&nbsp;=&nbsp;default;<br>
+ &#20; &#20;public:<br>
+ &#20; &#20; &#20; &#20;TargetClass() &#20;= &#20;default;<br>
+ &#20; &#20; &#20; &#20;~TargetClass() &#20;= &#20;default;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;value()&nbsp;const&nbsp;{&nbsp;return&nbsp;member_variable_;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;void&nbsp;set_value(int&nbsp;v)&nbsp;{&nbsp;member_variable_&nbsp;=&nbsp;v;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;int &#20;value() &#20;const &#20;{ &#20;return &#20;member_variable_; &#20;}<br>
+ &#20; &#20; &#20; &#20;void &#20;set_value(int &#20;v) &#20;{ &#20;member_variable_ &#20;= &#20;v; &#20;}<br>
 <br>
-&nbsp;&nbsp;private:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;member_variable_&nbsp;=&nbsp;0;<br>
+ &#20; &#20;private:<br>
+ &#20; &#20; &#20; &#20;int &#20;member_variable_ &#20;= &#20;0;<br>
 };<br>
 =END=<br>
 ```<br>
 <br>
-Replace&nbsp;a&nbsp;method&nbsp;inside&nbsp;a&nbsp;class:<br>
+Replace &#20;a &#20;method &#20;inside &#20;a &#20;class:<br>
 <br>
 ```text<br>
-===&nbsp;file:&nbsp;src/TEST.h&nbsp;===<br>
----&nbsp;replace-cpp-method&nbsp;ClassWithTargetMethod::TargetMethod<br>
-&nbsp;&nbsp;&nbsp;&nbsp;void&nbsp;TargetMethod()<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Updated&nbsp;implementation<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;member_variable_&nbsp;+=&nbsp;1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+=== &#20;file: &#20;src/TEST.h &#20;===<br>
+--- &#20;replace-cpp-method &#20;ClassWithTargetMethod::TargetMethod<br>
+ &#20; &#20; &#20; &#20;void &#20;TargetMethod()<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;Updated &#20;implementation<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;member_variable_ &#20;+= &#20;1;<br>
+ &#20; &#20; &#20; &#20;}<br>
 =END=<br>
 ```<br>
 <br>
-The&nbsp;C++&nbsp;finder:<br>
+The &#20;C++ &#20;finder:<br>
 <br>
-*&nbsp;skips&nbsp;comments,&nbsp;string&nbsp;/&nbsp;char&nbsp;literals&nbsp;and&nbsp;preprocessor&nbsp;lines,<br>
-*&nbsp;ignores&nbsp;forward&nbsp;declarations&nbsp;(`class&nbsp;Foo;`),<br>
-*&nbsp;replaces&nbsp;exactly&nbsp;the&nbsp;region&nbsp;of&nbsp;the&nbsp;target&nbsp;class&nbsp;/&nbsp;method.<br>
+* &#20;skips &#20;comments, &#20;string &#20;/ &#20;char &#20;literals &#20;and &#20;preprocessor &#20;lines,<br>
+* &#20;ignores &#20;forward &#20;declarations &#20;(`class &#20;Foo;`),<br>
+* &#20;replaces &#20;exactly &#20;the &#20;region &#20;of &#20;the &#20;target &#20;class &#20;/ &#20;method.<br>
 <br>
-###&nbsp;Python&nbsp;examples<br>
+### &#20;Python &#20;examples<br>
 <br>
-Replace&nbsp;a&nbsp;whole&nbsp;class:<br>
+Replace &#20;a &#20;whole &#20;class:<br>
 <br>
 ```text<br>
-===&nbsp;file:&nbsp;src/foo.py&nbsp;===<br>
----&nbsp;replace-py-class&nbsp;Foo<br>
-class&nbsp;Foo:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;def&nbsp;__init__(self):<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;self.x&nbsp;=&nbsp;2<br>
+=== &#20;file: &#20;src/foo.py &#20;===<br>
+--- &#20;replace-py-class &#20;Foo<br>
+class &#20;Foo:<br>
+ &#20; &#20; &#20; &#20;def &#20;__init__(self):<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;self.x &#20;= &#20;2<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;def&nbsp;answer(self):<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;42<br>
+ &#20; &#20; &#20; &#20;def &#20;answer(self):<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;42<br>
 =END=<br>
 ```<br>
 <br>
-Replace&nbsp;a&nbsp;method&nbsp;(sync&nbsp;or&nbsp;async)&nbsp;inside&nbsp;a&nbsp;class:<br>
+Replace &#20;a &#20;method &#20;(sync &#20;or &#20;async) &#20;inside &#20;a &#20;class:<br>
 <br>
 ```text<br>
-===&nbsp;file:&nbsp;src/weird.py&nbsp;===<br>
----&nbsp;replace-py-method&nbsp;Weird&nbsp;run<br>
-&nbsp;&nbsp;&nbsp;&nbsp;def&nbsp;run(self):<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;100<br>
+=== &#20;file: &#20;src/weird.py &#20;===<br>
+--- &#20;replace-py-method &#20;Weird &#20;run<br>
+ &#20; &#20; &#20; &#20;def &#20;run(self):<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;100<br>
 =END=<br>
 ```<br>
 <br>
 ```text<br>
-===&nbsp;file:&nbsp;src/async_foo.py&nbsp;===<br>
----&nbsp;replace-py-method&nbsp;Foo.bar<br>
-&nbsp;&nbsp;&nbsp;&nbsp;async&nbsp;def&nbsp;bar(self):<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;2<br>
+=== &#20;file: &#20;src/async_foo.py &#20;===<br>
+--- &#20;replace-py-method &#20;Foo.bar<br>
+ &#20; &#20; &#20; &#20;async &#20;def &#20;bar(self):<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;2<br>
 =END=<br>
 ```<br>
 <br>
-The&nbsp;Python&nbsp;finder:<br>
+The &#20;Python &#20;finder:<br>
 <br>
-*&nbsp;uses&nbsp;indentation&nbsp;to&nbsp;determine&nbsp;class&nbsp;/&nbsp;method&nbsp;bodies,<br>
-*&nbsp;includes&nbsp;decorators&nbsp;(`@something`)&nbsp;above&nbsp;the&nbsp;method,<br>
-*&nbsp;replaces&nbsp;the&nbsp;whole&nbsp;method&nbsp;body&nbsp;region.<br>
+* &#20;uses &#20;indentation &#20;to &#20;determine &#20;class &#20;/ &#20;method &#20;bodies,<br>
+* &#20;includes &#20;decorators &#20;(`@something`) &#20;above &#20;the &#20;method,<br>
+* &#20;replaces &#20;the &#20;whole &#20;method &#20;body &#20;region.<br>
 <br>
 ---<br>
 <br>
-##&nbsp;Build<br>
+## &#20;Build<br>
 <br>
-Linux&nbsp;/&nbsp;macOS:<br>
+Linux &#20;/ &#20;macOS:<br>
 <br>
 ```bash<br>
-mkdir&nbsp;build&nbsp;&amp;&amp;&nbsp;cd&nbsp;build<br>
-cmake&nbsp;-DCMAKE_BUILD_TYPE=Release&nbsp;..<br>
-cmake&nbsp;--build&nbsp;.<br>
-cmake&nbsp;--install&nbsp;.<br>
+mkdir &#20;build &#20;&amp;&amp; &#20;cd &#20;build<br>
+cmake &#20;-DCMAKE_BUILD_TYPE=Release &#20;..<br>
+cmake &#20;--build &#20;.<br>
+cmake &#20;--install &#20;.<br>
 ```<br>
 <br>
-Windows&nbsp;(Visual&nbsp;Studio&nbsp;generator):<br>
+Windows &#20;(Visual &#20;Studio &#20;generator):<br>
 <br>
 ```powershell<br>
-mkdir&nbsp;build<br>
-cd&nbsp;build<br>
-cmake&nbsp;..<br>
-cmake&nbsp;--build&nbsp;.&nbsp;--config&nbsp;Release<br>
-cmake&nbsp;--install&nbsp;.&nbsp;--config&nbsp;Release<br>
+mkdir &#20;build<br>
+cd &#20;build<br>
+cmake &#20;..<br>
+cmake &#20;--build &#20;. &#20;--config &#20;Release<br>
+cmake &#20;--install &#20;. &#20;--config &#20;Release<br>
 ```<br>
 <br>
 ---<br>
 <br>
-##&nbsp;License<br>
+## &#20;License<br>
 <br>
-Do&nbsp;whatever&nbsp;you&nbsp;want&nbsp;with&nbsp;it.<br>
+Do &#20;whatever &#20;you &#20;want &#20;with &#20;it.<br>
 <!-- END SCAT CODE -->
 </body>
 </html>

@@ -6,93 +6,93 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-cmake_minimum_required(VERSION&nbsp;3.12)<br>
-project(scat&nbsp;VERSION&nbsp;1.0&nbsp;LANGUAGES&nbsp;CXX)<br>
+cmake_minimum_required(VERSION &#20;3.12)<br>
+project(scat &#20;VERSION &#20;1.0 &#20;LANGUAGES &#20;CXX)<br>
 <br>
-set(CMAKE_CXX_STANDARD&nbsp;17)<br>
-set(CMAKE_CXX_STANDARD_REQUIRED&nbsp;ON)<br>
+set(CMAKE_CXX_STANDARD &#20;17)<br>
+set(CMAKE_CXX_STANDARD_REQUIRED &#20;ON)<br>
 <br>
-#&nbsp;-----------------------------------------------------------------------------<br>
-#&nbsp;Windows&nbsp;install&nbsp;prefix<br>
-#&nbsp;-----------------------------------------------------------------------------<br>
-if&nbsp;(WIN32&nbsp;AND&nbsp;CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;set(CMAKE_INSTALL_PREFIX&nbsp;&quot;$ENV{LOCALAPPDATA}/Programs/scat&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CACHE&nbsp;PATH&nbsp;&quot;Install&nbsp;path&quot;&nbsp;FORCE)<br>
+# &#20;-----------------------------------------------------------------------------<br>
+# &#20;Windows &#20;install &#20;prefix<br>
+# &#20;-----------------------------------------------------------------------------<br>
+if &#20;(WIN32 &#20;AND &#20;CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)<br>
+ &#20; &#20; &#20; &#20;set(CMAKE_INSTALL_PREFIX &#20;&quot;$ENV{LOCALAPPDATA}/Programs/scat&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;CACHE &#20;PATH &#20;&quot;Install &#20;path&quot; &#20;FORCE)<br>
 endif()<br>
 <br>
-#&nbsp;-----------------------------------------------------------------------------<br>
-#&nbsp;Gather&nbsp;sources&nbsp;with&nbsp;auto-update<br>
-#&nbsp;-----------------------------------------------------------------------------<br>
-file(GLOB&nbsp;SCAT_SOURCES<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CONFIGURE_DEPENDS<br>
-&nbsp;&nbsp;&nbsp;&nbsp;${CMAKE_SOURCE_DIR}/src/*.cpp<br>
+# &#20;-----------------------------------------------------------------------------<br>
+# &#20;Gather &#20;sources &#20;with &#20;auto-update<br>
+# &#20;-----------------------------------------------------------------------------<br>
+file(GLOB &#20;SCAT_SOURCES<br>
+ &#20; &#20; &#20; &#20;CONFIGURE_DEPENDS<br>
+ &#20; &#20; &#20; &#20;${CMAKE_SOURCE_DIR}/src/*.cpp<br>
 )<br>
 <br>
-#&nbsp;main.cpp&nbsp;не&nbsp;должен&nbsp;входить&nbsp;в&nbsp;логику&nbsp;тестов<br>
-list(REMOVE_ITEM&nbsp;SCAT_SOURCES&nbsp;&quot;${CMAKE_SOURCE_DIR}/src/main.cpp&quot;)<br>
+# &#20;main.cpp &#20;не &#20;должен &#20;входить &#20;в &#20;логику &#20;тестов<br>
+list(REMOVE_ITEM &#20;SCAT_SOURCES &#20;&quot;${CMAKE_SOURCE_DIR}/src/main.cpp&quot;)<br>
 <br>
-file(GLOB&nbsp;SCAT_HEADERS<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CONFIGURE_DEPENDS<br>
-&nbsp;&nbsp;&nbsp;&nbsp;${CMAKE_SOURCE_DIR}/src/*.h<br>
+file(GLOB &#20;SCAT_HEADERS<br>
+ &#20; &#20; &#20; &#20;CONFIGURE_DEPENDS<br>
+ &#20; &#20; &#20; &#20;${CMAKE_SOURCE_DIR}/src/*.h<br>
 )<br>
 <br>
-#&nbsp;-----------------------------------------------------------------------------<br>
-#&nbsp;Executable<br>
-#&nbsp;-----------------------------------------------------------------------------<br>
+# &#20;-----------------------------------------------------------------------------<br>
+# &#20;Executable<br>
+# &#20;-----------------------------------------------------------------------------<br>
 add_executable(scat<br>
-&nbsp;&nbsp;&nbsp;&nbsp;src/main.cpp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;тонкая&nbsp;обёртка<br>
-&nbsp;&nbsp;&nbsp;&nbsp;${SCAT_SOURCES}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;scat.cpp<br>
-&nbsp;&nbsp;&nbsp;&nbsp;${SCAT_HEADERS}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;scat.h<br>
+ &#20; &#20; &#20; &#20;src/main.cpp &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;# &#20;тонкая &#20;обёртка<br>
+ &#20; &#20; &#20; &#20;${SCAT_SOURCES} &#20; &#20; &#20; &#20; &#20;# &#20;scat.cpp<br>
+ &#20; &#20; &#20; &#20;${SCAT_HEADERS} &#20; &#20; &#20; &#20; &#20;# &#20;scat.h<br>
 )<br>
 <br>
-#&nbsp;std::filesystem&nbsp;fix&nbsp;for&nbsp;MinGW<br>
+# &#20;std::filesystem &#20;fix &#20;for &#20;MinGW<br>
 include(CheckCXXCompilerFlag)<br>
-check_cxx_compiler_flag(&quot;-lstdc++fs&quot;&nbsp;HAS_LIBSTDCXXFS)<br>
-if&nbsp;(HAS_LIBSTDCXXFS)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;target_link_libraries(scat&nbsp;stdc++fs)<br>
+check_cxx_compiler_flag(&quot;-lstdc++fs&quot; &#20;HAS_LIBSTDCXXFS)<br>
+if &#20;(HAS_LIBSTDCXXFS)<br>
+ &#20; &#20; &#20; &#20;target_link_libraries(scat &#20;stdc++fs)<br>
 endif()<br>
 <br>
-#&nbsp;-----------------------------------------------------------------------------<br>
-#&nbsp;Install&nbsp;executable<br>
-#&nbsp;-----------------------------------------------------------------------------<br>
-install(TARGETS&nbsp;scat<br>
-&nbsp;&nbsp;&nbsp;&nbsp;RUNTIME&nbsp;DESTINATION&nbsp;bin<br>
+# &#20;-----------------------------------------------------------------------------<br>
+# &#20;Install &#20;executable<br>
+# &#20;-----------------------------------------------------------------------------<br>
+install(TARGETS &#20;scat<br>
+ &#20; &#20; &#20; &#20;RUNTIME &#20;DESTINATION &#20;bin<br>
 )<br>
 <br>
-#&nbsp;-----------------------------------------------------------------------------<br>
-#&nbsp;Windows&nbsp;shim&nbsp;(scat.cmd&nbsp;in&nbsp;WindowsApps)<br>
-#&nbsp;-----------------------------------------------------------------------------<br>
-if&nbsp;(WIN32)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;install(CODE&nbsp;&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;set(wapps&nbsp;\&quot;\$ENV{LOCALAPPDATA}/Microsoft/WindowsApps\&quot;)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;file(MAKE_DIRECTORY&nbsp;\&quot;\${wapps}\&quot;)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;set(scat_path&nbsp;\&quot;\$ENV{LOCALAPPDATA}/Programs/scat/bin/scat.exe\&quot;)<br>
-if(NOT&nbsp;EXISTS&nbsp;\&quot;\${wapps}/scat.cmd\&quot;)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;file(WRITE&nbsp;\&quot;\${wapps}/scat.cmd\&quot;&nbsp;\&quot;@echo&nbsp;off\n\\\&quot;\${scat_path}\\\&quot;&nbsp;%*\&quot;)<br>
+# &#20;-----------------------------------------------------------------------------<br>
+# &#20;Windows &#20;shim &#20;(scat.cmd &#20;in &#20;WindowsApps)<br>
+# &#20;-----------------------------------------------------------------------------<br>
+if &#20;(WIN32)<br>
+ &#20; &#20; &#20; &#20;install(CODE &#20;&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;set(wapps &#20;\&quot;\$ENV{LOCALAPPDATA}/Microsoft/WindowsApps\&quot;)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;file(MAKE_DIRECTORY &#20;\&quot;\${wapps}\&quot;)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;set(scat_path &#20;\&quot;\$ENV{LOCALAPPDATA}/Programs/scat/bin/scat.exe\&quot;)<br>
+if(NOT &#20;EXISTS &#20;\&quot;\${wapps}/scat.cmd\&quot;)<br>
+ &#20; &#20; &#20; &#20;file(WRITE &#20;\&quot;\${wapps}/scat.cmd\&quot; &#20;\&quot;@echo &#20;off\n\\\&quot;\${scat_path}\\\&quot; &#20;%*\&quot;)<br>
 endif()<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&quot;)<br>
+ &#20; &#20; &#20; &#20;&quot;)<br>
 endif()<br>
 <br>
-#&nbsp;-----------------------------------------------------------------------------<br>
-#&nbsp;Tests<br>
-#&nbsp;-----------------------------------------------------------------------------<br>
+# &#20;-----------------------------------------------------------------------------<br>
+# &#20;Tests<br>
+# &#20;-----------------------------------------------------------------------------<br>
 enable_testing()<br>
 <br>
-file(GLOB&nbsp;SCAT_TESTS&nbsp;CONFIGURE_DEPENDS&nbsp;tests/*)<br>
+file(GLOB &#20;SCAT_TESTS &#20;CONFIGURE_DEPENDS &#20;tests/*)<br>
 <br>
 add_executable(scat_tests<br>
-&nbsp;&nbsp;&nbsp;&nbsp;${SCAT_TESTS}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;${SCAT_SOURCES}&nbsp;&nbsp;&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;${SCAT_HEADERS}&nbsp;&nbsp;&nbsp;<br>
+ &#20; &#20; &#20; &#20;${SCAT_TESTS}<br>
+ &#20; &#20; &#20; &#20;${SCAT_SOURCES} &#20; &#20; &#20;<br>
+ &#20; &#20; &#20; &#20;${SCAT_HEADERS} &#20; &#20; &#20;<br>
 )<br>
 <br>
-target_include_directories(scat_tests&nbsp;PRIVATE&nbsp;src&nbsp;tests)<br>
+target_include_directories(scat_tests &#20;PRIVATE &#20;src &#20;tests)<br>
 <br>
-if&nbsp;(WIN32)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;target_link_libraries(scat_tests&nbsp;ws2_32)<br>
+if &#20;(WIN32)<br>
+ &#20; &#20; &#20; &#20;target_link_libraries(scat_tests &#20;ws2_32)<br>
 endif()<br>
 <br>
-add_test(NAME&nbsp;scat_tests&nbsp;COMMAND&nbsp;scat_tests)<br>
+add_test(NAME &#20;scat_tests &#20;COMMAND &#20;scat_tests)<br>
 <!-- END SCAT CODE -->
 </body>
 </html>

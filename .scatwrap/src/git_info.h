@@ -6,34 +6,34 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#pragma&nbsp;once<br>
+#pragma &#20;once<br>
 <br>
-#include&nbsp;&lt;string&gt;<br>
+#include &#20;&lt;string&gt;<br>
 <br>
-struct&nbsp;GitInfo<br>
+struct &#20;GitInfo<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;commit;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;remote;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;has_commit&nbsp;=&nbsp;false;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;has_remote&nbsp;=&nbsp;false;<br>
+ &#20; &#20; &#20; &#20;std::string &#20;commit;<br>
+ &#20; &#20; &#20; &#20;std::string &#20;remote;<br>
+ &#20; &#20; &#20; &#20;bool &#20;has_commit &#20;= &#20;false;<br>
+ &#20; &#20; &#20; &#20;bool &#20;has_remote &#20;= &#20;false;<br>
 };<br>
 <br>
-struct&nbsp;GitHubInfo<br>
+struct &#20;GitHubInfo<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;user;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;repo;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;commit;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;ok&nbsp;=&nbsp;false;<br>
+ &#20; &#20; &#20; &#20;std::string &#20;user;<br>
+ &#20; &#20; &#20; &#20;std::string &#20;repo;<br>
+ &#20; &#20; &#20; &#20;std::string &#20;commit;<br>
+ &#20; &#20; &#20; &#20;bool &#20;ok &#20;= &#20;false;<br>
 };<br>
 <br>
-//&nbsp;Tries&nbsp;to&nbsp;detect&nbsp;git&nbsp;commit&nbsp;hash&nbsp;and&nbsp;remote&nbsp;origin&nbsp;URL<br>
-GitInfo&nbsp;detect_git_info();<br>
-bool&nbsp;parse_github_remote(const&nbsp;std::string&nbsp;&amp;remote,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;&amp;user,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;&amp;repo);<br>
+// &#20;Tries &#20;to &#20;detect &#20;git &#20;commit &#20;hash &#20;and &#20;remote &#20;origin &#20;URL<br>
+GitInfo &#20;detect_git_info();<br>
+bool &#20;parse_github_remote(const &#20;std::string &#20;&amp;remote,<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::string &#20;&amp;user,<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::string &#20;&amp;repo);<br>
 <br>
-GitHubInfo&nbsp;detect_github_info();<br>
-std::string&nbsp;detect_git_dir();&nbsp;//&nbsp;NEW<br>
+GitHubInfo &#20;detect_github_info();<br>
+std::string &#20;detect_git_dir(); &#20;// &#20;NEW<br>
 <!-- END SCAT CODE -->
 </body>
 </html>

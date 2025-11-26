@@ -6,81 +6,81 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#include&nbsp;&quot;parser.h&quot;<br>
-#include&nbsp;&quot;rules.h&quot;<br>
-#include&nbsp;&lt;cctype&gt;<br>
-#include&nbsp;&lt;fstream&gt;<br>
-#include&nbsp;&lt;stdexcept&gt;<br>
+#include &#20;&quot;parser.h&quot;<br>
+#include &#20;&quot;rules.h&quot;<br>
+#include &#20;&lt;cctype&gt;<br>
+#include &#20;&lt;fstream&gt;<br>
+#include &#20;&lt;stdexcept&gt;<br>
 <br>
-namespace&nbsp;fs&nbsp;=&nbsp;std::filesystem;<br>
+namespace &#20;fs &#20;= &#20;std::filesystem;<br>
 <br>
-static&nbsp;inline&nbsp;void&nbsp;trim(std::string&nbsp;&amp;s)<br>
+static &#20;inline &#20;void &#20;trim(std::string &#20;&amp;s)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;size_t&nbsp;b&nbsp;=&nbsp;s.find_first_not_of(&quot;&nbsp;\t\r\n&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(b&nbsp;==&nbsp;std::string::npos)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s.clear();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;size_t&nbsp;e&nbsp;=&nbsp;s.find_last_not_of(&quot;&nbsp;\t\r\n&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;s&nbsp;=&nbsp;s.substr(b,&nbsp;e&nbsp;-&nbsp;b&nbsp;+&nbsp;1);<br>
+ &#20; &#20; &#20; &#20;size_t &#20;b &#20;= &#20;s.find_first_not_of(&quot; &#20;\t\r\n&quot;);<br>
+ &#20; &#20; &#20; &#20;if &#20;(b &#20;== &#20;std::string::npos)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;s.clear();<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return;<br>
+ &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20;size_t &#20;e &#20;= &#20;s.find_last_not_of(&quot; &#20;\t\r\n&quot;);<br>
+ &#20; &#20; &#20; &#20;s &#20;= &#20;s.substr(b, &#20;e &#20;- &#20;b &#20;+ &#20;1);<br>
 }<br>
 <br>
-Config&nbsp;parse_config(const&nbsp;fs::path&nbsp;&amp;path)<br>
+Config &#20;parse_config(const &#20;fs::path &#20;&amp;path)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Config&nbsp;cfg;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;enum&nbsp;Section<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TEXT_RULES,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TREE_RULES,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MAPFORMAT_TEXT<br>
-&nbsp;&nbsp;&nbsp;&nbsp;};<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Section&nbsp;current&nbsp;=&nbsp;TEXT_RULES;<br>
+ &#20; &#20; &#20; &#20;Config &#20;cfg;<br>
+ &#20; &#20; &#20; &#20;enum &#20;Section<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;TEXT_RULES,<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;TREE_RULES,<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;MAPFORMAT_TEXT<br>
+ &#20; &#20; &#20; &#20;};<br>
+ &#20; &#20; &#20; &#20;Section &#20;current &#20;= &#20;TEXT_RULES;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::ifstream&nbsp;in(path);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!in.is_open())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw&nbsp;std::runtime_error(&quot;Failed&nbsp;to&nbsp;open&nbsp;config&nbsp;file:&nbsp;&quot;&nbsp;+<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;path.string());<br>
+ &#20; &#20; &#20; &#20;std::ifstream &#20;in(path);<br>
+ &#20; &#20; &#20; &#20;if &#20;(!in.is_open())<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;throw &#20;std::runtime_error(&quot;Failed &#20;to &#20;open &#20;config &#20;file: &#20;&quot; &#20;+<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;path.string());<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;raw_line;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(std::getline(in,&nbsp;raw_line))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;line&nbsp;=&nbsp;raw_line;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;trim(line);<br>
+ &#20; &#20; &#20; &#20;std::string &#20;raw_line;<br>
+ &#20; &#20; &#20; &#20;while &#20;(std::getline(in, &#20;raw_line))<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::string &#20;line &#20;= &#20;raw_line;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;trim(line);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(current&nbsp;==&nbsp;MAPFORMAT_TEXT)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Всё,&nbsp;что&nbsp;после&nbsp;[MAPFORMAT],&nbsp;идёт&nbsp;как&nbsp;есть&nbsp;(с&nbsp;сохранением&nbsp;пустых<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;строк&nbsp;и&nbsp;#)&nbsp;до&nbsp;конца&nbsp;файла&nbsp;(пока&nbsp;новых&nbsp;секций&nbsp;у&nbsp;нас&nbsp;нет).<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cfg.map_format&nbsp;+=&nbsp;raw_line;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cfg.map_format&nbsp;+=&nbsp;&quot;\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(current &#20;== &#20;MAPFORMAT_TEXT)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;Всё, &#20;что &#20;после &#20;[MAPFORMAT], &#20;идёт &#20;как &#20;есть &#20;(с &#20;сохранением &#20;пустых<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;строк &#20;и &#20;#) &#20;до &#20;конца &#20;файла &#20;(пока &#20;новых &#20;секций &#20;у &#20;нас &#20;нет).<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;cfg.map_format &#20;+= &#20;raw_line;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;cfg.map_format &#20;+= &#20;&quot;\n&quot;;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;continue;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;вне&nbsp;MAPFORMAT&nbsp;—&nbsp;старая&nbsp;логика<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(line.empty()&nbsp;||&nbsp;line[0]&nbsp;==&nbsp;'#')<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;вне &#20;MAPFORMAT &#20;— &#20;старая &#20;логика<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(line.empty() &#20;|| &#20;line[0] &#20;== &#20;'#')<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;continue;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(line&nbsp;==&nbsp;&quot;[TREE]&quot;)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;current&nbsp;=&nbsp;TREE_RULES;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(line&nbsp;==&nbsp;&quot;[MAPFORMAT]&quot;)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;current&nbsp;=&nbsp;MAPFORMAT_TEXT;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(line &#20;== &#20;&quot;[TREE]&quot;)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;current &#20;= &#20;TREE_RULES;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;continue;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(line &#20;== &#20;&quot;[MAPFORMAT]&quot;)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;current &#20;= &#20;MAPFORMAT_TEXT;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;continue;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Rule&nbsp;r&nbsp;=&nbsp;Rule::from_string(line);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;Rule &#20;r &#20;= &#20;Rule::from_string(line);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(current&nbsp;==&nbsp;TEXT_RULES)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cfg.text_rules.push_back(r);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cfg.tree_rules.push_back(r);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(current &#20;== &#20;TEXT_RULES)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;cfg.text_rules.push_back(r);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;else<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;cfg.tree_rules.push_back(r);<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;cfg;<br>
+ &#20; &#20; &#20; &#20;return &#20;cfg;<br>
 }<br>
 <!-- END SCAT CODE -->
 </body>

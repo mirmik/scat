@@ -6,151 +6,151 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#include&nbsp;&quot;doctest/doctest.h&quot;<br>
-#include&nbsp;&quot;symbols.h&quot;<br>
+#include &#20;&quot;doctest/doctest.h&quot;<br>
+#include &#20;&quot;symbols.h&quot;<br>
 <br>
-#include&nbsp;&lt;string&gt;<br>
+#include &#20;&lt;string&gt;<br>
 <br>
-TEST_CASE(&quot;PythonSymbolFinder:&nbsp;simple&nbsp;class&nbsp;and&nbsp;methods&quot;)<br>
+TEST_CASE(&quot;PythonSymbolFinder: &#20;simple &#20;class &#20;and &#20;methods&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;src&nbsp;=&nbsp;&quot;class&nbsp;Foo:\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;0<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;def&nbsp;bar(self):\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;1<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pass\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;2<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;3<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;def&nbsp;baz(self,&nbsp;x):\n&quot;&nbsp;//&nbsp;4<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;x&nbsp;+&nbsp;1\n&quot;;&nbsp;//&nbsp;5<br>
+ &#20; &#20; &#20; &#20;std::string &#20;src &#20;= &#20;&quot;class &#20;Foo:\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;0<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;def &#20;bar(self):\n&quot; &#20; &#20; &#20; &#20;// &#20;1<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;pass\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;2<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;3<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;def &#20;baz(self, &#20;x):\n&quot; &#20;// &#20;4<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;x &#20;+ &#20;1\n&quot;; &#20;// &#20;5<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;PythonSymbolFinder&nbsp;finder(src);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;r_class;<br>
+ &#20; &#20; &#20; &#20;PythonSymbolFinder &#20;finder(src);<br>
+ &#20; &#20; &#20; &#20;Region &#20;r_class;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(finder.find_class(&quot;Foo&quot;,&nbsp;r_class));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r_class.start_line&nbsp;==&nbsp;0);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r_class.end_line&nbsp;==&nbsp;5);<br>
+ &#20; &#20; &#20; &#20;CHECK(finder.find_class(&quot;Foo&quot;, &#20;r_class));<br>
+ &#20; &#20; &#20; &#20;CHECK(r_class.start_line &#20;== &#20;0);<br>
+ &#20; &#20; &#20; &#20;CHECK(r_class.end_line &#20;== &#20;5);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;r_bar;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(finder.find_method(&quot;Foo&quot;,&nbsp;&quot;bar&quot;,&nbsp;r_bar));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r_bar.start_line&nbsp;==&nbsp;1);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r_bar.end_line&nbsp;==&nbsp;2);<br>
+ &#20; &#20; &#20; &#20;Region &#20;r_bar;<br>
+ &#20; &#20; &#20; &#20;CHECK(finder.find_method(&quot;Foo&quot;, &#20;&quot;bar&quot;, &#20;r_bar));<br>
+ &#20; &#20; &#20; &#20;CHECK(r_bar.start_line &#20;== &#20;1);<br>
+ &#20; &#20; &#20; &#20;CHECK(r_bar.end_line &#20;== &#20;2);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;r_baz;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(finder.find_method(&quot;Foo&quot;,&nbsp;&quot;baz&quot;,&nbsp;r_baz));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r_baz.start_line&nbsp;==&nbsp;4);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r_baz.end_line&nbsp;==&nbsp;5);<br>
+ &#20; &#20; &#20; &#20;Region &#20;r_baz;<br>
+ &#20; &#20; &#20; &#20;CHECK(finder.find_method(&quot;Foo&quot;, &#20;&quot;baz&quot;, &#20;r_baz));<br>
+ &#20; &#20; &#20; &#20;CHECK(r_baz.start_line &#20;== &#20;4);<br>
+ &#20; &#20; &#20; &#20;CHECK(r_baz.end_line &#20;== &#20;5);<br>
 }<br>
 <br>
-TEST_CASE(&quot;PythonSymbolFinder:&nbsp;ignores&nbsp;top-level&nbsp;functions&quot;)<br>
+TEST_CASE(&quot;PythonSymbolFinder: &#20;ignores &#20;top-level &#20;functions&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;src&nbsp;=&nbsp;&quot;def&nbsp;foo():\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;0<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;pass\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;1<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;2<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;class&nbsp;Foo:\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;3<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;def&nbsp;foo(self):\n&quot;&nbsp;//&nbsp;4<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pass\n&quot;;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;5<br>
+ &#20; &#20; &#20; &#20;std::string &#20;src &#20;= &#20;&quot;def &#20;foo():\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;0<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;pass\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;1<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;2<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;class &#20;Foo:\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;3<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;def &#20;foo(self):\n&quot; &#20;// &#20;4<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;pass\n&quot;; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;5<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;PythonSymbolFinder&nbsp;finder(src);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;r_class;<br>
+ &#20; &#20; &#20; &#20;PythonSymbolFinder &#20;finder(src);<br>
+ &#20; &#20; &#20; &#20;Region &#20;r_class;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(finder.find_class(&quot;Foo&quot;,&nbsp;r_class));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r_class.start_line&nbsp;==&nbsp;3);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r_class.end_line&nbsp;==&nbsp;5);<br>
+ &#20; &#20; &#20; &#20;CHECK(finder.find_class(&quot;Foo&quot;, &#20;r_class));<br>
+ &#20; &#20; &#20; &#20;CHECK(r_class.start_line &#20;== &#20;3);<br>
+ &#20; &#20; &#20; &#20;CHECK(r_class.end_line &#20;== &#20;5);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;r_method;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(finder.find_method(&quot;Foo&quot;,&nbsp;&quot;foo&quot;,&nbsp;r_method));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r_method.start_line&nbsp;==&nbsp;4);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r_method.end_line&nbsp;==&nbsp;5);<br>
+ &#20; &#20; &#20; &#20;Region &#20;r_method;<br>
+ &#20; &#20; &#20; &#20;CHECK(finder.find_method(&quot;Foo&quot;, &#20;&quot;foo&quot;, &#20;r_method));<br>
+ &#20; &#20; &#20; &#20;CHECK(r_method.start_line &#20;== &#20;4);<br>
+ &#20; &#20; &#20; &#20;CHECK(r_method.end_line &#20;== &#20;5);<br>
 }<br>
 <br>
-TEST_CASE(&quot;PythonSymbolFinder:&nbsp;decorated&nbsp;methods&quot;)<br>
+TEST_CASE(&quot;PythonSymbolFinder: &#20;decorated &#20;methods&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;src&nbsp;=&nbsp;&quot;class&nbsp;Foo:\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;0<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;@decorator\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;1<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;def&nbsp;bar(self):\n&quot;&nbsp;//&nbsp;2<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pass\n&quot;;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;3<br>
+ &#20; &#20; &#20; &#20;std::string &#20;src &#20;= &#20;&quot;class &#20;Foo:\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;0<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;@decorator\n&quot; &#20; &#20; &#20; &#20; &#20;// &#20;1<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;def &#20;bar(self):\n&quot; &#20;// &#20;2<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;pass\n&quot;; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;3<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;PythonSymbolFinder&nbsp;finder(src);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;r_method;<br>
+ &#20; &#20; &#20; &#20;PythonSymbolFinder &#20;finder(src);<br>
+ &#20; &#20; &#20; &#20;Region &#20;r_method;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(finder.find_method(&quot;Foo&quot;,&nbsp;&quot;bar&quot;,&nbsp;r_method));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r_method.start_line&nbsp;==&nbsp;1);&nbsp;//&nbsp;вместе&nbsp;с&nbsp;декоратором<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r_method.end_line&nbsp;==&nbsp;3);<br>
+ &#20; &#20; &#20; &#20;CHECK(finder.find_method(&quot;Foo&quot;, &#20;&quot;bar&quot;, &#20;r_method));<br>
+ &#20; &#20; &#20; &#20;CHECK(r_method.start_line &#20;== &#20;1); &#20;// &#20;вместе &#20;с &#20;декоратором<br>
+ &#20; &#20; &#20; &#20;CHECK(r_method.end_line &#20;== &#20;3);<br>
 }<br>
 <br>
-TEST_CASE(&quot;PythonSymbolFinder:&nbsp;nested&nbsp;class&nbsp;and&nbsp;methods&quot;)<br>
+TEST_CASE(&quot;PythonSymbolFinder: &#20;nested &#20;class &#20;and &#20;methods&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;src&nbsp;=&nbsp;&quot;class&nbsp;Outer:\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;0<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;def&nbsp;a(self):\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;1<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pass\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;2<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;class&nbsp;Inner:\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;3<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;def&nbsp;b(self):\n&quot;&nbsp;//&nbsp;4<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pass\n&quot;;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;5<br>
+ &#20; &#20; &#20; &#20;std::string &#20;src &#20;= &#20;&quot;class &#20;Outer:\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;0<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;def &#20;a(self):\n&quot; &#20; &#20; &#20; &#20; &#20;// &#20;1<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;pass\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;2<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;class &#20;Inner:\n&quot; &#20; &#20; &#20; &#20; &#20;// &#20;3<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;def &#20;b(self):\n&quot; &#20;// &#20;4<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;pass\n&quot;; &#20; &#20; &#20; &#20;// &#20;5<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;PythonSymbolFinder&nbsp;finder(src);<br>
+ &#20; &#20; &#20; &#20;PythonSymbolFinder &#20;finder(src);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;r_outer;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(finder.find_class(&quot;Outer&quot;,&nbsp;r_outer));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r_outer.start_line&nbsp;==&nbsp;0);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r_outer.end_line&nbsp;==&nbsp;5);<br>
+ &#20; &#20; &#20; &#20;Region &#20;r_outer;<br>
+ &#20; &#20; &#20; &#20;CHECK(finder.find_class(&quot;Outer&quot;, &#20;r_outer));<br>
+ &#20; &#20; &#20; &#20;CHECK(r_outer.start_line &#20;== &#20;0);<br>
+ &#20; &#20; &#20; &#20;CHECK(r_outer.end_line &#20;== &#20;5);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;r_a;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(finder.find_method(&quot;Outer&quot;,&nbsp;&quot;a&quot;,&nbsp;r_a));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r_a.start_line&nbsp;==&nbsp;1);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r_a.end_line&nbsp;==&nbsp;2);<br>
+ &#20; &#20; &#20; &#20;Region &#20;r_a;<br>
+ &#20; &#20; &#20; &#20;CHECK(finder.find_method(&quot;Outer&quot;, &#20;&quot;a&quot;, &#20;r_a));<br>
+ &#20; &#20; &#20; &#20;CHECK(r_a.start_line &#20;== &#20;1);<br>
+ &#20; &#20; &#20; &#20;CHECK(r_a.end_line &#20;== &#20;2);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;r_inner_class;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(finder.find_class(&quot;Inner&quot;,&nbsp;r_inner_class));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r_inner_class.start_line&nbsp;==&nbsp;3);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r_inner_class.end_line&nbsp;==&nbsp;5);<br>
+ &#20; &#20; &#20; &#20;Region &#20;r_inner_class;<br>
+ &#20; &#20; &#20; &#20;CHECK(finder.find_class(&quot;Inner&quot;, &#20;r_inner_class));<br>
+ &#20; &#20; &#20; &#20;CHECK(r_inner_class.start_line &#20;== &#20;3);<br>
+ &#20; &#20; &#20; &#20;CHECK(r_inner_class.end_line &#20;== &#20;5);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;r_b;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(finder.find_method(&quot;Inner&quot;,&nbsp;&quot;b&quot;,&nbsp;r_b));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r_b.start_line&nbsp;==&nbsp;4);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r_b.end_line&nbsp;==&nbsp;5);<br>
+ &#20; &#20; &#20; &#20;Region &#20;r_b;<br>
+ &#20; &#20; &#20; &#20;CHECK(finder.find_method(&quot;Inner&quot;, &#20;&quot;b&quot;, &#20;r_b));<br>
+ &#20; &#20; &#20; &#20;CHECK(r_b.start_line &#20;== &#20;4);<br>
+ &#20; &#20; &#20; &#20;CHECK(r_b.end_line &#20;== &#20;5);<br>
 }<br>
 <br>
-TEST_CASE(&quot;PythonSymbolFinder:&nbsp;async&nbsp;methods&quot;)<br>
+TEST_CASE(&quot;PythonSymbolFinder: &#20;async &#20;methods&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;src&nbsp;=&nbsp;&quot;class&nbsp;Foo:\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;0<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;async&nbsp;def&nbsp;bar(self):\n&quot;&nbsp;&nbsp;&nbsp;//&nbsp;1<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;await&nbsp;something()\n&quot;;&nbsp;//&nbsp;2<br>
+ &#20; &#20; &#20; &#20;std::string &#20;src &#20;= &#20;&quot;class &#20;Foo:\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;0<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;async &#20;def &#20;bar(self):\n&quot; &#20; &#20; &#20;// &#20;1<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;await &#20;something()\n&quot;; &#20;// &#20;2<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;PythonSymbolFinder&nbsp;finder(src);<br>
+ &#20; &#20; &#20; &#20;PythonSymbolFinder &#20;finder(src);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;r_class;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(finder.find_class(&quot;Foo&quot;,&nbsp;r_class));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r_class.start_line&nbsp;==&nbsp;0);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r_class.end_line&nbsp;==&nbsp;2);<br>
+ &#20; &#20; &#20; &#20;Region &#20;r_class;<br>
+ &#20; &#20; &#20; &#20;CHECK(finder.find_class(&quot;Foo&quot;, &#20;r_class));<br>
+ &#20; &#20; &#20; &#20;CHECK(r_class.start_line &#20;== &#20;0);<br>
+ &#20; &#20; &#20; &#20;CHECK(r_class.end_line &#20;== &#20;2);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;r_bar;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(finder.find_method(&quot;Foo&quot;,&nbsp;&quot;bar&quot;,&nbsp;r_bar));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r_bar.start_line&nbsp;==&nbsp;1);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r_bar.end_line&nbsp;==&nbsp;2);<br>
+ &#20; &#20; &#20; &#20;Region &#20;r_bar;<br>
+ &#20; &#20; &#20; &#20;CHECK(finder.find_method(&quot;Foo&quot;, &#20;&quot;bar&quot;, &#20;r_bar));<br>
+ &#20; &#20; &#20; &#20;CHECK(r_bar.start_line &#20;== &#20;1);<br>
+ &#20; &#20; &#20; &#20;CHECK(r_bar.end_line &#20;== &#20;2);<br>
 }<br>
 <br>
-TEST_CASE(&quot;PythonSymbolFinder:&nbsp;whitespace,&nbsp;comments&nbsp;and&nbsp;docstrings&quot;)<br>
+TEST_CASE(&quot;PythonSymbolFinder: &#20;whitespace, &#20;comments &#20;and &#20;docstrings&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;src&nbsp;=&nbsp;&quot;#!/usr/bin/env&nbsp;python3\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;0<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;1<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;class&nbsp;&nbsp;&nbsp;Weird&nbsp;&nbsp;(&nbsp;&nbsp;Base&nbsp;&nbsp;):\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;2<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;\\\&quot;\\\&quot;\\\&quot;docstring\\\&quot;\\\&quot;\\\&quot;\n&quot;&nbsp;//&nbsp;3<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;comment&nbsp;inside&nbsp;class\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;4<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;def&nbsp;&nbsp;&nbsp;run&nbsp;(&nbsp;self,&nbsp;&nbsp;x&nbsp;):\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;5<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;inner&nbsp;comment\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;6<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;x&nbsp;+&nbsp;1\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;7<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;8<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;def&nbsp;run(x):\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;9<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;x\n&quot;;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;10<br>
+ &#20; &#20; &#20; &#20;std::string &#20;src &#20;= &#20;&quot;#!/usr/bin/env &#20;python3\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;0<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;1<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;class &#20; &#20; &#20;Weird &#20; &#20;( &#20; &#20;Base &#20; &#20;):\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;2<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;\\\&quot;\\\&quot;\\\&quot;docstring\\\&quot;\\\&quot;\\\&quot;\n&quot; &#20;// &#20;3<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;# &#20;comment &#20;inside &#20;class\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;4<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;def &#20; &#20; &#20;run &#20;( &#20;self, &#20; &#20;x &#20;):\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;5<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;# &#20;inner &#20;comment\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;6<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;x &#20;+ &#20;1\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;7<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;8<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;def &#20;run(x):\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;9<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;return &#20;x\n&quot;; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;10<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;PythonSymbolFinder&nbsp;finder(src);<br>
+ &#20; &#20; &#20; &#20;PythonSymbolFinder &#20;finder(src);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;r_class;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(finder.find_class(&quot;Weird&quot;,&nbsp;r_class));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r_class.start_line&nbsp;==&nbsp;2);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r_class.end_line&nbsp;==&nbsp;7);<br>
+ &#20; &#20; &#20; &#20;Region &#20;r_class;<br>
+ &#20; &#20; &#20; &#20;CHECK(finder.find_class(&quot;Weird&quot;, &#20;r_class));<br>
+ &#20; &#20; &#20; &#20;CHECK(r_class.start_line &#20;== &#20;2);<br>
+ &#20; &#20; &#20; &#20;CHECK(r_class.end_line &#20;== &#20;7);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;r_run;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(finder.find_method(&quot;Weird&quot;,&nbsp;&quot;run&quot;,&nbsp;r_run));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r_run.start_line&nbsp;==&nbsp;5);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r_run.end_line&nbsp;==&nbsp;7);<br>
+ &#20; &#20; &#20; &#20;Region &#20;r_run;<br>
+ &#20; &#20; &#20; &#20;CHECK(finder.find_method(&quot;Weird&quot;, &#20;&quot;run&quot;, &#20;r_run));<br>
+ &#20; &#20; &#20; &#20;CHECK(r_run.start_line &#20;== &#20;5);<br>
+ &#20; &#20; &#20; &#20;CHECK(r_run.end_line &#20;== &#20;7);<br>
 }<br>
 <!-- END SCAT CODE -->
 </body>

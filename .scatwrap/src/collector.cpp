@@ -6,182 +6,182 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#include&nbsp;&quot;collector.h&quot;<br>
-#include&nbsp;&quot;glob.h&quot;<br>
-#include&nbsp;&quot;util.h&quot;<br>
-#include&nbsp;&lt;algorithm&gt;<br>
-#include&nbsp;&lt;filesystem&gt;<br>
-#include&nbsp;&lt;functional&gt;<br>
-#include&nbsp;&lt;iostream&gt;<br>
-#include&nbsp;&lt;sstream&gt;<br>
-#include&nbsp;&lt;unordered_set&gt;<br>
+#include &#20;&quot;collector.h&quot;<br>
+#include &#20;&quot;glob.h&quot;<br>
+#include &#20;&quot;util.h&quot;<br>
+#include &#20;&lt;algorithm&gt;<br>
+#include &#20;&lt;filesystem&gt;<br>
+#include &#20;&lt;functional&gt;<br>
+#include &#20;&lt;iostream&gt;<br>
+#include &#20;&lt;sstream&gt;<br>
+#include &#20;&lt;unordered_set&gt;<br>
 <br>
-namespace&nbsp;fs&nbsp;=&nbsp;std::filesystem;<br>
+namespace &#20;fs &#20;= &#20;std::filesystem;<br>
 <br>
-//&nbsp;---------------------------------------------------------------<br>
-//&nbsp;Вспомогалки&nbsp;для&nbsp;glob<br>
-//&nbsp;---------------------------------------------------------------<br>
+// &#20;---------------------------------------------------------------<br>
+// &#20;Вспомогалки &#20;для &#20;glob<br>
+// &#20;---------------------------------------------------------------<br>
 <br>
-//&nbsp;pattern&nbsp;like:&nbsp;&nbsp;&quot;src/*&quot;&nbsp;&nbsp;or&nbsp;&nbsp;&quot;datas/**&quot;<br>
-static&nbsp;bool&nbsp;has_double_star(const&nbsp;std::string&nbsp;&amp;s)<br>
+// &#20;pattern &#20;like: &#20; &#20;&quot;src/*&quot; &#20; &#20;or &#20; &#20;&quot;datas/**&quot;<br>
+static &#20;bool &#20;has_double_star(const &#20;std::string &#20;&amp;s)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;s.find(&quot;**&quot;)&nbsp;!=&nbsp;std::string::npos;<br>
+ &#20; &#20; &#20; &#20;return &#20;s.find(&quot;**&quot;) &#20;!= &#20;std::string::npos;<br>
 }<br>
 <br>
-static&nbsp;bool&nbsp;has_single_star(const&nbsp;std::string&nbsp;&amp;s)<br>
+static &#20;bool &#20;has_single_star(const &#20;std::string &#20;&amp;s)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;s.find('*')&nbsp;!=&nbsp;std::string::npos&nbsp;&amp;&amp;&nbsp;!has_double_star(s);<br>
+ &#20; &#20; &#20; &#20;return &#20;s.find('*') &#20;!= &#20;std::string::npos &#20;&amp;&amp; &#20;!has_double_star(s);<br>
 }<br>
 <br>
-//&nbsp;Расширение&nbsp;одного&nbsp;правила<br>
-static&nbsp;void&nbsp;expand_rule(const&nbsp;Rule&nbsp;&amp;r,&nbsp;std::vector&lt;fs::path&gt;&nbsp;&amp;out)<br>
+// &#20;Расширение &#20;одного &#20;правила<br>
+static &#20;void &#20;expand_rule(const &#20;Rule &#20;&amp;r, &#20;std::vector&lt;fs::path&gt; &#20;&amp;out)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;std::string&nbsp;&amp;pat&nbsp;=&nbsp;r.pattern;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::error_code&nbsp;ec;<br>
+ &#20; &#20; &#20; &#20;const &#20;std::string &#20;&amp;pat &#20;= &#20;r.pattern;<br>
+ &#20; &#20; &#20; &#20;std::error_code &#20;ec;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;------------------------------------------------------------------<br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;новый&nbsp;glob&nbsp;—&nbsp;вынесен&nbsp;в&nbsp;glob.cpp<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;v&nbsp;=&nbsp;expand_glob(pat);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.insert(out.end(),&nbsp;v.begin(),&nbsp;v.end());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;// &#20;------------------------------------------------------------------<br>
+ &#20; &#20; &#20; &#20;// &#20;новый &#20;glob &#20;— &#20;вынесен &#20;в &#20;glob.cpp<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;auto &#20;v &#20;= &#20;expand_glob(pat);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out.insert(out.end(), &#20;v.begin(), &#20;v.end());<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;====&nbsp;*&nbsp;(one&nbsp;level)&nbsp;====<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(has_single_star(pat))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;dir&nbsp;=&nbsp;fs::path(pat).parent_path();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;mask&nbsp;=&nbsp;fs::path(pat).filename().string();<br>
+ &#20; &#20; &#20; &#20;// &#20;==== &#20;* &#20;(one &#20;level) &#20;====<br>
+ &#20; &#20; &#20; &#20;if &#20;(has_single_star(pat))<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;fs::path &#20;dir &#20;= &#20;fs::path(pat).parent_path();<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::string &#20;mask &#20;= &#20;fs::path(pat).filename().string();<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!fs::exists(dir,&nbsp;ec)&nbsp;||&nbsp;!fs::is_directory(dir,&nbsp;ec))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(!fs::exists(dir, &#20;ec) &#20;|| &#20;!fs::is_directory(dir, &#20;ec))<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(auto&nbsp;&amp;e&nbsp;:&nbsp;fs::directory_iterator(dir,&nbsp;ec))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(e.is_regular_file()&nbsp;&amp;&amp;&nbsp;match_simple(e.path(),&nbsp;mask))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.push_back(e.path());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;for &#20;(auto &#20;&amp;e &#20;: &#20;fs::directory_iterator(dir, &#20;ec))<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(e.is_regular_file() &#20;&amp;&amp; &#20;match_simple(e.path(), &#20;mask))<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out.push_back(e.path());<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;====&nbsp;Прямой&nbsp;путь&nbsp;====<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;p&nbsp;=&nbsp;pat;<br>
+ &#20; &#20; &#20; &#20;// &#20;==== &#20;Прямой &#20;путь &#20;====<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;p &#20;= &#20;pat;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(fs::is_regular_file(p,&nbsp;ec))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.push_back(fs::canonical(p,&nbsp;ec));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;if &#20;(fs::is_regular_file(p, &#20;ec))<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out.push_back(fs::canonical(p, &#20;ec));<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(fs::is_directory(p,&nbsp;ec))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(auto&nbsp;&amp;e&nbsp;:&nbsp;fs::directory_iterator(p,&nbsp;ec))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(e.is_regular_file())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.push_back(e.path());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;if &#20;(fs::is_directory(p, &#20;ec))<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;for &#20;(auto &#20;&amp;e &#20;: &#20;fs::directory_iterator(p, &#20;ec))<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(e.is_regular_file())<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out.push_back(e.path());<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return;<br>
+ &#20; &#20; &#20; &#20;}<br>
 }<br>
 <br>
-//&nbsp;---------------------------------------------------------------<br>
-//&nbsp;collect_from_rules()<br>
-//&nbsp;---------------------------------------------------------------<br>
+// &#20;---------------------------------------------------------------<br>
+// &#20;collect_from_rules()<br>
+// &#20;---------------------------------------------------------------<br>
 <br>
-std::vector&lt;fs::path&gt;&nbsp;collect_from_rules(const&nbsp;std::vector&lt;Rule&gt;&nbsp;&amp;rules,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;Options&nbsp;&amp;opt)<br>
+std::vector&lt;fs::path&gt; &#20;collect_from_rules(const &#20;std::vector&lt;Rule&gt; &#20;&amp;rules,<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;const &#20;Options &#20;&amp;opt)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;fs::path&gt;&nbsp;tmp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::error_code&nbsp;ec;<br>
+ &#20; &#20; &#20; &#20;std::vector&lt;fs::path&gt; &#20;tmp;<br>
+ &#20; &#20; &#20; &#20;std::error_code &#20;ec;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;1.&nbsp;Собираем&nbsp;все&nbsp;include-рулы<br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(const&nbsp;auto&nbsp;&amp;r&nbsp;:&nbsp;rules)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!r.exclude)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expand_rule(r,&nbsp;tmp);<br>
+ &#20; &#20; &#20; &#20;// &#20;1. &#20;Собираем &#20;все &#20;include-рулы<br>
+ &#20; &#20; &#20; &#20;for &#20;(const &#20;auto &#20;&amp;r &#20;: &#20;rules)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(!r.exclude)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;expand_rule(r, &#20;tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;2.&nbsp;Применяем&nbsp;exclude-рулы&nbsp;через&nbsp;нормальный&nbsp;glob<br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(const&nbsp;auto&nbsp;&amp;r&nbsp;:&nbsp;rules)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!r.exclude)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+ &#20; &#20; &#20; &#20;// &#20;2. &#20;Применяем &#20;exclude-рулы &#20;через &#20;нормальный &#20;glob<br>
+ &#20; &#20; &#20; &#20;for &#20;(const &#20;auto &#20;&amp;r &#20;: &#20;rules)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(!r.exclude)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;continue;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;bad&nbsp;=&nbsp;expand_glob(r.pattern);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;auto &#20;bad &#20;= &#20;expand_glob(r.pattern);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::unordered_set&lt;std::string&gt;&nbsp;bad_abs;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bad_abs.reserve(bad.size());<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::unordered_set&lt;std::string&gt; &#20;bad_abs;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;bad_abs.reserve(bad.size());<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(auto&nbsp;&amp;b&nbsp;:&nbsp;bad)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::error_code&nbsp;ec;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;absb&nbsp;=&nbsp;fs::absolute(b,&nbsp;ec);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bad_abs.insert(absb.string());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;for &#20;(auto &#20;&amp;b &#20;: &#20;bad)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::error_code &#20;ec;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;auto &#20;absb &#20;= &#20;fs::absolute(b, &#20;ec);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;bad_abs.insert(absb.string());<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tmp.erase(std::remove_if(tmp.begin(),<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tmp.end(),<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[&amp;](const&nbsp;fs::path&nbsp;&amp;p)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::error_code&nbsp;ec;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;absp&nbsp;=&nbsp;fs::absolute(p,&nbsp;ec);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;bad_abs.find(absp.string())&nbsp;!=<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bad_abs.end();<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}),<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tmp.end());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;tmp.erase(std::remove_if(tmp.begin(),<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;tmp.end(),<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;[&amp;](const &#20;fs::path &#20;&amp;p)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::error_code &#20;ec;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;auto &#20;absp &#20;= &#20;fs::absolute(p, &#20;ec);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;bad_abs.find(absp.string()) &#20;!=<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;bad_abs.end();<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}),<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;tmp.end());<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;3.&nbsp;Убираем&nbsp;дубликаты<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::sort(tmp.begin(),&nbsp;tmp.end());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;tmp.erase(std::unique(tmp.begin(),&nbsp;tmp.end()),&nbsp;tmp.end());<br>
+ &#20; &#20; &#20; &#20;// &#20;3. &#20;Убираем &#20;дубликаты<br>
+ &#20; &#20; &#20; &#20;std::sort(tmp.begin(), &#20;tmp.end());<br>
+ &#20; &#20; &#20; &#20;tmp.erase(std::unique(tmp.begin(), &#20;tmp.end()), &#20;tmp.end());<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;tmp;<br>
+ &#20; &#20; &#20; &#20;return &#20;tmp;<br>
 }<br>
 <br>
-//&nbsp;---------------------------------------------------------------<br>
-//&nbsp;collect_from_paths()<br>
-//&nbsp;---------------------------------------------------------------<br>
+// &#20;---------------------------------------------------------------<br>
+// &#20;collect_from_paths()<br>
+// &#20;---------------------------------------------------------------<br>
 <br>
-std::vector&lt;fs::path&gt;&nbsp;collect_from_paths(const&nbsp;std::vector&lt;std::string&gt;&nbsp;&amp;paths,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;Options&nbsp;&amp;opt)<br>
+std::vector&lt;fs::path&gt; &#20;collect_from_paths(const &#20;std::vector&lt;std::string&gt; &#20;&amp;paths,<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;const &#20;Options &#20;&amp;opt)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;fs::path&gt;&nbsp;out;<br>
+ &#20; &#20; &#20; &#20;std::vector&lt;fs::path&gt; &#20;out;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(auto&nbsp;&amp;s&nbsp;:&nbsp;paths)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;p&nbsp;=&nbsp;s;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::error_code&nbsp;ec;<br>
+ &#20; &#20; &#20; &#20;for &#20;(auto &#20;&amp;s &#20;: &#20;paths)<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;fs::path &#20;p &#20;= &#20;s;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::error_code &#20;ec;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!fs::exists(p,&nbsp;ec))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cerr&nbsp;&lt;&lt;&nbsp;&quot;Not&nbsp;found:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;p&nbsp;&lt;&lt;&nbsp;&quot;\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(!fs::exists(p, &#20;ec))<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::cerr &#20;&lt;&lt; &#20;&quot;Not &#20;found: &#20;&quot; &#20;&lt;&lt; &#20;p &#20;&lt;&lt; &#20;&quot;\n&quot;;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;continue;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(fs::is_regular_file(p,&nbsp;ec))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.push_back(fs::canonical(p,&nbsp;ec));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(fs::is_regular_file(p, &#20;ec))<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out.push_back(fs::canonical(p, &#20;ec));<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;continue;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(fs::is_directory(p,&nbsp;ec))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(opt.recursive)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(auto&nbsp;&amp;e&nbsp;:&nbsp;fs::recursive_directory_iterator(p,&nbsp;ec))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(e.is_regular_file())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.push_back(e.path());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(auto&nbsp;&amp;e&nbsp;:&nbsp;fs::directory_iterator(p,&nbsp;ec))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(e.is_regular_file())<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.push_back(e.path());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(fs::is_directory(p, &#20;ec))<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(opt.recursive)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;for &#20;(auto &#20;&amp;e &#20;: &#20;fs::recursive_directory_iterator(p, &#20;ec))<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(e.is_regular_file())<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out.push_back(e.path());<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;else<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;for &#20;(auto &#20;&amp;e &#20;: &#20;fs::directory_iterator(p, &#20;ec))<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;if &#20;(e.is_regular_file())<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out.push_back(e.path());<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;}<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Убираем&nbsp;дубликаты<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::sort(out.begin(),&nbsp;out.end());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;out.erase(std::unique(out.begin(),&nbsp;out.end()),&nbsp;out.end());<br>
+ &#20; &#20; &#20; &#20;// &#20;Убираем &#20;дубликаты<br>
+ &#20; &#20; &#20; &#20;std::sort(out.begin(), &#20;out.end());<br>
+ &#20; &#20; &#20; &#20;out.erase(std::unique(out.begin(), &#20;out.end()), &#20;out.end());<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;out;<br>
+ &#20; &#20; &#20; &#20;return &#20;out;<br>
 }<br>
 <!-- END SCAT CODE -->
 </body>

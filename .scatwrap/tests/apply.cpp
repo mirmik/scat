@@ -6,279 +6,279 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#include&nbsp;&quot;doctest/doctest.h&quot;<br>
-#include&nbsp;&lt;filesystem&gt;<br>
-#include&nbsp;&lt;fstream&gt;<br>
-#include&nbsp;&lt;iostream&gt;<br>
-#include&nbsp;&lt;scat.h&gt;<br>
-#include&nbsp;&lt;sstream&gt;<br>
-#include&nbsp;&lt;string&gt;<br>
-#include&nbsp;&lt;vector&gt;<br>
+#include &#20;&quot;doctest/doctest.h&quot;<br>
+#include &#20;&lt;filesystem&gt;<br>
+#include &#20;&lt;fstream&gt;<br>
+#include &#20;&lt;iostream&gt;<br>
+#include &#20;&lt;scat.h&gt;<br>
+#include &#20;&lt;sstream&gt;<br>
+#include &#20;&lt;string&gt;<br>
+#include &#20;&lt;vector&gt;<br>
 <br>
-int&nbsp;apply_chunk_main(int&nbsp;argc,&nbsp;char&nbsp;**argv);<br>
+int &#20;apply_chunk_main(int &#20;argc, &#20;char &#20;**argv);<br>
 <br>
-namespace&nbsp;fs&nbsp;=&nbsp;std::filesystem;<br>
+namespace &#20;fs &#20;= &#20;std::filesystem;<br>
 <br>
-std::vector&lt;std::string&gt;&nbsp;read_lines(const&nbsp;fs::path&nbsp;&amp;p)<br>
+std::vector&lt;std::string&gt; &#20;read_lines(const &#20;fs::path &#20;&amp;p)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::ifstream&nbsp;in(p);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;v;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;s;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(std::getline(in,&nbsp;s))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v.push_back(s);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;v;<br>
+ &#20; &#20; &#20; &#20;std::ifstream &#20;in(p);<br>
+ &#20; &#20; &#20; &#20;std::vector&lt;std::string&gt; &#20;v;<br>
+ &#20; &#20; &#20; &#20;std::string &#20;s;<br>
+ &#20; &#20; &#20; &#20;while &#20;(std::getline(in, &#20;s))<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;v.push_back(s);<br>
+ &#20; &#20; &#20; &#20;return &#20;v;<br>
 }<br>
 <br>
-int&nbsp;run_apply(const&nbsp;fs::path&nbsp;&amp;patch)<br>
+int &#20;run_apply(const &#20;fs::path &#20;&amp;patch)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;arg0&nbsp;=&nbsp;&quot;apply&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;arg1&nbsp;=&nbsp;patch.string();<br>
+ &#20; &#20; &#20; &#20;std::string &#20;arg0 &#20;= &#20;&quot;apply&quot;;<br>
+ &#20; &#20; &#20; &#20;std::string &#20;arg1 &#20;= &#20;patch.string();<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;храним&nbsp;строки&nbsp;в&nbsp;живом&nbsp;виде<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;args&nbsp;=&nbsp;{arg0,&nbsp;arg1};<br>
+ &#20; &#20; &#20; &#20;// &#20;храним &#20;строки &#20;в &#20;живом &#20;виде<br>
+ &#20; &#20; &#20; &#20;std::vector&lt;std::string&gt; &#20;args &#20;= &#20;{arg0, &#20;arg1};<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;формируем&nbsp;argv&nbsp;как&nbsp;указатели&nbsp;НА&nbsp;ЖИВЫЕ&nbsp;строки<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;char&nbsp;*&gt;&nbsp;argv_real;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;argv_real.reserve(args.size());<br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(auto&nbsp;&amp;s&nbsp;:&nbsp;args)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;argv_real.push_back(s.data());<br>
+ &#20; &#20; &#20; &#20;// &#20;формируем &#20;argv &#20;как &#20;указатели &#20;НА &#20;ЖИВЫЕ &#20;строки<br>
+ &#20; &#20; &#20; &#20;std::vector&lt;char &#20;*&gt; &#20;argv_real;<br>
+ &#20; &#20; &#20; &#20;argv_real.reserve(args.size());<br>
+ &#20; &#20; &#20; &#20;for &#20;(auto &#20;&amp;s &#20;: &#20;args)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;argv_real.push_back(s.data());<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;apply_chunk_main((int)argv_real.size(),&nbsp;argv_real.data());<br>
+ &#20; &#20; &#20; &#20;return &#20;apply_chunk_main((int)argv_real.size(), &#20;argv_real.data());<br>
 }<br>
 <br>
-TEST_CASE(&quot;apply_chunk_main:&nbsp;insert-after-text&quot;)<br>
+TEST_CASE(&quot;apply_chunk_main: &#20;insert-after-text&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;chunk_test_insert_after_text&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(tmp);<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;tmp &#20;= &#20;fs::temp_directory_path() &#20;/ &#20;&quot;chunk_test_insert_after_text&quot;;<br>
+ &#20; &#20; &#20; &#20;fs::remove_all(tmp);<br>
+ &#20; &#20; &#20; &#20;fs::create_directories(tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;f&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;a.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;LINE1\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;LINE2\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;LINE3\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;f &#20;= &#20;tmp &#20;/ &#20;&quot;a.txt&quot;;<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ofstream &#20;out(f);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out &#20;&lt;&lt; &#20;&quot;LINE1\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;LINE2\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;LINE3\n&quot;;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;patch&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;patch.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(patch);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;===&nbsp;file:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;f.string()<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;===\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;insert-after-text\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;LINE2\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;AFTER\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;TEXT\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;patch &#20;= &#20;tmp &#20;/ &#20;&quot;patch.txt&quot;;<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ofstream &#20;out(patch);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out &#20;&lt;&lt; &#20;&quot;=== &#20;file: &#20;&quot; &#20;&lt;&lt; &#20;f.string()<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&lt;&lt; &#20;&quot; &#20;===\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;--- &#20;insert-after-text\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;LINE2\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;---\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;AFTER\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;TEXT\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;=END=\n&quot;;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;r&nbsp;=&nbsp;run_apply(patch);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r&nbsp;==&nbsp;0);<br>
+ &#20; &#20; &#20; &#20;int &#20;r &#20;= &#20;run_apply(patch);<br>
+ &#20; &#20; &#20; &#20;CHECK(r &#20;== &#20;0);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;lines&nbsp;=&nbsp;read_lines(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;REQUIRE(lines.size()&nbsp;==&nbsp;5);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[0]&nbsp;==&nbsp;&quot;LINE1&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[1]&nbsp;==&nbsp;&quot;LINE2&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[2]&nbsp;==&nbsp;&quot;AFTER&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[3]&nbsp;==&nbsp;&quot;TEXT&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[4]&nbsp;==&nbsp;&quot;LINE3&quot;);<br>
+ &#20; &#20; &#20; &#20;auto &#20;lines &#20;= &#20;read_lines(f);<br>
+ &#20; &#20; &#20; &#20;REQUIRE(lines.size() &#20;== &#20;5);<br>
+ &#20; &#20; &#20; &#20;CHECK(lines[0] &#20;== &#20;&quot;LINE1&quot;);<br>
+ &#20; &#20; &#20; &#20;CHECK(lines[1] &#20;== &#20;&quot;LINE2&quot;);<br>
+ &#20; &#20; &#20; &#20;CHECK(lines[2] &#20;== &#20;&quot;AFTER&quot;);<br>
+ &#20; &#20; &#20; &#20;CHECK(lines[3] &#20;== &#20;&quot;TEXT&quot;);<br>
+ &#20; &#20; &#20; &#20;CHECK(lines[4] &#20;== &#20;&quot;LINE3&quot;);<br>
 }<br>
 <br>
-TEST_CASE(&quot;apply_chunk_main:&nbsp;insert-before-text&quot;)<br>
+TEST_CASE(&quot;apply_chunk_main: &#20;insert-before-text&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;chunk_test_insert_before_text&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(tmp);<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;tmp &#20;= &#20;fs::temp_directory_path() &#20;/ &#20;&quot;chunk_test_insert_before_text&quot;;<br>
+ &#20; &#20; &#20; &#20;fs::remove_all(tmp);<br>
+ &#20; &#20; &#20; &#20;fs::create_directories(tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;f&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;b.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;AAA\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;BBB\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;CCC\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;f &#20;= &#20;tmp &#20;/ &#20;&quot;b.txt&quot;;<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ofstream &#20;out(f);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out &#20;&lt;&lt; &#20;&quot;AAA\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;BBB\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;CCC\n&quot;;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;patch&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;patch.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(patch);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;===&nbsp;file:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;f.string()<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;===\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;insert-before-text\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;BBB\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;X\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;Y\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;patch &#20;= &#20;tmp &#20;/ &#20;&quot;patch.txt&quot;;<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ofstream &#20;out(patch);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out &#20;&lt;&lt; &#20;&quot;=== &#20;file: &#20;&quot; &#20;&lt;&lt; &#20;f.string()<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&lt;&lt; &#20;&quot; &#20;===\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;--- &#20;insert-before-text\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;BBB\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;---\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;X\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;Y\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;=END=\n&quot;;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;r&nbsp;=&nbsp;run_apply(patch);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r&nbsp;==&nbsp;0);<br>
+ &#20; &#20; &#20; &#20;int &#20;r &#20;= &#20;run_apply(patch);<br>
+ &#20; &#20; &#20; &#20;CHECK(r &#20;== &#20;0);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;lines&nbsp;=&nbsp;read_lines(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;REQUIRE(lines.size()&nbsp;==&nbsp;5);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[0]&nbsp;==&nbsp;&quot;AAA&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[1]&nbsp;==&nbsp;&quot;X&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[2]&nbsp;==&nbsp;&quot;Y&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[3]&nbsp;==&nbsp;&quot;BBB&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[4]&nbsp;==&nbsp;&quot;CCC&quot;);<br>
+ &#20; &#20; &#20; &#20;auto &#20;lines &#20;= &#20;read_lines(f);<br>
+ &#20; &#20; &#20; &#20;REQUIRE(lines.size() &#20;== &#20;5);<br>
+ &#20; &#20; &#20; &#20;CHECK(lines[0] &#20;== &#20;&quot;AAA&quot;);<br>
+ &#20; &#20; &#20; &#20;CHECK(lines[1] &#20;== &#20;&quot;X&quot;);<br>
+ &#20; &#20; &#20; &#20;CHECK(lines[2] &#20;== &#20;&quot;Y&quot;);<br>
+ &#20; &#20; &#20; &#20;CHECK(lines[3] &#20;== &#20;&quot;BBB&quot;);<br>
+ &#20; &#20; &#20; &#20;CHECK(lines[4] &#20;== &#20;&quot;CCC&quot;);<br>
 }<br>
 <br>
-TEST_CASE(&quot;apply_chunk_main:&nbsp;replace-text&quot;)<br>
+TEST_CASE(&quot;apply_chunk_main: &#20;replace-text&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;chunk_test_replace_text&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(tmp);<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;tmp &#20;= &#20;fs::temp_directory_path() &#20;/ &#20;&quot;chunk_test_replace_text&quot;;<br>
+ &#20; &#20; &#20; &#20;fs::remove_all(tmp);<br>
+ &#20; &#20; &#20; &#20;fs::create_directories(tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;f&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;c.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;alpha\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;beta\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;gamma\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;f &#20;= &#20;tmp &#20;/ &#20;&quot;c.txt&quot;;<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ofstream &#20;out(f);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out &#20;&lt;&lt; &#20;&quot;alpha\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;beta\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;gamma\n&quot;;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;patch&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;patch.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(patch);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;===&nbsp;file:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;f.string()<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;===\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;replace-text\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;beta\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;BETA1\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;BETA2\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;patch &#20;= &#20;tmp &#20;/ &#20;&quot;patch.txt&quot;;<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ofstream &#20;out(patch);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out &#20;&lt;&lt; &#20;&quot;=== &#20;file: &#20;&quot; &#20;&lt;&lt; &#20;f.string()<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&lt;&lt; &#20;&quot; &#20;===\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;--- &#20;replace-text\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;beta\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;---\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;BETA1\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;BETA2\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;=END=\n&quot;;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;r&nbsp;=&nbsp;run_apply(patch);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r&nbsp;==&nbsp;0);<br>
+ &#20; &#20; &#20; &#20;int &#20;r &#20;= &#20;run_apply(patch);<br>
+ &#20; &#20; &#20; &#20;CHECK(r &#20;== &#20;0);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;lines&nbsp;=&nbsp;read_lines(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;REQUIRE(lines.size()&nbsp;==&nbsp;4);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[0]&nbsp;==&nbsp;&quot;alpha&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[1]&nbsp;==&nbsp;&quot;BETA1&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[2]&nbsp;==&nbsp;&quot;BETA2&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[3]&nbsp;==&nbsp;&quot;gamma&quot;);<br>
+ &#20; &#20; &#20; &#20;auto &#20;lines &#20;= &#20;read_lines(f);<br>
+ &#20; &#20; &#20; &#20;REQUIRE(lines.size() &#20;== &#20;4);<br>
+ &#20; &#20; &#20; &#20;CHECK(lines[0] &#20;== &#20;&quot;alpha&quot;);<br>
+ &#20; &#20; &#20; &#20;CHECK(lines[1] &#20;== &#20;&quot;BETA1&quot;);<br>
+ &#20; &#20; &#20; &#20;CHECK(lines[2] &#20;== &#20;&quot;BETA2&quot;);<br>
+ &#20; &#20; &#20; &#20;CHECK(lines[3] &#20;== &#20;&quot;gamma&quot;);<br>
 }<br>
 <br>
-TEST_CASE(&quot;apply_chunk_main:&nbsp;delete-text&quot;)<br>
+TEST_CASE(&quot;apply_chunk_main: &#20;delete-text&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;chunk_test_delete_text&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(tmp);<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;tmp &#20;= &#20;fs::temp_directory_path() &#20;/ &#20;&quot;chunk_test_delete_text&quot;;<br>
+ &#20; &#20; &#20; &#20;fs::remove_all(tmp);<br>
+ &#20; &#20; &#20; &#20;fs::create_directories(tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;f&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;d.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;one\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;two\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;three\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;four\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;f &#20;= &#20;tmp &#20;/ &#20;&quot;d.txt&quot;;<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ofstream &#20;out(f);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out &#20;&lt;&lt; &#20;&quot;one\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;two\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;three\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;four\n&quot;;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;patch&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;patch.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(patch);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;===&nbsp;file:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;f.string()<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;===\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;delete-text\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;two\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;three\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;patch &#20;= &#20;tmp &#20;/ &#20;&quot;patch.txt&quot;;<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ofstream &#20;out(patch);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out &#20;&lt;&lt; &#20;&quot;=== &#20;file: &#20;&quot; &#20;&lt;&lt; &#20;f.string()<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&lt;&lt; &#20;&quot; &#20;===\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;--- &#20;delete-text\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;two\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;three\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;---\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;=END=\n&quot;;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;r&nbsp;=&nbsp;run_apply(patch);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r&nbsp;==&nbsp;0);<br>
+ &#20; &#20; &#20; &#20;int &#20;r &#20;= &#20;run_apply(patch);<br>
+ &#20; &#20; &#20; &#20;CHECK(r &#20;== &#20;0);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;lines&nbsp;=&nbsp;read_lines(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;REQUIRE(lines.size()&nbsp;==&nbsp;2);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[0]&nbsp;==&nbsp;&quot;one&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[1]&nbsp;==&nbsp;&quot;four&quot;);<br>
+ &#20; &#20; &#20; &#20;auto &#20;lines &#20;= &#20;read_lines(f);<br>
+ &#20; &#20; &#20; &#20;REQUIRE(lines.size() &#20;== &#20;2);<br>
+ &#20; &#20; &#20; &#20;CHECK(lines[0] &#20;== &#20;&quot;one&quot;);<br>
+ &#20; &#20; &#20; &#20;CHECK(lines[1] &#20;== &#20;&quot;four&quot;);<br>
 }<br>
 <br>
-TEST_CASE(&quot;apply_chunk_main:&nbsp;apply-stdin&quot;)<br>
+TEST_CASE(&quot;apply_chunk_main: &#20;apply-stdin&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;namespace&nbsp;fs&nbsp;=&nbsp;std::filesystem;<br>
+ &#20; &#20; &#20; &#20;namespace &#20;fs &#20;= &#20;std::filesystem;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;chunk_test_stdin&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(tmp);<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;tmp &#20;= &#20;fs::temp_directory_path() &#20;/ &#20;&quot;chunk_test_stdin&quot;;<br>
+ &#20; &#20; &#20; &#20;fs::remove_all(tmp);<br>
+ &#20; &#20; &#20; &#20;fs::create_directories(tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;f&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;stdin.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;A\nB\nC\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;f &#20;= &#20;tmp &#20;/ &#20;&quot;stdin.txt&quot;;<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ofstream &#20;out(f);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out &#20;&lt;&lt; &#20;&quot;A\nB\nC\n&quot;;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;patch&nbsp;=&nbsp;&quot;===&nbsp;file:&nbsp;&quot;&nbsp;+&nbsp;f.string()&nbsp;+<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;===\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;replace-text\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;B\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;XXX\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;;<br>
+ &#20; &#20; &#20; &#20;std::string &#20;patch &#20;= &#20;&quot;=== &#20;file: &#20;&quot; &#20;+ &#20;f.string() &#20;+<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20;===\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;--- &#20;replace-text\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;B\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;---\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;XXX\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;=END=\n&quot;;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::istringstream&nbsp;fake_stdin(patch);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;*old_stdin&nbsp;=&nbsp;std::cin.rdbuf(fake_stdin.rdbuf());<br>
+ &#20; &#20; &#20; &#20;std::istringstream &#20;fake_stdin(patch);<br>
+ &#20; &#20; &#20; &#20;auto &#20;*old_stdin &#20;= &#20;std::cin.rdbuf(fake_stdin.rdbuf());<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;char&nbsp;*argv[]&nbsp;=&nbsp;{&quot;scat&quot;,&nbsp;&quot;--apply-stdin&quot;};<br>
-&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;r&nbsp;=&nbsp;scat_main(2,&nbsp;(char&nbsp;**)argv);<br>
+ &#20; &#20; &#20; &#20;const &#20;char &#20;*argv[] &#20;= &#20;{&quot;scat&quot;, &#20;&quot;--apply-stdin&quot;};<br>
+ &#20; &#20; &#20; &#20;int &#20;r &#20;= &#20;scat_main(2, &#20;(char &#20;**)argv);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::cin.rdbuf(old_stdin);<br>
+ &#20; &#20; &#20; &#20;std::cin.rdbuf(old_stdin);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r&nbsp;==&nbsp;0);<br>
+ &#20; &#20; &#20; &#20;CHECK(r &#20;== &#20;0);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;lines&nbsp;=&nbsp;read_lines(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;REQUIRE(lines.size()&nbsp;==&nbsp;3);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[0]&nbsp;==&nbsp;&quot;A&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[1]&nbsp;==&nbsp;&quot;XXX&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[2]&nbsp;==&nbsp;&quot;C&quot;);<br>
+ &#20; &#20; &#20; &#20;auto &#20;lines &#20;= &#20;read_lines(f);<br>
+ &#20; &#20; &#20; &#20;REQUIRE(lines.size() &#20;== &#20;3);<br>
+ &#20; &#20; &#20; &#20;CHECK(lines[0] &#20;== &#20;&quot;A&quot;);<br>
+ &#20; &#20; &#20; &#20;CHECK(lines[1] &#20;== &#20;&quot;XXX&quot;);<br>
+ &#20; &#20; &#20; &#20;CHECK(lines[2] &#20;== &#20;&quot;C&quot;);<br>
 }<br>
-TEST_CASE(&quot;apply_chunk_main:&nbsp;delete-file&nbsp;then&nbsp;create-file&quot;)<br>
+TEST_CASE(&quot;apply_chunk_main: &#20;delete-file &#20;then &#20;create-file&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;namespace&nbsp;fs&nbsp;=&nbsp;std::filesystem;<br>
+ &#20; &#20; &#20; &#20;namespace &#20;fs &#20;= &#20;std::filesystem;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;chunk_test_del_create&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(tmp);<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;tmp &#20;= &#20;fs::temp_directory_path() &#20;/ &#20;&quot;chunk_test_del_create&quot;;<br>
+ &#20; &#20; &#20; &#20;fs::remove_all(tmp);<br>
+ &#20; &#20; &#20; &#20;fs::create_directories(tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;f&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;x.txt&quot;;<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;f &#20;= &#20;tmp &#20;/ &#20;&quot;x.txt&quot;;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Исходный&nbsp;файл<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;OLD&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;// &#20;Исходный &#20;файл<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ofstream &#20;out(f);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out &#20;&lt;&lt; &#20;&quot;OLD&quot;;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Патч:&nbsp;удалить&nbsp;→&nbsp;создать&nbsp;заново<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;patch&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;patch.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(patch);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;===&nbsp;file:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;f.string()<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;===\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;delete-file\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;===&nbsp;file:&nbsp;&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;f.string()<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;===\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;create-file\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;NEW1\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;NEW2\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;// &#20;Патч: &#20;удалить &#20;→ &#20;создать &#20;заново<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;patch &#20;= &#20;tmp &#20;/ &#20;&quot;patch.txt&quot;;<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ofstream &#20;out(patch);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out &#20;&lt;&lt; &#20;&quot;=== &#20;file: &#20;&quot; &#20;&lt;&lt; &#20;f.string()<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&lt;&lt; &#20;&quot; &#20;===\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;--- &#20;delete-file\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;=END=\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;=== &#20;file: &#20;&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&lt;&lt; &#20;f.string()<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&lt;&lt; &#20;&quot; &#20;===\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;--- &#20;create-file\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;NEW1\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;NEW2\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;=END=\n&quot;;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;r&nbsp;=&nbsp;run_apply(patch);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r&nbsp;==&nbsp;0);<br>
+ &#20; &#20; &#20; &#20;int &#20;r &#20;= &#20;run_apply(patch);<br>
+ &#20; &#20; &#20; &#20;CHECK(r &#20;== &#20;0);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;REQUIRE(fs::exists(f));<br>
+ &#20; &#20; &#20; &#20;REQUIRE(fs::exists(f));<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;lines&nbsp;=&nbsp;read_lines(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;REQUIRE(lines.size()&nbsp;==&nbsp;2);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[0]&nbsp;==&nbsp;&quot;NEW1&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(lines[1]&nbsp;==&nbsp;&quot;NEW2&quot;);<br>
+ &#20; &#20; &#20; &#20;auto &#20;lines &#20;= &#20;read_lines(f);<br>
+ &#20; &#20; &#20; &#20;REQUIRE(lines.size() &#20;== &#20;2);<br>
+ &#20; &#20; &#20; &#20;CHECK(lines[0] &#20;== &#20;&quot;NEW1&quot;);<br>
+ &#20; &#20; &#20; &#20;CHECK(lines[1] &#20;== &#20;&quot;NEW2&quot;);<br>
 }<br>
 <!-- END SCAT CODE -->
 </body>

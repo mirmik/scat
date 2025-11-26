@@ -6,39 +6,39 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#pragma&nbsp;once<br>
-#include&nbsp;&lt;string&gt;<br>
-#include&nbsp;&lt;vector&gt;<br>
+#pragma &#20;once<br>
+#include &#20;&lt;string&gt;<br>
+#include &#20;&lt;vector&gt;<br>
 <br>
-struct&nbsp;Options<br>
+struct &#20;Options<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;chunk_trailer&nbsp;=&nbsp;false;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;recursive&nbsp;=&nbsp;false;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;list_only&nbsp;=&nbsp;false;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;abs_paths&nbsp;=&nbsp;false;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;line_numbers&nbsp;=&nbsp;false;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;sorted&nbsp;=&nbsp;false;&nbsp;//&nbsp;--sorted:&nbsp;sort&nbsp;list&nbsp;(-l)&nbsp;by&nbsp;size<br>
+ &#20; &#20; &#20; &#20;bool &#20;chunk_trailer &#20;= &#20;false;<br>
+ &#20; &#20; &#20; &#20;bool &#20;recursive &#20;= &#20;false;<br>
+ &#20; &#20; &#20; &#20;bool &#20;list_only &#20;= &#20;false;<br>
+ &#20; &#20; &#20; &#20;bool &#20;abs_paths &#20;= &#20;false;<br>
+ &#20; &#20; &#20; &#20;bool &#20;line_numbers &#20;= &#20;false;<br>
+ &#20; &#20; &#20; &#20;bool &#20;sorted &#20;= &#20;false; &#20;// &#20;--sorted: &#20;sort &#20;list &#20;(-l) &#20;by &#20;size<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;show_size&nbsp;=&nbsp;false;&nbsp;//&nbsp;--size:&nbsp;show&nbsp;file&nbsp;sizes&nbsp;in&nbsp;-l<br>
-&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;server_port&nbsp;=&nbsp;0;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;--server&nbsp;PORT<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;apply_file;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;apply_stdin&nbsp;=&nbsp;false;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;config_file;&nbsp;//&nbsp;empty&nbsp;=&nbsp;no&nbsp;config&nbsp;mode<br>
-&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;chunk_help&nbsp;=&nbsp;false;<br>
+ &#20; &#20; &#20; &#20;bool &#20;show_size &#20;= &#20;false; &#20;// &#20;--size: &#20;show &#20;file &#20;sizes &#20;in &#20;-l<br>
+ &#20; &#20; &#20; &#20;int &#20;server_port &#20;= &#20;0; &#20; &#20; &#20; &#20;// &#20;--server &#20;PORT<br>
+ &#20; &#20; &#20; &#20;std::string &#20;apply_file;<br>
+ &#20; &#20; &#20; &#20;bool &#20;apply_stdin &#20;= &#20;false;<br>
+ &#20; &#20; &#20; &#20;std::string &#20;config_file; &#20;// &#20;empty &#20;= &#20;no &#20;config &#20;mode<br>
+ &#20; &#20; &#20; &#20;bool &#20;chunk_help &#20;= &#20;false;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;git_info&nbsp;=&nbsp;false;&nbsp;//&nbsp;--git-info:&nbsp;print&nbsp;git&nbsp;meta&nbsp;info<br>
-&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;gh_map&nbsp;=&nbsp;false;&nbsp;&nbsp;&nbsp;//&nbsp;--ghmap:&nbsp;print&nbsp;GitHub&nbsp;raw&nbsp;URLs&nbsp;for&nbsp;current&nbsp;commit<br>
-&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;copy_out&nbsp;=&nbsp;false;&nbsp;//&nbsp;--copy:&nbsp;also&nbsp;send&nbsp;stdout&nbsp;to&nbsp;clipboard<br>
-&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;hook_install&nbsp;=<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;false;&nbsp;//&nbsp;--hook-install:&nbsp;install/update&nbsp;git&nbsp;pre-commit&nbsp;hook<br>
+ &#20; &#20; &#20; &#20;bool &#20;git_info &#20;= &#20;false; &#20;// &#20;--git-info: &#20;print &#20;git &#20;meta &#20;info<br>
+ &#20; &#20; &#20; &#20;bool &#20;gh_map &#20;= &#20;false; &#20; &#20; &#20;// &#20;--ghmap: &#20;print &#20;GitHub &#20;raw &#20;URLs &#20;for &#20;current &#20;commit<br>
+ &#20; &#20; &#20; &#20;bool &#20;copy_out &#20;= &#20;false; &#20;// &#20;--copy: &#20;also &#20;send &#20;stdout &#20;to &#20;clipboard<br>
+ &#20; &#20; &#20; &#20;bool &#20;hook_install &#20;=<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;false; &#20;// &#20;--hook-install: &#20;install/update &#20;git &#20;pre-commit &#20;hook<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;paths;&nbsp;//&nbsp;positional&nbsp;paths<br>
+ &#20; &#20; &#20; &#20;std::vector&lt;std::string&gt; &#20;paths; &#20;// &#20;positional &#20;paths<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;wrap_root;&nbsp;&nbsp;&nbsp;//&nbsp;--wrap<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;path_prefix;&nbsp;//&nbsp;--prefix&nbsp;P<br>
+ &#20; &#20; &#20; &#20;std::string &#20;wrap_root; &#20; &#20; &#20;// &#20;--wrap<br>
+ &#20; &#20; &#20; &#20;std::string &#20;path_prefix; &#20;// &#20;--prefix &#20;P<br>
 };<br>
 <br>
-Options&nbsp;parse_options(int&nbsp;argc,&nbsp;char&nbsp;**argv);<br>
+Options &#20;parse_options(int &#20;argc, &#20;char &#20;**argv);<br>
 <!-- END SCAT CODE -->
 </body>
 </html>

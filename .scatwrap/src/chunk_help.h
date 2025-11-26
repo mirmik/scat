@@ -6,9 +6,9 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#pragma&nbsp;once<br>
+#pragma &#20;once<br>
 <br>
-void&nbsp;print_chunk_help();<br>
+void &#20;print_chunk_help();<br>
 <!-- END SCAT CODE -->
 </body>
 </html>

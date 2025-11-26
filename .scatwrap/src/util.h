@@ -6,26 +6,26 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#pragma&nbsp;once<br>
-#include&nbsp;&quot;options.h&quot;<br>
-#include&nbsp;&lt;cstdint&gt;<br>
-#include&nbsp;&lt;filesystem&gt;<br>
-#include&nbsp;&lt;string&gt;<br>
-#include&nbsp;&lt;string_view&gt;<br>
-#include&nbsp;&lt;vector&gt;<br>
+#pragma &#20;once<br>
+#include &#20;&quot;options.h&quot;<br>
+#include &#20;&lt;cstdint&gt;<br>
+#include &#20;&lt;filesystem&gt;<br>
+#include &#20;&lt;string&gt;<br>
+#include &#20;&lt;string_view&gt;<br>
+#include &#20;&lt;vector&gt;<br>
 <br>
-std::string&nbsp;make_display_path(const&nbsp;std::filesystem::path&nbsp;&amp;p);<br>
-void&nbsp;dump_file(const&nbsp;std::filesystem::path&nbsp;&amp;p,&nbsp;bool&nbsp;first,&nbsp;const&nbsp;Options&nbsp;&amp;opt);<br>
+std::string &#20;make_display_path(const &#20;std::filesystem::path &#20;&amp;p);<br>
+void &#20;dump_file(const &#20;std::filesystem::path &#20;&amp;p, &#20;bool &#20;first, &#20;const &#20;Options &#20;&amp;opt);<br>
 <br>
-//&nbsp;Безопасное&nbsp;получение&nbsp;размера&nbsp;файла;&nbsp;при&nbsp;ошибке&nbsp;возвращает&nbsp;0.<br>
-std::uintmax_t&nbsp;get_file_size(const&nbsp;std::filesystem::path&nbsp;&amp;p);<br>
+// &#20;Безопасное &#20;получение &#20;размера &#20;файла; &#20;при &#20;ошибке &#20;возвращает &#20;0.<br>
+std::uintmax_t &#20;get_file_size(const &#20;std::filesystem::path &#20;&amp;p);<br>
 <br>
-bool&nbsp;match_simple(const&nbsp;std::filesystem::path&nbsp;&amp;p,&nbsp;const&nbsp;std::string&nbsp;&amp;mask);<br>
+bool &#20;match_simple(const &#20;std::filesystem::path &#20;&amp;p, &#20;const &#20;std::string &#20;&amp;mask);<br>
 <br>
-//&nbsp;HTML&nbsp;helpers<br>
-std::string&nbsp;html_escape(std::string_view&nbsp;src);<br>
-std::string&nbsp;wrap_cpp_as_html(std::string_view&nbsp;cpp_code,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string_view&nbsp;title&nbsp;=&nbsp;&quot;C++&nbsp;code&quot;);<br>
+// &#20;HTML &#20;helpers<br>
+std::string &#20;html_escape(std::string_view &#20;src);<br>
+std::string &#20;wrap_cpp_as_html(std::string_view &#20;cpp_code,<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::string_view &#20;title &#20;= &#20;&quot;C++ &#20;code&quot;);<br>
 <!-- END SCAT CODE -->
 </body>
 </html>

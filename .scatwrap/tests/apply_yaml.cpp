@@ -6,241 +6,241 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#include&nbsp;&quot;doctest/doctest.h&quot;<br>
-#include&nbsp;&lt;filesystem&gt;<br>
-#include&nbsp;&lt;fstream&gt;<br>
-#include&nbsp;&lt;iostream&gt;<br>
-#include&nbsp;&lt;string&gt;<br>
-#include&nbsp;&lt;vector&gt;<br>
+#include &#20;&quot;doctest/doctest.h&quot;<br>
+#include &#20;&lt;filesystem&gt;<br>
+#include &#20;&lt;fstream&gt;<br>
+#include &#20;&lt;iostream&gt;<br>
+#include &#20;&lt;string&gt;<br>
+#include &#20;&lt;vector&gt;<br>
 <br>
-int&nbsp;apply_chunk_main(int&nbsp;argc,&nbsp;char&nbsp;**argv);<br>
+int &#20;apply_chunk_main(int &#20;argc, &#20;char &#20;**argv);<br>
 <br>
-namespace&nbsp;fs&nbsp;=&nbsp;std::filesystem;<br>
+namespace &#20;fs &#20;= &#20;std::filesystem;<br>
 <br>
-static&nbsp;std::vector&lt;std::string&gt;&nbsp;read_lines(const&nbsp;fs::path&nbsp;&amp;p)<br>
+static &#20;std::vector&lt;std::string&gt; &#20;read_lines(const &#20;fs::path &#20;&amp;p)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::ifstream&nbsp;in(p);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;v;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;s;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(std::getline(in,&nbsp;s))<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v.push_back(s);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;v;<br>
+ &#20; &#20; &#20; &#20;std::ifstream &#20;in(p);<br>
+ &#20; &#20; &#20; &#20;std::vector&lt;std::string&gt; &#20;v;<br>
+ &#20; &#20; &#20; &#20;std::string &#20;s;<br>
+ &#20; &#20; &#20; &#20;while &#20;(std::getline(in, &#20;s))<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;v.push_back(s);<br>
+ &#20; &#20; &#20; &#20;return &#20;v;<br>
 }<br>
 <br>
-static&nbsp;int&nbsp;run_apply(const&nbsp;fs::path&nbsp;&amp;patch)<br>
+static &#20;int &#20;run_apply(const &#20;fs::path &#20;&amp;patch)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;a0&nbsp;=&nbsp;&quot;apply&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;a1&nbsp;=&nbsp;patch.string();<br>
+ &#20; &#20; &#20; &#20;std::string &#20;a0 &#20;= &#20;&quot;apply&quot;;<br>
+ &#20; &#20; &#20; &#20;std::string &#20;a1 &#20;= &#20;patch.string();<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;store&nbsp;=&nbsp;{a0,&nbsp;a1};<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;char&nbsp;*&gt;&nbsp;argv;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(auto&nbsp;&amp;s&nbsp;:&nbsp;store)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;argv.push_back(s.data());<br>
+ &#20; &#20; &#20; &#20;std::vector&lt;std::string&gt; &#20;store &#20;= &#20;{a0, &#20;a1};<br>
+ &#20; &#20; &#20; &#20;std::vector&lt;char &#20;*&gt; &#20;argv;<br>
+ &#20; &#20; &#20; &#20;for &#20;(auto &#20;&amp;s &#20;: &#20;store)<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;argv.push_back(s.data());<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;apply_chunk_main((int)argv.size(),&nbsp;argv.data());<br>
+ &#20; &#20; &#20; &#20;return &#20;apply_chunk_main((int)argv.size(), &#20;argv.data());<br>
 }<br>
 <br>
-//&nbsp;============================================================================<br>
-//&nbsp;1.&nbsp;MARKER:&nbsp;без&nbsp;BEFORE/AFTER&nbsp;—&nbsp;работает&nbsp;как&nbsp;старый&nbsp;режим<br>
-//&nbsp;============================================================================<br>
-TEST_CASE(&quot;YAML:&nbsp;only&nbsp;MARKER:&nbsp;behaves&nbsp;like&nbsp;legacy&nbsp;replace-text&quot;)<br>
+// &#20;============================================================================<br>
+// &#20;1. &#20;MARKER: &#20;без &#20;BEFORE/AFTER &#20;— &#20;работает &#20;как &#20;старый &#20;режим<br>
+// &#20;============================================================================<br>
+TEST_CASE(&quot;YAML: &#20;only &#20;MARKER: &#20;behaves &#20;like &#20;legacy &#20;replace-text&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;yaml_marker_only_test&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(tmp);<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;tmp &#20;= &#20;fs::temp_directory_path() &#20;/ &#20;&quot;yaml_marker_only_test&quot;;<br>
+ &#20; &#20; &#20; &#20;fs::remove_all(tmp);<br>
+ &#20; &#20; &#20; &#20;fs::create_directories(tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;f&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;a.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;A\nB\nC\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;f &#20;= &#20;tmp &#20;/ &#20;&quot;a.txt&quot;;<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ofstream &#20;out(f);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out &#20;&lt;&lt; &#20;&quot;A\nB\nC\n&quot;;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;patch&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;patch1.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(patch);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;===&nbsp;file:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;f.string()<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;===\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;replace-text\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;MARKER:\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;B\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;X\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;patch &#20;= &#20;tmp &#20;/ &#20;&quot;patch1.txt&quot;;<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ofstream &#20;out(patch);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out &#20;&lt;&lt; &#20;&quot;=== &#20;file: &#20;&quot; &#20;&lt;&lt; &#20;f.string()<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&lt;&lt; &#20;&quot; &#20;===\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;--- &#20;replace-text\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;MARKER:\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;B\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;---\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;X\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;=END=\n&quot;;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(run_apply(patch)&nbsp;==&nbsp;0);<br>
+ &#20; &#20; &#20; &#20;CHECK(run_apply(patch) &#20;== &#20;0);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;L&nbsp;=&nbsp;read_lines(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;REQUIRE(L.size()&nbsp;==&nbsp;3);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(L[0]&nbsp;==&nbsp;&quot;A&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(L[1]&nbsp;==&nbsp;&quot;X&quot;);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(L[2]&nbsp;==&nbsp;&quot;C&quot;);<br>
+ &#20; &#20; &#20; &#20;auto &#20;L &#20;= &#20;read_lines(f);<br>
+ &#20; &#20; &#20; &#20;REQUIRE(L.size() &#20;== &#20;3);<br>
+ &#20; &#20; &#20; &#20;CHECK(L[0] &#20;== &#20;&quot;A&quot;);<br>
+ &#20; &#20; &#20; &#20;CHECK(L[1] &#20;== &#20;&quot;X&quot;);<br>
+ &#20; &#20; &#20; &#20;CHECK(L[2] &#20;== &#20;&quot;C&quot;);<br>
 }<br>
 <br>
-//&nbsp;============================================================================<br>
-//&nbsp;2.&nbsp;BEFORE&nbsp;fuzzy<br>
-//&nbsp;============================================================================<br>
-TEST_CASE(&quot;YAML:&nbsp;BEFORE&nbsp;fuzzy&nbsp;selects&nbsp;the&nbsp;correct&nbsp;marker&quot;)<br>
+// &#20;============================================================================<br>
+// &#20;2. &#20;BEFORE &#20;fuzzy<br>
+// &#20;============================================================================<br>
+TEST_CASE(&quot;YAML: &#20;BEFORE &#20;fuzzy &#20;selects &#20;the &#20;correct &#20;marker&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;yaml_before_test2&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(tmp);<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;tmp &#20;= &#20;fs::temp_directory_path() &#20;/ &#20;&quot;yaml_before_test2&quot;;<br>
+ &#20; &#20; &#20; &#20;fs::remove_all(tmp);<br>
+ &#20; &#20; &#20; &#20;fs::create_directories(tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;f&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;b.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;foo\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;target\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;bar\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;XXX\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;target\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;YYY\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;f &#20;= &#20;tmp &#20;/ &#20;&quot;b.txt&quot;;<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ofstream &#20;out(f);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out &#20;&lt;&lt; &#20;&quot;foo\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;target\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;bar\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;XXX\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;target\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;YYY\n&quot;;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;patch&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;patch2.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(patch);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;===&nbsp;file:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;f.string()<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;===\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;replace-text\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;BEFORE:\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;XXX\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;MARKER:\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;target\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;SECOND\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;patch &#20;= &#20;tmp &#20;/ &#20;&quot;patch2.txt&quot;;<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ofstream &#20;out(patch);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out &#20;&lt;&lt; &#20;&quot;=== &#20;file: &#20;&quot; &#20;&lt;&lt; &#20;f.string()<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&lt;&lt; &#20;&quot; &#20;===\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;--- &#20;replace-text\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;BEFORE:\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;XXX\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;MARKER:\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;target\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;---\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;SECOND\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;=END=\n&quot;;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(run_apply(patch)&nbsp;==&nbsp;0);<br>
+ &#20; &#20; &#20; &#20;CHECK(run_apply(patch) &#20;== &#20;0);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;L&nbsp;=&nbsp;read_lines(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;REQUIRE(L.size()&nbsp;==&nbsp;7);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(L[5]&nbsp;==&nbsp;&quot;SECOND&quot;);<br>
+ &#20; &#20; &#20; &#20;auto &#20;L &#20;= &#20;read_lines(f);<br>
+ &#20; &#20; &#20; &#20;REQUIRE(L.size() &#20;== &#20;7);<br>
+ &#20; &#20; &#20; &#20;CHECK(L[5] &#20;== &#20;&quot;SECOND&quot;);<br>
 }<br>
 <br>
-//&nbsp;============================================================================<br>
-//&nbsp;3.&nbsp;AFTER&nbsp;fuzzy<br>
-//&nbsp;============================================================================<br>
-TEST_CASE(&quot;YAML:&nbsp;AFTER&nbsp;fuzzy&nbsp;selects&nbsp;correct&nbsp;block&quot;)<br>
+// &#20;============================================================================<br>
+// &#20;3. &#20;AFTER &#20;fuzzy<br>
+// &#20;============================================================================<br>
+TEST_CASE(&quot;YAML: &#20;AFTER &#20;fuzzy &#20;selects &#20;correct &#20;block&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;yaml_after_test2&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(tmp);<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;tmp &#20;= &#20;fs::temp_directory_path() &#20;/ &#20;&quot;yaml_after_test2&quot;;<br>
+ &#20; &#20; &#20; &#20;fs::remove_all(tmp);<br>
+ &#20; &#20; &#20; &#20;fs::create_directories(tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;f&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;c.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;log\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;X\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;done\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;log\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;X\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;finish\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;f &#20;= &#20;tmp &#20;/ &#20;&quot;c.txt&quot;;<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ofstream &#20;out(f);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out &#20;&lt;&lt; &#20;&quot;log\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;X\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;done\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;log\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;X\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;finish\n&quot;;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;patch&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;patch3.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(patch);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;===&nbsp;file:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;f.string()<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;===\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;replace-text\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;MARKER:\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;X\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;AFTER:\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;finish\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;CHANGED\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;patch &#20;= &#20;tmp &#20;/ &#20;&quot;patch3.txt&quot;;<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ofstream &#20;out(patch);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out &#20;&lt;&lt; &#20;&quot;=== &#20;file: &#20;&quot; &#20;&lt;&lt; &#20;f.string()<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&lt;&lt; &#20;&quot; &#20;===\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;--- &#20;replace-text\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;MARKER:\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;X\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;AFTER:\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;finish\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;---\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;CHANGED\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;=END=\n&quot;;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(run_apply(patch)&nbsp;==&nbsp;0);<br>
+ &#20; &#20; &#20; &#20;CHECK(run_apply(patch) &#20;== &#20;0);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;L&nbsp;=&nbsp;read_lines(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;REQUIRE(L.size()&nbsp;==&nbsp;7);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(L[5]&nbsp;==&nbsp;&quot;CHANGED&quot;);<br>
+ &#20; &#20; &#20; &#20;auto &#20;L &#20;= &#20;read_lines(f);<br>
+ &#20; &#20; &#20; &#20;REQUIRE(L.size() &#20;== &#20;7);<br>
+ &#20; &#20; &#20; &#20;CHECK(L[5] &#20;== &#20;&quot;CHANGED&quot;);<br>
 }<br>
 <br>
-//&nbsp;============================================================================<br>
-//&nbsp;4.&nbsp;BEFORE&nbsp;+&nbsp;AFTER&nbsp;together<br>
-//&nbsp;============================================================================<br>
-TEST_CASE(&quot;YAML:&nbsp;strong&nbsp;fuzzy&nbsp;match&nbsp;with&nbsp;BEFORE&nbsp;+&nbsp;AFTER&quot;)<br>
+// &#20;============================================================================<br>
+// &#20;4. &#20;BEFORE &#20;+ &#20;AFTER &#20;together<br>
+// &#20;============================================================================<br>
+TEST_CASE(&quot;YAML: &#20;strong &#20;fuzzy &#20;match &#20;with &#20;BEFORE &#20;+ &#20;AFTER&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;yaml_before_after_test2&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(tmp);<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;tmp &#20;= &#20;fs::temp_directory_path() &#20;/ &#20;&quot;yaml_before_after_test2&quot;;<br>
+ &#20; &#20; &#20; &#20;fs::remove_all(tmp);<br>
+ &#20; &#20; &#20; &#20;fs::create_directories(tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;f&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;d.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;A\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;mark\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;B\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;C\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;mark\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;D\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;f &#20;= &#20;tmp &#20;/ &#20;&quot;d.txt&quot;;<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ofstream &#20;out(f);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out &#20;&lt;&lt; &#20;&quot;A\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;mark\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;B\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;C\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;mark\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;D\n&quot;;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;patch&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;patch4.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(patch);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;===&nbsp;file:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;f.string()<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;===\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;replace-text\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;BEFORE:\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;C\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;MARKER:\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;mark\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;AFTER:\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;D\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;SELECTED\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;patch &#20;= &#20;tmp &#20;/ &#20;&quot;patch4.txt&quot;;<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ofstream &#20;out(patch);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out &#20;&lt;&lt; &#20;&quot;=== &#20;file: &#20;&quot; &#20;&lt;&lt; &#20;f.string()<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&lt;&lt; &#20;&quot; &#20;===\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;--- &#20;replace-text\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;BEFORE:\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;C\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;MARKER:\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;mark\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;AFTER:\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;D\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;---\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;SELECTED\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;=END=\n&quot;;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(run_apply(patch)&nbsp;==&nbsp;0);<br>
+ &#20; &#20; &#20; &#20;CHECK(run_apply(patch) &#20;== &#20;0);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;L&nbsp;=&nbsp;read_lines(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;REQUIRE(L.size()&nbsp;==&nbsp;7);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(L[5]&nbsp;==&nbsp;&quot;SELECTED&quot;);<br>
+ &#20; &#20; &#20; &#20;auto &#20;L &#20;= &#20;read_lines(f);<br>
+ &#20; &#20; &#20; &#20;REQUIRE(L.size() &#20;== &#20;7);<br>
+ &#20; &#20; &#20; &#20;CHECK(L[5] &#20;== &#20;&quot;SELECTED&quot;);<br>
 }<br>
 <br>
-//&nbsp;============================================================================<br>
-//&nbsp;7.&nbsp;Legacy&nbsp;format&nbsp;still&nbsp;works<br>
-//&nbsp;============================================================================<br>
-TEST_CASE(&quot;YAML:&nbsp;legacy&nbsp;replace-text&nbsp;still&nbsp;works&quot;)<br>
+// &#20;============================================================================<br>
+// &#20;7. &#20;Legacy &#20;format &#20;still &#20;works<br>
+// &#20;============================================================================<br>
+TEST_CASE(&quot;YAML: &#20;legacy &#20;replace-text &#20;still &#20;works&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;yaml_legacy_test2&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(tmp);<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;tmp &#20;= &#20;fs::temp_directory_path() &#20;/ &#20;&quot;yaml_legacy_test2&quot;;<br>
+ &#20; &#20; &#20; &#20;fs::remove_all(tmp);<br>
+ &#20; &#20; &#20; &#20;fs::create_directories(tmp);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;f&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;g.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;1\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;2\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;3\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;f &#20;= &#20;tmp &#20;/ &#20;&quot;g.txt&quot;;<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ofstream &#20;out(f);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out &#20;&lt;&lt; &#20;&quot;1\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;2\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;3\n&quot;;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;patch&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;patch7.txt&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(patch);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;&quot;===&nbsp;file:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;f.string()<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;&quot;&nbsp;===\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---&nbsp;replace-text\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;2\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;---\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;X\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;=END=\n&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ &#20; &#20; &#20; &#20;fs::path &#20;patch &#20;= &#20;tmp &#20;/ &#20;&quot;patch7.txt&quot;;<br>
+ &#20; &#20; &#20; &#20;{<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;std::ofstream &#20;out(patch);<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;out &#20;&lt;&lt; &#20;&quot;=== &#20;file: &#20;&quot; &#20;&lt;&lt; &#20;f.string()<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&lt;&lt; &#20;&quot; &#20;===\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;--- &#20;replace-text\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;2\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;---\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;X\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;=END=\n&quot;;<br>
+ &#20; &#20; &#20; &#20;}<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(run_apply(patch)&nbsp;==&nbsp;0);<br>
+ &#20; &#20; &#20; &#20;CHECK(run_apply(patch) &#20;== &#20;0);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;auto&nbsp;L&nbsp;=&nbsp;read_lines(f);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(L[1]&nbsp;==&nbsp;&quot;X&quot;);<br>
+ &#20; &#20; &#20; &#20;auto &#20;L &#20;= &#20;read_lines(f);<br>
+ &#20; &#20; &#20; &#20;CHECK(L[1] &#20;== &#20;&quot;X&quot;);<br>
 }<br>
 <!-- END SCAT CODE -->
 </body>

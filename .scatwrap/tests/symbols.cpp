@@ -6,179 +6,179 @@
 </head>
 <body>
 <!-- BEGIN SCAT CODE -->
-#include&nbsp;&quot;symbols.h&quot;<br>
-#include&nbsp;&quot;doctest/doctest.h&quot;<br>
+#include &#20;&quot;symbols.h&quot;<br>
+#include &#20;&quot;doctest/doctest.h&quot;<br>
 <br>
-#include&nbsp;&lt;string&gt;<br>
+#include &#20;&lt;string&gt;<br>
 <br>
-TEST_CASE(&quot;CppSymbolFinder:&nbsp;finds&nbsp;simple&nbsp;class&nbsp;definition&quot;)<br>
+TEST_CASE(&quot;CppSymbolFinder: &#20;finds &#20;simple &#20;class &#20;definition&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;src&nbsp;=&nbsp;&quot;class&nbsp;Foo&nbsp;{\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;public:\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;void&nbsp;bar();\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;};\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;class&nbsp;Bar&nbsp;{};\n&quot;;<br>
+ &#20; &#20; &#20; &#20;std::string &#20;src &#20;= &#20;&quot;class &#20;Foo &#20;{\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;public:\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;void &#20;bar();\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;};\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;class &#20;Bar &#20;{};\n&quot;;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;CppSymbolFinder&nbsp;finder(src);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;r;<br>
+ &#20; &#20; &#20; &#20;CppSymbolFinder &#20;finder(src);<br>
+ &#20; &#20; &#20; &#20;Region &#20;r;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(finder.find_class(&quot;Foo&quot;,&nbsp;r));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r.start_line&nbsp;==&nbsp;0);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r.end_line&nbsp;==&nbsp;3);<br>
+ &#20; &#20; &#20; &#20;CHECK(finder.find_class(&quot;Foo&quot;, &#20;r));<br>
+ &#20; &#20; &#20; &#20;CHECK(r.start_line &#20;== &#20;0);<br>
+ &#20; &#20; &#20; &#20;CHECK(r.end_line &#20;== &#20;3);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Другой&nbsp;класс&nbsp;тоже&nbsp;должен&nbsp;находиться<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(finder.find_class(&quot;Bar&quot;,&nbsp;r));<br>
+ &#20; &#20; &#20; &#20;// &#20;Другой &#20;класс &#20;тоже &#20;должен &#20;находиться<br>
+ &#20; &#20; &#20; &#20;CHECK(finder.find_class(&quot;Bar&quot;, &#20;r));<br>
 }<br>
 <br>
-TEST_CASE(&quot;CppSymbolFinder:&nbsp;ignores&nbsp;forward&nbsp;declaration&quot;)<br>
+TEST_CASE(&quot;CppSymbolFinder: &#20;ignores &#20;forward &#20;declaration&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;src&nbsp;=&nbsp;&quot;class&nbsp;Foo;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;class&nbsp;Foo&nbsp;{\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;public:\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;void&nbsp;bar();\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;};\n&quot;;<br>
+ &#20; &#20; &#20; &#20;std::string &#20;src &#20;= &#20;&quot;class &#20;Foo;\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;class &#20;Foo &#20;{\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;public:\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;void &#20;bar();\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;};\n&quot;;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;CppSymbolFinder&nbsp;finder(src);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;r;<br>
+ &#20; &#20; &#20; &#20;CppSymbolFinder &#20;finder(src);<br>
+ &#20; &#20; &#20; &#20;Region &#20;r;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(finder.find_class(&quot;Foo&quot;,&nbsp;r));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r.start_line&nbsp;==&nbsp;2);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r.end_line&nbsp;==&nbsp;5);<br>
+ &#20; &#20; &#20; &#20;CHECK(finder.find_class(&quot;Foo&quot;, &#20;r));<br>
+ &#20; &#20; &#20; &#20;CHECK(r.start_line &#20;== &#20;2);<br>
+ &#20; &#20; &#20; &#20;CHECK(r.end_line &#20;== &#20;5);<br>
 }<br>
 <br>
-TEST_CASE(&quot;CppSymbolFinder:&nbsp;finds&nbsp;method&nbsp;declarations&nbsp;inside&nbsp;class&quot;)<br>
+TEST_CASE(&quot;CppSymbolFinder: &#20;finds &#20;method &#20;declarations &#20;inside &#20;class&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;src&nbsp;=&nbsp;&quot;class&nbsp;Foo&nbsp;{\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;public:\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;bar(int&nbsp;x)&nbsp;const;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;void&nbsp;baz();\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;};\n&quot;;<br>
+ &#20; &#20; &#20; &#20;std::string &#20;src &#20;= &#20;&quot;class &#20;Foo &#20;{\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;public:\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;int &#20;bar(int &#20;x) &#20;const;\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;void &#20;baz();\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;};\n&quot;;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;CppSymbolFinder&nbsp;finder(src);<br>
+ &#20; &#20; &#20; &#20;CppSymbolFinder &#20;finder(src);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;r1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(finder.find_method(&quot;Foo&quot;,&nbsp;&quot;bar&quot;,&nbsp;r1));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r1.start_line&nbsp;==&nbsp;2);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r1.end_line&nbsp;==&nbsp;2);<br>
+ &#20; &#20; &#20; &#20;Region &#20;r1;<br>
+ &#20; &#20; &#20; &#20;CHECK(finder.find_method(&quot;Foo&quot;, &#20;&quot;bar&quot;, &#20;r1));<br>
+ &#20; &#20; &#20; &#20;CHECK(r1.start_line &#20;== &#20;2);<br>
+ &#20; &#20; &#20; &#20;CHECK(r1.end_line &#20;== &#20;2);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;r2;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(finder.find_method(&quot;Foo&quot;,&nbsp;&quot;baz&quot;,&nbsp;r2));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r2.start_line&nbsp;==&nbsp;3);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r2.end_line&nbsp;==&nbsp;3);<br>
+ &#20; &#20; &#20; &#20;Region &#20;r2;<br>
+ &#20; &#20; &#20; &#20;CHECK(finder.find_method(&quot;Foo&quot;, &#20;&quot;baz&quot;, &#20;r2));<br>
+ &#20; &#20; &#20; &#20;CHECK(r2.start_line &#20;== &#20;3);<br>
+ &#20; &#20; &#20; &#20;CHECK(r2.end_line &#20;== &#20;3);<br>
 }<br>
 <br>
-TEST_CASE(&quot;CppSymbolFinder:&nbsp;finds&nbsp;inline&nbsp;method&nbsp;definition&quot;)<br>
+TEST_CASE(&quot;CppSymbolFinder: &#20;finds &#20;inline &#20;method &#20;definition&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;src&nbsp;=&nbsp;&quot;class&nbsp;Foo&nbsp;{\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;public:\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;bar(int&nbsp;x)&nbsp;const&nbsp;{\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;x&nbsp;+&nbsp;1;\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;}\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;};\n&quot;;<br>
+ &#20; &#20; &#20; &#20;std::string &#20;src &#20;= &#20;&quot;class &#20;Foo &#20;{\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;public:\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;int &#20;bar(int &#20;x) &#20;const &#20;{\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;x &#20;+ &#20;1;\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;}\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;};\n&quot;;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;CppSymbolFinder&nbsp;finder(src);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;r;<br>
+ &#20; &#20; &#20; &#20;CppSymbolFinder &#20;finder(src);<br>
+ &#20; &#20; &#20; &#20;Region &#20;r;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(finder.find_method(&quot;Foo&quot;,&nbsp;&quot;bar&quot;,&nbsp;r));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r.start_line&nbsp;==&nbsp;2);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r.end_line&nbsp;==&nbsp;4);<br>
+ &#20; &#20; &#20; &#20;CHECK(finder.find_method(&quot;Foo&quot;, &#20;&quot;bar&quot;, &#20;r));<br>
+ &#20; &#20; &#20; &#20;CHECK(r.start_line &#20;== &#20;2);<br>
+ &#20; &#20; &#20; &#20;CHECK(r.end_line &#20;== &#20;4);<br>
 }<br>
 <br>
-TEST_CASE(&quot;CppSymbolFinder:&nbsp;method&nbsp;not&nbsp;found&nbsp;returns&nbsp;false&quot;)<br>
+TEST_CASE(&quot;CppSymbolFinder: &#20;method &#20;not &#20;found &#20;returns &#20;false&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;src&nbsp;=&nbsp;&quot;class&nbsp;Foo&nbsp;{\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;public:\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;void&nbsp;bar();\n&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;};\n&quot;;<br>
+ &#20; &#20; &#20; &#20;std::string &#20;src &#20;= &#20;&quot;class &#20;Foo &#20;{\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;public:\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;void &#20;bar();\n&quot;<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;};\n&quot;;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;CppSymbolFinder&nbsp;finder(src);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;r;<br>
+ &#20; &#20; &#20; &#20;CppSymbolFinder &#20;finder(src);<br>
+ &#20; &#20; &#20; &#20;Region &#20;r;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK_FALSE(finder.find_method(&quot;Foo&quot;,&nbsp;&quot;baz&quot;,&nbsp;r));<br>
+ &#20; &#20; &#20; &#20;CHECK_FALSE(finder.find_method(&quot;Foo&quot;, &#20;&quot;baz&quot;, &#20;r));<br>
 }<br>
 <br>
-TEST_CASE(&quot;CppSymbolFinder:&nbsp;complex&nbsp;file&nbsp;with&nbsp;multiple&nbsp;classes&nbsp;and&nbsp;comments&quot;)<br>
+TEST_CASE(&quot;CppSymbolFinder: &#20;complex &#20;file &#20;with &#20;multiple &#20;classes &#20;and &#20;comments&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;src&nbsp;=&nbsp;&quot;#pragma&nbsp;once\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;0<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;1<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;//&nbsp;forward&nbsp;decl\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;2<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;class&nbsp;Forward;\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;3<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;4<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;/*&nbsp;comment&nbsp;with&nbsp;class&nbsp;Fake&nbsp;{&nbsp;*/\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;5<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;6<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;class&nbsp;First&nbsp;{\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;7<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;public:\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;8<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;method&nbsp;comment\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;9<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;m1(int&nbsp;x)&nbsp;const;\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;10<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;m2()&nbsp;const&nbsp;{\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;11<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;\&quot;class&nbsp;Fake&nbsp;{\&quot;;&nbsp;//&nbsp;in&nbsp;string\n&quot;&nbsp;//&nbsp;12<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;}\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;13<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;};\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;14<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;15<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;//&nbsp;Another&nbsp;class\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;16<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;struct&nbsp;Second&nbsp;{\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;17<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;void&nbsp;go();\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;18<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;};\n&quot;;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;19<br>
+ &#20; &#20; &#20; &#20;std::string &#20;src &#20;= &#20;&quot;#pragma &#20;once\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;0<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;1<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;// &#20;forward &#20;decl\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;2<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;class &#20;Forward;\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;3<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;4<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;/* &#20;comment &#20;with &#20;class &#20;Fake &#20;{ &#20;*/\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;5<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;6<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;class &#20;First &#20;{\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;7<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;public:\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;8<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;// &#20;method &#20;comment\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;9<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;int &#20;m1(int &#20;x) &#20;const;\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;10<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;std::string &#20;m2() &#20;const &#20;{\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;11<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;return &#20;\&quot;class &#20;Fake &#20;{\&quot;; &#20;// &#20;in &#20;string\n&quot; &#20;// &#20;12<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;}\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;13<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;};\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;14<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;15<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;// &#20;Another &#20;class\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;16<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;struct &#20;Second &#20;{\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;17<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;void &#20;go();\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;18<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;};\n&quot;; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;19<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;CppSymbolFinder&nbsp;finder(src);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;r;<br>
+ &#20; &#20; &#20; &#20;CppSymbolFinder &#20;finder(src);<br>
+ &#20; &#20; &#20; &#20;Region &#20;r;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;forward&nbsp;declaration&nbsp;не&nbsp;должен&nbsp;считаться&nbsp;определением<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK_FALSE(finder.find_class(&quot;Forward&quot;,&nbsp;r));<br>
+ &#20; &#20; &#20; &#20;// &#20;forward &#20;declaration &#20;не &#20;должен &#20;считаться &#20;определением<br>
+ &#20; &#20; &#20; &#20;CHECK_FALSE(finder.find_class(&quot;Forward&quot;, &#20;r));<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Первый&nbsp;класс<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(finder.find_class(&quot;First&quot;,&nbsp;r));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r.start_line&nbsp;==&nbsp;7);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r.end_line&nbsp;==&nbsp;14);<br>
+ &#20; &#20; &#20; &#20;// &#20;Первый &#20;класс<br>
+ &#20; &#20; &#20; &#20;CHECK(finder.find_class(&quot;First&quot;, &#20;r));<br>
+ &#20; &#20; &#20; &#20;CHECK(r.start_line &#20;== &#20;7);<br>
+ &#20; &#20; &#20; &#20;CHECK(r.end_line &#20;== &#20;14);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Второй&nbsp;класс<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(finder.find_class(&quot;Second&quot;,&nbsp;r));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r.start_line&nbsp;==&nbsp;17);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(r.end_line&nbsp;==&nbsp;19);<br>
+ &#20; &#20; &#20; &#20;// &#20;Второй &#20;класс<br>
+ &#20; &#20; &#20; &#20;CHECK(finder.find_class(&quot;Second&quot;, &#20;r));<br>
+ &#20; &#20; &#20; &#20;CHECK(r.start_line &#20;== &#20;17);<br>
+ &#20; &#20; &#20; &#20;CHECK(r.end_line &#20;== &#20;19);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Методы&nbsp;первого&nbsp;класса<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;m1;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(finder.find_method(&quot;First&quot;,&nbsp;&quot;m1&quot;,&nbsp;m1));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(m1.start_line&nbsp;==&nbsp;10);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(m1.end_line&nbsp;==&nbsp;10);<br>
+ &#20; &#20; &#20; &#20;// &#20;Методы &#20;первого &#20;класса<br>
+ &#20; &#20; &#20; &#20;Region &#20;m1;<br>
+ &#20; &#20; &#20; &#20;CHECK(finder.find_method(&quot;First&quot;, &#20;&quot;m1&quot;, &#20;m1));<br>
+ &#20; &#20; &#20; &#20;CHECK(m1.start_line &#20;== &#20;10);<br>
+ &#20; &#20; &#20; &#20;CHECK(m1.end_line &#20;== &#20;10);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;m2;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(finder.find_method(&quot;First&quot;,&nbsp;&quot;m2&quot;,&nbsp;m2));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(m2.start_line&nbsp;==&nbsp;11);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(m2.end_line&nbsp;==&nbsp;13);<br>
+ &#20; &#20; &#20; &#20;Region &#20;m2;<br>
+ &#20; &#20; &#20; &#20;CHECK(finder.find_method(&quot;First&quot;, &#20;&quot;m2&quot;, &#20;m2));<br>
+ &#20; &#20; &#20; &#20;CHECK(m2.start_line &#20;== &#20;11);<br>
+ &#20; &#20; &#20; &#20;CHECK(m2.end_line &#20;== &#20;13);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Метод&nbsp;во&nbsp;втором&nbsp;классе<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;m_go;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(finder.find_method(&quot;Second&quot;,&nbsp;&quot;go&quot;,&nbsp;m_go));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(m_go.start_line&nbsp;==&nbsp;18);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(m_go.end_line&nbsp;==&nbsp;18);<br>
+ &#20; &#20; &#20; &#20;// &#20;Метод &#20;во &#20;втором &#20;классе<br>
+ &#20; &#20; &#20; &#20;Region &#20;m_go;<br>
+ &#20; &#20; &#20; &#20;CHECK(finder.find_method(&quot;Second&quot;, &#20;&quot;go&quot;, &#20;m_go));<br>
+ &#20; &#20; &#20; &#20;CHECK(m_go.start_line &#20;== &#20;18);<br>
+ &#20; &#20; &#20; &#20;CHECK(m_go.end_line &#20;== &#20;18);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK_FALSE(finder.find_class(&quot;Fake&quot;,&nbsp;r));<br>
+ &#20; &#20; &#20; &#20;CHECK_FALSE(finder.find_class(&quot;Fake&quot;, &#20;r));<br>
 }<br>
 <br>
-TEST_CASE(&quot;CppSymbolFinder:&nbsp;handles&nbsp;extra&nbsp;whitespace&nbsp;and&nbsp;newlines&quot;)<br>
+TEST_CASE(&quot;CppSymbolFinder: &#20;handles &#20;extra &#20;whitespace &#20;and &#20;newlines&quot;)<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;src&nbsp;=&nbsp;&quot;&nbsp;&nbsp;\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;0<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;class&nbsp;&nbsp;&nbsp;Weird&nbsp;&nbsp;\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;1<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;:&nbsp;public&nbsp;Base\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;2<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;{\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;3<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;public:\n&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;4<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;&nbsp;&nbsp;&nbsp;&nbsp;void&nbsp;&nbsp;run&nbsp;(&nbsp;);\n&quot;&nbsp;//&nbsp;5<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&quot;};\n&quot;;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;6<br>
+ &#20; &#20; &#20; &#20;std::string &#20;src &#20;= &#20;&quot; &#20; &#20;\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;0<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;class &#20; &#20; &#20;Weird &#20; &#20;\n&quot; &#20; &#20; &#20; &#20;// &#20;1<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20;: &#20;public &#20;Base\n&quot; &#20; &#20; &#20; &#20;// &#20;2<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;{\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;3<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;public:\n&quot; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;4<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot; &#20; &#20; &#20; &#20;void &#20; &#20;run &#20;( &#20;);\n&quot; &#20;// &#20;5<br>
+ &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;&quot;};\n&quot;; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20; &#20;// &#20;6<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;CppSymbolFinder&nbsp;finder(src);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;rc;<br>
+ &#20; &#20; &#20; &#20;CppSymbolFinder &#20;finder(src);<br>
+ &#20; &#20; &#20; &#20;Region &#20;rc;<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(finder.find_class(&quot;Weird&quot;,&nbsp;rc));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(rc.start_line&nbsp;==&nbsp;1);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(rc.end_line&nbsp;==&nbsp;6);<br>
+ &#20; &#20; &#20; &#20;CHECK(finder.find_class(&quot;Weird&quot;, &#20;rc));<br>
+ &#20; &#20; &#20; &#20;CHECK(rc.start_line &#20;== &#20;1);<br>
+ &#20; &#20; &#20; &#20;CHECK(rc.end_line &#20;== &#20;6);<br>
 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;Region&nbsp;rm;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(finder.find_method(&quot;Weird&quot;,&nbsp;&quot;run&quot;,&nbsp;rm));<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(rm.start_line&nbsp;==&nbsp;5);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CHECK(rm.end_line&nbsp;==&nbsp;5);<br>
+ &#20; &#20; &#20; &#20;Region &#20;rm;<br>
+ &#20; &#20; &#20; &#20;CHECK(finder.find_method(&quot;Weird&quot;, &#20;&quot;run&quot;, &#20;rm));<br>
+ &#20; &#20; &#20; &#20;CHECK(rm.start_line &#20;== &#20;5);<br>
+ &#20; &#20; &#20; &#20;CHECK(rm.end_line &#20;== &#20;5);<br>
 }<br>
 <!-- END SCAT CODE -->
 </body>
