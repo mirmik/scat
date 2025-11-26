@@ -20,6 +20,7 @@
 #include &lt;set&gt;
 #include &lt;sstream&gt;
 #include &lt;exception&gt;
+    #include &quot;git_info.h&quot;
 
 int wrap_files_to_html(const std::vector&lt;std::filesystem::path&gt;&amp; files,
                               const Options&amp; opt);
@@ -444,6 +445,23 @@ int scat_main(int argc, char** argv)
 {
     Options opt = parse_options(argc, argv);
     g_use_absolute_paths = opt.abs_paths;
+
+        // Git info mode: print repository metadata and exit
+        if (opt.git_info)
+        {
+            GitInfo info = detect_git_info();
+
+            if (!info.has_commit &amp;&amp; !info.has_remote) {
+                std::cout &lt;&lt; &quot;Git: not a repository or git is not available\n&quot;;
+            } else {
+                if (info.has_commit)
+                    std::cout &lt;&lt; &quot;Git commit: &quot; &lt;&lt; info.commit &lt;&lt; &quot;\n&quot;;
+                if (info.has_remote)
+                    std::cout &lt;&lt; &quot;Git remote: &quot; &lt;&lt; info.remote &lt;&lt; &quot;\n&quot;;
+            }
+
+            return 0;
+        }
 
     // HTTP server mode
     if (opt.server_port != 0)

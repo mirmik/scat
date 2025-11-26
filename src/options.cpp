@@ -21,10 +21,12 @@ static void print_help() {
         "  --chunk-help  Show chunk v2 help\n"
         "  --wrap DIR    Wrap collected files as HTML into DIR\n"
         "  --prefix P    Prepend P before file paths in -l output\n"
+        "  --git-info    Print git commit hash and remote origin\n"
         "  -h, --help    Show this help\n"
         "\n"
         "If no paths are given, scat reads patterns from scat.txt.\n";
 }
+
 
 
 Options parse_options(int argc, char** argv) {
@@ -32,7 +34,6 @@ Options parse_options(int argc, char** argv) {
 
     for (int i = 1; i < argc; ++i) {
         std::string a = argv[i];
-
         if (a == "-r") {
             opt.recursive = true;
         } else if (a == "-l") {
@@ -78,6 +79,8 @@ Options parse_options(int argc, char** argv) {
                 std::cerr << "--config requires file\n";
                 std::exit(1);
             }
+        } else if (a == "--git-info") {
+            opt.git_info = true;
         } else if (a == "-h" || a == "--help") {
             print_help();
             std::exit(0);
@@ -99,3 +102,4 @@ Options parse_options(int argc, char** argv) {
 
     return opt;
 }
+
