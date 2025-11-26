@@ -253,63 +253,69 @@ void print_tree(const std::vector<std::filesystem::path>& files)
     std::cout << "========================\n\n";
 }
 
-// Печать списка файлов с размерами (общая логика для обоих режимов)
+// Печать списка файлов (с размерами — опционально)
 static void print_list_with_sizes(const std::vector<std::filesystem::path>& files,
                                   const Options& opt)
 {
     namespace fs = std::filesystem;
 
-    struct Item
-    {
-        fs::path path;
-        std::string display;
-        std::uintmax_t size;
+    struct Item {
+        fs::path           path;
+        std::string        display;
+        std::uintmax_t     size;
     };
 
     std::vector<Item> items;
     items.reserve(files.size());
 
-    std::uintmax_t total = 0;
-    std::size_t max_name = 0;
+    std::uintmax_t total   = 0;
+    std::size_t    max_len = 0;
 
-    for (auto& f : files)
-    {
+    for (auto& f : files) {
         auto disp = make_display_path(f);
-        auto sz = get_file_size(f);
+        auto sz   = get_file_size(f);
 
         total += sz;
 
         std::size_t shown_len = opt.path_prefix.size() + disp.size();
-        if (shown_len > max_name)
-            max_name = shown_len;
+        if (shown_len > max_len)
+            max_len = shown_len;
 
         items.push_back(Item{f, std::move(disp), sz});
     }
 
-    if (opt.sorted)
-    {
-        std::sort(items.begin(), items.end(), [](const Item& a, const Item& b) {
-            if (a.size != b.size)
-                return a.size > b.size; // по убыванию
-            return a.display < b.display;
-        });
+    if (opt.sorted) {
+        std::sort(items.begin(), items.end(),
+                  [](const Item& a, const Item& b) {
+                      if (a.size != b.size)
+                          return a.size > b.size; // по убыванию
+                      return a.display < b.display;
+                  });
     }
 
-    for (const auto& it : items)
-    {
+    const bool show_size = opt.show_size;
+
+    for (const auto& it : items) {
         std::string shown = opt.path_prefix + it.display;
         std::cout << shown;
-        if (max_name > shown.size())
-        {
-            std::size_t pad = max_name - shown.size();
-            for (std::size_t i = 0; i < pad; ++i)
-                std::cout << ' ';
+
+        if (show_size) {
+            if (max_len > shown.size()) {
+                std::size_t pad = max_len - shown.size();
+                for (std::size_t i = 0; i < pad; ++i)
+                    std::cout << ' ';
+            }
+            std::cout << " (" << it.size << " bytes)";
         }
-        std::cout << " (" << it.size << " bytes)\n";
+
+        std::cout << "\n";
     }
 
-    std::cout << "Total size: " << total << " bytes\n";
+    if (show_size) {
+        std::cout << "Total size: " << total << " bytes\n";
+    }
 }
+
 
 // Вывод всех файлов и подсчёт суммарного размера
 static std::uintmax_t dump_files_and_total(const std::vector<std::filesystem::path>& files,
