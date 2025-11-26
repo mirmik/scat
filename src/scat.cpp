@@ -1,16 +1,16 @@
 #include "scat.h"
 #include "collector.h"
 #include "options.h"
+#include "parser.h"
 #include "rules.h"
 #include "util.h"
+#include <filesystem>
+#include <fstream>
+#include <functional>
 #include <iostream>
 #include <map>
-#include <sstream>
-#include <fstream>
-#include "parser.h"
 #include <set>
-#include <functional>
-#include <filesystem>
+#include <sstream>
 
 namespace fs = std::filesystem;
 
@@ -18,151 +18,149 @@ bool g_use_absolute_paths = false;
 
 void print_chunk_help()
 {
-    std::cout <<
-"# Chunk v2 — Change Description Format\n"
-"\n"
-"Chunk v2 is a plain-text format for describing modifications to source files.\n"
-"A patch consists of multiple sections, each describing a single operation:\n"
-"line-based edits, text-based edits, or file-level operations.\n"
-"\n"
-"---\n"
-"\n"
-"## 1. Section structure\n"
-"\n"
-"=== file: <path> ===\n"
-"<command>\n"
-"<content...>\n"
-"=END=\n"
-"\n"
-"* <path> — relative file path\n"
-"* Empty lines between sections are allowed\n"
-"* Exactly one command per section\n"
-"* <content> may contain any lines, including empty ones\n"
-"\n"
-"---\n"
-"\n"
-"## 3. Commands (text-based)\n"
-"\n"
-"Two formats are supported for text-based commands:\n"
-"\n"
-"### 3.1 Legacy format (simple)\n"
-"These commands match an exact multi-line marker in the file.\n"
-"Everything before the first `---` is the marker; everything after it is content.\n"
-"\n"
-"### Insert after marker\n"
-"--- insert-after-text\n"
-"<marker lines...>\n"
-"---\n"
-"<inserted lines...>\n"
-"=END=\n"
-"\n"
-"### Insert before marker\n"
-"--- insert-before-text\n"
-"<marker lines...>\n"
-"---\n"
-"<inserted lines...>\n"
-"=END=\n"
-"\n"
-"### Replace marker\n"
-"--- replace-text\n"
-"<marker lines...>\n"
-"---\n"
-"<new lines...>\n"
-"=END=\n"
-"\n"
-"### Delete marker\n"
-"--- delete-text\n"
-"<marker lines...>\n"
-"---\n"
-"=END=\n"
-"\n"
-"---\n"
-"\n"
-"### 3.2 YAML strict format\n"
-"\n"
-"In YAML mode you can also specify strict context around the marker:\n"
-"\n"
-"--- replace-text\n"
-"BEFORE:\n"
-"  <lines that must appear immediately above the marker>\n"
-"MARKER:\n"
-"  <marker lines>\n"
-"AFTER:\n"
-"  <lines that must appear immediately below the marker>\n"
-"---\n"
-"<payload lines...>\n"
-"=END=\n"
-"\n"
-"Rules:\n"
-"* YAML mode is enabled only when the first non-empty line after the command\n"
-"  is one of: `BEFORE:`, `MARKER:`, `AFTER:`.\n"
-"* Matching is strict: BEFORE lines must be directly above the marker block;\n"
-"  AFTER lines must be directly below it.\n"
-"* Whitespace differences are ignored (lines are trimmed before comparison).\n"
-"* If BEFORE/AFTER are present, there is no fallback to the first occurrence\n"
-"  of the marker.\n"
-"* If more than one place matches the strict context, the patch fails as\n"
-"  ambiguous.\n"
-"* If no place matches the strict context, the patch fails with\n"
-"  \"strict marker context not found\".\n"
-"\n"
-"---\n"
-"\n"
-"## 4. File-level commands\n"
-"These operations work on the whole file rather than its contents.\n"
-"\n"
-"### Create or overwrite file\n"
-"--- create-file\n"
-"<file content...>\n"
-"=END=\n"
-"\n"
-"### Delete file\n"
-"--- delete-file\n"
-"=END=\n"
-"\n"
-"---\n"
-"\n"
-"## 5. Examples\n"
-"\n"
-"=== file: src/a.cpp ===\n"
-"--- replace 3:4\n"
-"int value = 42;\n"
-"std::cout << value << \"\\\\n\";\n"
-"=END=\n"
-"\n"
-"=== file: src/b.cpp ===\n"
-"--- insert-after 12\n"
-"log_debug(\"checkpoint reached\");\n"
-"=END=\n"
-"\n"
-"=== file: src/c.cpp ===\n"
-"--- delete 20:25\n"
-"=END=\n"
-"\n"
-"=== file: assets/config.json ===\n"
-"--- create-file\n"
-"{ \"version\": 1 }\n"
-"=END=\n"
-"\n"
-"=== file: old/temp.txt ===\n"
-"--- delete-file\n"
-"=END=\n"
-"\n"
-"---\n"
-"\n"
-"## Recommended usage\n"
-"* Prefer text-based commands (`*-text`) — they are more stable when code moves.\n"
-"* Use file-level commands when creating or removing entire files.\n"
-"* Group modifications to multiple files into **one patch file**.\n"
-"\n"
-"*This cheat sheet is in the text for a reason. If you're asked to write a patch,\n"
-" use the following format: chunk_v2.\n"
-"*Try to strictly follow the rules described in this document, without making any\n"
-" syntactic errors.\n"
-"*When working with chunks, be careful that commands do not reference the same\n"
-" text macros. Macros should never overlap.\n";
+    std::cout << "# Chunk v2 — Change Description Format\n"
+                 "\n"
+                 "Chunk v2 is a plain-text format for describing modifications to source files.\n"
+                 "A patch consists of multiple sections, each describing a single operation:\n"
+                 "line-based edits, text-based edits, or file-level operations.\n"
+                 "\n"
+                 "---\n"
+                 "\n"
+                 "## 1. Section structure\n"
+                 "\n"
+                 "=== file: <path> ===\n"
+                 "<command>\n"
+                 "<content...>\n"
+                 "=END=\n"
+                 "\n"
+                 "* <path> — relative file path\n"
+                 "* Empty lines between sections are allowed\n"
+                 "* Exactly one command per section\n"
+                 "* <content> may contain any lines, including empty ones\n"
+                 "\n"
+                 "---\n"
+                 "\n"
+                 "## 3. Commands (text-based)\n"
+                 "\n"
+                 "Two formats are supported for text-based commands:\n"
+                 "\n"
+                 "### 3.1 Legacy format (simple)\n"
+                 "These commands match an exact multi-line marker in the file.\n"
+                 "Everything before the first `---` is the marker; everything after it is content.\n"
+                 "\n"
+                 "### Insert after marker\n"
+                 "--- insert-after-text\n"
+                 "<marker lines...>\n"
+                 "---\n"
+                 "<inserted lines...>\n"
+                 "=END=\n"
+                 "\n"
+                 "### Insert before marker\n"
+                 "--- insert-before-text\n"
+                 "<marker lines...>\n"
+                 "---\n"
+                 "<inserted lines...>\n"
+                 "=END=\n"
+                 "\n"
+                 "### Replace marker\n"
+                 "--- replace-text\n"
+                 "<marker lines...>\n"
+                 "---\n"
+                 "<new lines...>\n"
+                 "=END=\n"
+                 "\n"
+                 "### Delete marker\n"
+                 "--- delete-text\n"
+                 "<marker lines...>\n"
+                 "---\n"
+                 "=END=\n"
+                 "\n"
+                 "---\n"
+                 "\n"
+                 "### 3.2 YAML strict format\n"
+                 "\n"
+                 "In YAML mode you can also specify strict context around the marker:\n"
+                 "\n"
+                 "--- replace-text\n"
+                 "BEFORE:\n"
+                 "  <lines that must appear immediately above the marker>\n"
+                 "MARKER:\n"
+                 "  <marker lines>\n"
+                 "AFTER:\n"
+                 "  <lines that must appear immediately below the marker>\n"
+                 "---\n"
+                 "<payload lines...>\n"
+                 "=END=\n"
+                 "\n"
+                 "Rules:\n"
+                 "* YAML mode is enabled only when the first non-empty line after the command\n"
+                 "  is one of: `BEFORE:`, `MARKER:`, `AFTER:`.\n"
+                 "* Matching is strict: BEFORE lines must be directly above the marker block;\n"
+                 "  AFTER lines must be directly below it.\n"
+                 "* Whitespace differences are ignored (lines are trimmed before comparison).\n"
+                 "* If BEFORE/AFTER are present, there is no fallback to the first occurrence\n"
+                 "  of the marker.\n"
+                 "* If more than one place matches the strict context, the patch fails as\n"
+                 "  ambiguous.\n"
+                 "* If no place matches the strict context, the patch fails with\n"
+                 "  \"strict marker context not found\".\n"
+                 "\n"
+                 "---\n"
+                 "\n"
+                 "## 4. File-level commands\n"
+                 "These operations work on the whole file rather than its contents.\n"
+                 "\n"
+                 "### Create or overwrite file\n"
+                 "--- create-file\n"
+                 "<file content...>\n"
+                 "=END=\n"
+                 "\n"
+                 "### Delete file\n"
+                 "--- delete-file\n"
+                 "=END=\n"
+                 "\n"
+                 "---\n"
+                 "\n"
+                 "## 5. Examples\n"
+                 "\n"
+                 "=== file: src/a.cpp ===\n"
+                 "--- replace 3:4\n"
+                 "int value = 42;\n"
+                 "std::cout << value << \"\\\\n\";\n"
+                 "=END=\n"
+                 "\n"
+                 "=== file: src/b.cpp ===\n"
+                 "--- insert-after 12\n"
+                 "log_debug(\"checkpoint reached\");\n"
+                 "=END=\n"
+                 "\n"
+                 "=== file: src/c.cpp ===\n"
+                 "--- delete 20:25\n"
+                 "=END=\n"
+                 "\n"
+                 "=== file: assets/config.json ===\n"
+                 "--- create-file\n"
+                 "{ \"version\": 1 }\n"
+                 "=END=\n"
+                 "\n"
+                 "=== file: old/temp.txt ===\n"
+                 "--- delete-file\n"
+                 "=END=\n"
+                 "\n"
+                 "---\n"
+                 "\n"
+                 "## Recommended usage\n"
+                 "* Prefer text-based commands (`*-text`) — they are more stable when code moves.\n"
+                 "* Use file-level commands when creating or removing entire files.\n"
+                 "* Group modifications to multiple files into **one patch file**.\n"
+                 "\n"
+                 "*This cheat sheet is in the text for a reason. If you're asked to write a patch,\n"
+                 " use the following format: chunk_v2.\n"
+                 "*Try to strictly follow the rules described in this document, without making any\n"
+                 " syntactic errors.\n"
+                 "*When working with chunks, be careful that commands do not reference the same\n"
+                 " text macros. Macros should never overlap.\n";
 }
-
 
 int apply_chunk_main(int argc, char** argv);
 
@@ -176,7 +174,8 @@ void print_tree(const std::vector<std::filesystem::path>& files)
 
     std::sort(rels.begin(), rels.end());
 
-    struct Node {
+    struct Node
+    {
         std::map<std::string, Node*> children;
         bool is_file = false;
     };
@@ -217,13 +216,10 @@ void print_tree(const std::vector<std::filesystem::path>& files)
     // ----------------------------
     std::function<void(Node*, const std::string&, bool, const std::string&)> go;
 
-    go = [&](Node* node, const std::string& name, bool last, const std::string& prefix)
-    {
+    go = [&](Node* node, const std::string& name, bool last, const std::string& prefix) {
         if (!name.empty())
         {
-            std::cout << prefix
-                      << (last ? "└── " : "├── ")
-                      << name;
+            std::cout << prefix << (last ? "└── " : "├── ") << name;
 
             if (!node->is_file)
                 std::cout << "/";
@@ -243,8 +239,7 @@ void print_tree(const std::vector<std::filesystem::path>& files)
             bool is_last = (i + 1 == keys.size());
             Node* child = node->children[keys[i]];
 
-            go(child, keys[i], is_last,
-               prefix + (name.empty() ? "" : (last ? "    " : "│   ")));
+            go(child, keys[i], is_last, prefix + (name.empty() ? "" : (last ? "    " : "│   ")));
         }
     };
 
@@ -253,12 +248,16 @@ void print_tree(const std::vector<std::filesystem::path>& files)
     std::cout << "========================\n\n";
 }
 
-
+int run_server(const Options& opt);
 
 int scat_main(int argc, char** argv)
 {
     Options opt = parse_options(argc, argv);
     g_use_absolute_paths = opt.abs_paths;
+
+    // HTTP server mode
+    if (opt.server_port != 0)
+        return run_server(opt);
 
     // ------------------------------------------------------------
     // Chunk help
@@ -337,7 +336,7 @@ int scat_main(int argc, char** argv)
             for (auto& f : text_files)
             {
                 auto disp = make_display_path(f);
-                auto sz   = get_file_size(f);
+                auto sz = get_file_size(f);
 
                 total += sz;
                 if (disp.size() > max_name)
@@ -348,13 +347,11 @@ int scat_main(int argc, char** argv)
 
             if (opt.sorted)
             {
-                std::sort(items.begin(), items.end(),
-                          [](const Item& a, const Item& b)
-                          {
-                              if (a.size != b.size)
-                                  return a.size > b.size; // по убыванию
-                              return a.display < b.display;
-                          });
+                std::sort(items.begin(), items.end(), [](const Item& a, const Item& b) {
+                    if (a.size != b.size)
+                        return a.size > b.size; // по убыванию
+                    return a.display < b.display;
+                });
             }
 
             for (const auto& it : items)
@@ -409,8 +406,7 @@ int scat_main(int argc, char** argv)
     // ------------------------------------------------------------
     // NORMAL MODE — user provided paths, not using a config file
     // ------------------------------------------------------------
-    std::vector<std::filesystem::path> files =
-        collect_from_paths(opt.paths, opt);
+    std::vector<std::filesystem::path> files = collect_from_paths(opt.paths, opt);
 
     if (files.empty())
     {
@@ -437,7 +433,7 @@ int scat_main(int argc, char** argv)
         for (auto& f : files)
         {
             auto disp = make_display_path(f);
-            auto sz   = get_file_size(f);
+            auto sz = get_file_size(f);
 
             total += sz;
             if (disp.size() > max_name)
@@ -448,13 +444,11 @@ int scat_main(int argc, char** argv)
 
         if (opt.sorted)
         {
-            std::sort(items.begin(), items.end(),
-                      [](const Item& a, const Item& b)
-                      {
-                          if (a.size != b.size)
-                              return a.size > b.size; // по убыванию
-                          return a.display < b.display;
-                      });
+            std::sort(items.begin(), items.end(), [](const Item& a, const Item& b) {
+                if (a.size != b.size)
+                    return a.size > b.size; // по убыванию
+                return a.display < b.display;
+            });
         }
 
         for (const auto& it : items)

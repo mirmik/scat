@@ -14,6 +14,7 @@ static void print_help()
                  "  --abs        Show absolute paths\n"
                  "  --config F   Read patterns from file F\n"
                  "  --apply F    Apply patch from file F\n"
+                 "  --server P   Run HTTP server on port P\n"
                  "  -h, --help   Show this help\n"
                  "\n"
                  "If no paths are given, scat reads patterns from scat.txt.\n";
@@ -37,6 +38,16 @@ Options parse_options(int argc, char** argv)
             opt.abs_paths = true;
         else if (a == "--sorted")
             opt.sorted = true;
+        else if (a == "--server")
+        {
+            if (i + 1 < argc)
+                opt.server_port = std::atoi(argv[++i]);
+            else
+            {
+                std::cerr << "--server requires port\n";
+                std::exit(1);
+            }
+        }
         else if (a == "--chunk-help")
             opt.chunk_help = true;
         else if (a == "-c" || a == "--chunk")
