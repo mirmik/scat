@@ -11,6 +11,7 @@
 #include <map>
 #include <set>
 #include <sstream>
+#include <exception>
 
 namespace fs = std::filesystem;
 
@@ -306,7 +307,16 @@ int scat_main(int argc, char** argv)
     // ------------------------------------------------------------
     if (!opt.config_file.empty())
     {
-        Config cfg = parse_config(opt.config_file);
+        Config cfg;
+        try
+        {
+            cfg = parse_config(opt.config_file);
+        }
+        catch (const std::exception& e)
+        {
+            std::cerr << e.what() << "\n";
+            return 1;
+        }
 
         // 1) TEXT rules
         auto text_files = collect_from_rules(cfg.text_rules, opt);
