@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>tests/wrap_cleanup.cpp</title>
+</head>
+<body>
+<!-- BEGIN SCAT CODE -->
+#include&nbsp;&quot;doctest/doctest.h&quot;<br>
+#include&nbsp;&quot;options.h&quot;<br>
+<br>
+#include&nbsp;&lt;filesystem&gt;<br>
+#include&nbsp;&lt;fstream&gt;<br>
+#include&nbsp;&lt;vector&gt;<br>
+<br>
+namespace&nbsp;fs&nbsp;=&nbsp;std::filesystem;<br>
+<br>
+//&nbsp;объявляем&nbsp;внешнюю&nbsp;функцию&nbsp;из&nbsp;scat.cpp<br>
+int&nbsp;wrap_files_to_html(const&nbsp;std::vector&lt;fs::path&gt;&nbsp;&amp;files,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;Options&nbsp;&amp;opt);<br>
+<br>
+static&nbsp;void&nbsp;write_file(const&nbsp;fs::path&nbsp;&amp;p,&nbsp;const&nbsp;std::string&nbsp;&amp;text)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(p.parent_path());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::ofstream&nbsp;out(p);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;&lt;&lt;&nbsp;text;<br>
+}<br>
+<br>
+TEST_CASE(&quot;wrap:&nbsp;removes&nbsp;stale&nbsp;files&nbsp;in&nbsp;wrap_root&quot;)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;отдельный&nbsp;tmp-каталог&nbsp;под&nbsp;тест<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;tmp&nbsp;=&nbsp;fs::temp_directory_path()&nbsp;/&nbsp;&quot;wrap_cleanup_test_1&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::remove_all(tmp);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;srcdir&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;src&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(srcdir);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;живой&nbsp;исходный&nbsp;файл,&nbsp;который&nbsp;будем&nbsp;врапить<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;alive1&nbsp;=&nbsp;srcdir&nbsp;/&nbsp;&quot;alive1.cpp&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;write_file(alive1,&nbsp;&quot;int&nbsp;A&nbsp;=&nbsp;1;&quot;);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;директория&nbsp;для&nbsp;врапов<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;wrap_root&nbsp;=&nbsp;tmp&nbsp;/&nbsp;&quot;wrap&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::create_directories(wrap_root);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&quot;мёртвый&quot;&nbsp;врап,&nbsp;который&nbsp;должен&nbsp;быть&nbsp;удалён<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;dead_wrap&nbsp;=&nbsp;wrap_root&nbsp;/&nbsp;&quot;dead_file.cpp&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;write_file(dead_wrap,&nbsp;&quot;&lt;html&gt;DEAD&lt;/html&gt;&quot;);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Options&nbsp;opt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;opt.wrap_root&nbsp;=&nbsp;wrap_root.string();<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;fs::path&gt;&nbsp;files&nbsp;=&nbsp;{alive1};<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;вызываем&nbsp;реальный&nbsp;wrap-процесс<br>
+&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;rc&nbsp;=&nbsp;wrap_files_to_html(files,&nbsp;opt);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(rc&nbsp;==&nbsp;0);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;проверяем,&nbsp;что&nbsp;для&nbsp;живого&nbsp;файла&nbsp;действительно&nbsp;появился&nbsp;врап<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::error_code&nbsp;ec;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;rel&nbsp;=&nbsp;fs::relative(alive1,&nbsp;fs::current_path(),&nbsp;ec);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(ec)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;тот&nbsp;же&nbsp;fallback,&nbsp;что&nbsp;и&nbsp;в&nbsp;wrap_files_to_html<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rel&nbsp;=&nbsp;alive1.filename();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fs::path&nbsp;expected_wrap&nbsp;=&nbsp;wrap_root&nbsp;/&nbsp;rel;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHECK(fs::exists(expected_wrap));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;и&nbsp;что&nbsp;&quot;мёртвый&quot;&nbsp;врап&nbsp;исчез<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CHECK(!fs::exists(dead_wrap));<br>
+}<br>
+<!-- END SCAT CODE -->
+</body>
+</html>

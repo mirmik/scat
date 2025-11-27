@@ -29,8 +29,6 @@
 #include&nbsp;&lt;sys/types.h&gt;<br>
 #endif<br>
 <br>
-int&nbsp;wrap_files_to_html(const&nbsp;std::vector&lt;std::filesystem::path&gt;&nbsp;&amp;files,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;Options&nbsp;&amp;opt);<br>
 <br>
 namespace&nbsp;fs&nbsp;=&nbsp;std::filesystem;<br>
 <br>

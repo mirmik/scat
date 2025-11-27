@@ -21,8 +21,6 @@
 #include <sys/types.h>
 #endif
 
-int wrap_files_to_html(const std::vector<std::filesystem::path> &files,
-                       const Options &opt);
 
 namespace fs = std::filesystem;
 
