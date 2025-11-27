@@ -14,11 +14,7 @@ static void print_help()
                  "  -n            Show line numbers\n"
                  "  --abs         Show absolute paths\n"
                  "  --config F    Read patterns from file F\n"
-                 "  --apply F     Apply patch from file F\n"
-                 "  --apply-stdin Apply patch from stdin\n"
                  "  --server P    Run HTTP server on port P\n"
-                 "  -c, --chunk   Print chunk trailer after output\n"
-                 "  --chunk-help  Show chunk v2 help\n"
                  "  --wrap DIR    Wrap collected files as HTML into DIR\n"
                  "  --prefix P    Prepend P before file paths in -l output\n"
                  "  --git-info    Print git commit hash and remote origin\n"
@@ -90,28 +86,6 @@ Options parse_options(int argc, char **argv)
             else
             {
                 std::cerr << "--server requires port\n";
-                std::exit(1);
-            }
-        }
-        else if (a == "--chunk-help")
-        {
-            opt.chunk_help = true;
-        }
-        else if (a == "-c" || a == "--chunk")
-        {
-            opt.chunk_trailer = true;
-        }
-        else if (a == "--apply-stdin")
-        {
-            opt.apply_stdin = true;
-        }
-        else if (a == "--apply")
-        {
-            if (i + 1 < argc)
-                opt.apply_file = argv[++i];
-            else
-            {
-                std::cerr << "--apply requires file\n";
                 std::exit(1);
             }
         }

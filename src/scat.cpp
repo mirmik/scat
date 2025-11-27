@@ -1,5 +1,4 @@
 #include "scat.h"
-#include "apply_chunk_v2.h"
 #include "clipboard.h"
 #include "collector.h"
 #include "git_info.h"
@@ -279,13 +278,6 @@ static int run_config_mode(const Options &opt)
                 print_tree(tree_files);
             }
         }
-
-        if (opt.chunk_trailer)
-        {
-            std::cout << "\n===== CHUNK FORMAT HELP =====\n\n";
-            print_chunk_help();
-        }
-
         std::cout << "\nTotal size: " << total << " bytes\n";
     };
 
@@ -304,12 +296,6 @@ static int run_normal_mode(const Options &opt)
     auto after_dump = [&](std::uintmax_t total)
     {
         // В обычном режиме дерево не печатаем
-        if (opt.chunk_trailer)
-        {
-            std::cout << "\n===== CHUNK FORMAT HELP =====\n\n";
-            print_chunk_help();
-        }
-
         std::cout << "\nTotal size: " << total << " bytes\n";
     };
 
@@ -548,46 +534,6 @@ int scat_main(int argc, char **argv)
     // HTTP server mode
     if (opt.server_port != 0)
         return run_server(opt);
-
-    // ------------------------------------------------------------
-    // Chunk help
-    // ------------------------------------------------------------
-    if (opt.chunk_help)
-    {
-        print_chunk_help();
-        return 0;
-    }
-
-    // ------------------------------------------------------------
-    // Apply patch mode
-    // ------------------------------------------------------------
-    if (!opt.apply_file.empty() || opt.apply_stdin)
-    {
-        if (opt.apply_stdin)
-        {
-            namespace fs = std::filesystem;
-
-            std::stringstream ss;
-            ss << std::cin.rdbuf();
-            fs::path tmp = fs::temp_directory_path() / "scat_stdin_patch.txt";
-            {
-                std::ofstream out(tmp);
-                out << ss.str();
-            }
-
-            std::string tmp_str = tmp.string();
-            const char *args[] = {"apply", tmp_str.c_str()};
-            int r = apply_chunk_main(2, const_cast<char **>(args));
-            fs::remove(tmp);
-            return r;
-        }
-        else
-        {
-            std::string file = opt.apply_file;
-            const char *args[] = {"apply", file.c_str()};
-            return apply_chunk_main(2, const_cast<char **>(args));
-        }
-    }
 
     // ------------------------------------------------------------
     // CONFIG MODE — uses scat.txt or --config F

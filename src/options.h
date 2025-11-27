@@ -4,7 +4,6 @@
 
 struct Options
 {
-    bool chunk_trailer = false;
     bool recursive = false;
     bool list_only = false;
     bool abs_paths = false;
@@ -13,10 +12,7 @@ struct Options
 
     bool show_size = false; // --size: show file sizes in -l
     int server_port = 0;    // --server PORT
-    std::string apply_file;
-    bool apply_stdin = false;
     std::string config_file; // empty = no config mode
-    bool chunk_help = false;
 
     bool git_info = false; // --git-info: print git meta info
     bool gh_map = false;   // --ghmap: print GitHub raw URLs for current commit

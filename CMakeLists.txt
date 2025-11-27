@@ -8,7 +8,6 @@ include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-lstdc++fs" HAS_LIBSTDCXXFS)
 
 enable_testing()
-add_subdirectory(chunk)
 
 # -----------------------------------------------------------------------------
 # Windows install prefix
@@ -42,8 +41,6 @@ add_executable(scat
     ${SCAT_SOURCES}     # scat.cpp
     ${SCAT_HEADERS}     # scat.h
 )
-
-target_link_libraries(scat chunklib)
 
 # std::filesystem fix for MinGW
 if (HAS_LIBSTDCXXFS)
@@ -83,7 +80,6 @@ add_executable(scat_tests
 )
 
 target_include_directories(scat_tests PRIVATE src tests)
-target_link_libraries(scat_tests chunklib)
 
 if (WIN32)
     target_link_libraries(scat_tests ws2_32)
