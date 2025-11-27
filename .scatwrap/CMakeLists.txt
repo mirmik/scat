@@ -12,6 +12,12 @@ project(scat&nbsp;VERSION&nbsp;1.0&nbsp;LANGUAGES&nbsp;CXX)<br>
 set(CMAKE_CXX_STANDARD&nbsp;17)<br>
 set(CMAKE_CXX_STANDARD_REQUIRED&nbsp;ON)<br>
 <br>
+include(CheckCXXCompilerFlag)<br>
+check_cxx_compiler_flag(&quot;-lstdc++fs&quot;&nbsp;HAS_LIBSTDCXXFS)<br>
+<br>
+enable_testing()<br>
+add_subdirectory(chunk)<br>
+<br>
 #&nbsp;-----------------------------------------------------------------------------<br>
 #&nbsp;Windows&nbsp;install&nbsp;prefix<br>
 #&nbsp;-----------------------------------------------------------------------------<br>
@@ -45,9 +51,9 @@ add_executable(scat<br>
 &nbsp;&nbsp;&nbsp;&nbsp;${SCAT_HEADERS}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;scat.h<br>
 )<br>
 <br>
+target_link_libraries(scat&nbsp;chunklib)<br>
+<br>
 #&nbsp;std::filesystem&nbsp;fix&nbsp;for&nbsp;MinGW<br>
-include(CheckCXXCompilerFlag)<br>
-check_cxx_compiler_flag(&quot;-lstdc++fs&quot;&nbsp;HAS_LIBSTDCXXFS)<br>
 if&nbsp;(HAS_LIBSTDCXXFS)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;target_link_libraries(scat&nbsp;stdc++fs)<br>
 endif()<br>
@@ -76,8 +82,6 @@ endif()<br>
 #&nbsp;-----------------------------------------------------------------------------<br>
 #&nbsp;Tests<br>
 #&nbsp;-----------------------------------------------------------------------------<br>
-enable_testing()<br>
-<br>
 file(GLOB&nbsp;SCAT_TESTS&nbsp;CONFIGURE_DEPENDS&nbsp;tests/*)<br>
 <br>
 add_executable(scat_tests<br>
@@ -87,6 +91,7 @@ add_executable(scat_tests<br>
 )<br>
 <br>
 target_include_directories(scat_tests&nbsp;PRIVATE&nbsp;src&nbsp;tests)<br>
+target_link_libraries(scat_tests&nbsp;chunklib)<br>
 <br>
 if&nbsp;(WIN32)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;target_link_libraries(scat_tests&nbsp;ws2_32)<br>

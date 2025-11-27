@@ -4,6 +4,12 @@ project(scat VERSION 1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag("-lstdc++fs" HAS_LIBSTDCXXFS)
+
+enable_testing()
+add_subdirectory(chunk)
+
 # -----------------------------------------------------------------------------
 # Windows install prefix
 # -----------------------------------------------------------------------------
@@ -37,9 +43,9 @@ add_executable(scat
     ${SCAT_HEADERS}     # scat.h
 )
 
+target_link_libraries(scat chunklib)
+
 # std::filesystem fix for MinGW
-include(CheckCXXCompilerFlag)
-check_cxx_compiler_flag("-lstdc++fs" HAS_LIBSTDCXXFS)
 if (HAS_LIBSTDCXXFS)
     target_link_libraries(scat stdc++fs)
 endif()
@@ -68,8 +74,6 @@ endif()
 # -----------------------------------------------------------------------------
 # Tests
 # -----------------------------------------------------------------------------
-enable_testing()
-
 file(GLOB SCAT_TESTS CONFIGURE_DEPENDS tests/*)
 
 add_executable(scat_tests
@@ -79,6 +83,7 @@ add_executable(scat_tests
 )
 
 target_include_directories(scat_tests PRIVATE src tests)
+target_link_libraries(scat_tests chunklib)
 
 if (WIN32)
     target_link_libraries(scat_tests ws2_32)

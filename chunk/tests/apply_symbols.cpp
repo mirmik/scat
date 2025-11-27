@@ -1,10 +1,9 @@
+#include "apply_chunk_v2.h"
 #include "doctest/doctest.h"
 #include <filesystem>
 #include <fstream>
 #include <string>
 #include <vector>
-
-int apply_chunk_main(int argc, char **argv);
 
 namespace fs = std::filesystem;
 

@@ -1,4 +1,5 @@
 #include "scat.h"
+#include "apply_chunk_v2.h"
 #include "clipboard.h"
 #include "collector.h"
 #include "git_info.h"
@@ -27,8 +28,6 @@ int wrap_files_to_html(const std::vector<std::filesystem::path> &files,
 namespace fs = std::filesystem;
 
 bool g_use_absolute_paths = false;
-
-int apply_chunk_main(int argc, char **argv);
 
 void print_tree(const std::vector<std::filesystem::path> &files)
 {

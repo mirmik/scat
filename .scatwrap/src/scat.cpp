@@ -7,6 +7,7 @@
 <body>
 <!-- BEGIN SCAT CODE -->
 #include&nbsp;&quot;scat.h&quot;<br>
+#include&nbsp;&quot;apply_chunk_v2.h&quot;<br>
 #include&nbsp;&quot;clipboard.h&quot;<br>
 #include&nbsp;&quot;collector.h&quot;<br>
 #include&nbsp;&quot;git_info.h&quot;<br>
@@ -35,8 +36,6 @@ int&nbsp;wrap_files_to_html(const&nbsp;std::vector&lt;std::filesystem::path&gt;&
 namespace&nbsp;fs&nbsp;=&nbsp;std::filesystem;<br>
 <br>
 bool&nbsp;g_use_absolute_paths&nbsp;=&nbsp;false;<br>
-<br>
-int&nbsp;apply_chunk_main(int&nbsp;argc,&nbsp;char&nbsp;**argv);<br>
 <br>
 void&nbsp;print_tree(const&nbsp;std::vector&lt;std::filesystem::path&gt;&nbsp;&amp;files)<br>
 {<br>

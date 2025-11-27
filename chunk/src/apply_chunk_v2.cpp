@@ -1,3 +1,4 @@
+#include "apply_chunk_v2.h"
 #include "symbols.h"
 #include <algorithm>
 #include <cctype>
