@@ -16,7 +16,6 @@ include(CheckCXXCompilerFlag)<br>
 check_cxx_compiler_flag(&quot;-lstdc++fs&quot;&nbsp;HAS_LIBSTDCXXFS)<br>
 <br>
 enable_testing()<br>
-add_subdirectory(chunk)<br>
 <br>
 #&nbsp;-----------------------------------------------------------------------------<br>
 #&nbsp;Windows&nbsp;install&nbsp;prefix<br>
@@ -50,8 +49,6 @@ add_executable(scat<br>
 &nbsp;&nbsp;&nbsp;&nbsp;${SCAT_SOURCES}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;scat.cpp<br>
 &nbsp;&nbsp;&nbsp;&nbsp;${SCAT_HEADERS}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;scat.h<br>
 )<br>
-<br>
-target_link_libraries(scat&nbsp;chunklib)<br>
 <br>
 #&nbsp;std::filesystem&nbsp;fix&nbsp;for&nbsp;MinGW<br>
 if&nbsp;(HAS_LIBSTDCXXFS)<br>
@@ -91,7 +88,6 @@ add_executable(scat_tests<br>
 )<br>
 <br>
 target_include_directories(scat_tests&nbsp;PRIVATE&nbsp;src&nbsp;tests)<br>
-target_link_libraries(scat_tests&nbsp;chunklib)<br>
 <br>
 if&nbsp;(WIN32)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;target_link_libraries(scat_tests&nbsp;ws2_32)<br>

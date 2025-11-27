@@ -562,6 +562,10 @@ int wrap_files_to_html(const std::vector<std::filesystem::path> &files,
     std::error_code ec;
     fs::create_directories(root, ec);
 
+    // запоминаем все "живые" относительные пути, для которых мы только что
+    // перегенерируем врапы
+    std::set<std::string> alive_rel_paths;
+
     for (const auto &f : files)
     {
         // считаем относительный путь относительно текущего каталога
@@ -573,9 +577,11 @@ int wrap_files_to_html(const std::vector<std::filesystem::path> &files,
             rel = f.filename();
         }
 
+        // запоминаем, что врап для этого относительного пути должен существовать
+        alive_rel_paths.insert(rel.generic_string());
+
         fs::path dst = root / rel;
         fs::create_directories(dst.parent_path(), ec);
-
         std::ifstream in(f, std::ios::binary);
         if (!in)
         {
@@ -588,7 +594,6 @@ int wrap_files_to_html(const std::vector<std::filesystem::path> &files,
 
         std::string title = rel.generic_string();
         std::string html = wrap_cpp_as_html(ss.str(), title);
-
         std::ofstream out(dst, std::ios::binary);
         if (!out)
         {
@@ -599,5 +604,42 @@ int wrap_files_to_html(const std::vector<std::filesystem::path> &files,
         out << html;
     }
 
+    // ------------------------------------------------------------
+    // ЧИСТКА СТАРЫХ ВРАПОВ
+    //
+    // Проходим по wrap_root рекурсивно и удаляем все обычные файлы,
+    // для которых нет соответствующего "живого" относительного пути.
+    // При этом НЕ трогаем конфиг-файл scat.txt (если он там есть).
+    // ------------------------------------------------------------
+    std::error_code rec_ec;
+    for (fs::recursive_directory_iterator it(root, rec_ec), end;
+         !rec_ec && it != end;
+         it.increment(rec_ec))
+    {
+        if (!it->is_regular_file())
+            continue;
+
+        fs::path p = it->path();
+
+        // относительный путь внутри wrap_root
+        fs::path rel = fs::relative(p, root, rec_ec);
+        if (rec_ec)
+        {
+            // что-то пошло не так — не рискуем, просто пропускаем
+            rec_ec.clear();
+            continue;
+        }
+
+        std::string key = rel.generic_string();
+
+        if (!alive_rel_paths.count(key))
+        {
+            std::error_code rm_ec;
+            fs::remove(p, rm_ec);
+            // ошибок удаления игнорируем, максимум можно залогировать
+        }
+    }
+
     return 0;
 }
+

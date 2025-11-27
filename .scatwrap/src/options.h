@@ -12,7 +12,6 @@
 <br>
 struct&nbsp;Options<br>
 {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;chunk_trailer&nbsp;=&nbsp;false;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;recursive&nbsp;=&nbsp;false;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;list_only&nbsp;=&nbsp;false;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;abs_paths&nbsp;=&nbsp;false;<br>
@@ -21,10 +20,7 @@ struct&nbsp;Options<br>
 <br>
 &nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;show_size&nbsp;=&nbsp;false;&nbsp;//&nbsp;--size:&nbsp;show&nbsp;file&nbsp;sizes&nbsp;in&nbsp;-l<br>
 &nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;server_port&nbsp;=&nbsp;0;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;--server&nbsp;PORT<br>
-&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;apply_file;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;apply_stdin&nbsp;=&nbsp;false;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;config_file;&nbsp;//&nbsp;empty&nbsp;=&nbsp;no&nbsp;config&nbsp;mode<br>
-&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;chunk_help&nbsp;=&nbsp;false;<br>
 <br>
 &nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;git_info&nbsp;=&nbsp;false;&nbsp;//&nbsp;--git-info:&nbsp;print&nbsp;git&nbsp;meta&nbsp;info<br>
 &nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;gh_map&nbsp;=&nbsp;false;&nbsp;&nbsp;&nbsp;//&nbsp;--ghmap:&nbsp;print&nbsp;GitHub&nbsp;raw&nbsp;URLs&nbsp;for&nbsp;current&nbsp;commit<br>
