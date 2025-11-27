@@ -67,44 +67,57 @@ GitInfo detect_git_info()
     return info;
 }
 
-// Разбор remote вроде git@github.com:user/repo.git или
-// https://github.com/user/repo(.git)
+// Разбор remote вроде
+//  - git@github.com:user/repo.git
+//  - git@github-alt:user/repo.git (алиас из ~/.ssh/config)
+//  - https://github.com/user/repo(.git)
+//  - ssh://git@github.com/user/repo(.git)
 bool parse_github_remote(const std::string &remote,
                          std::string &user,
                          std::string &repo)
 {
-    const std::string host = "github.com";
-    auto pos = remote.find(host);
-    if (pos == std::string::npos)
-        return false;
+    std::string path;
 
-    pos += host.size();
+    // Пытаемся найти схему вида "https://", "ssh://", "git://", ...
+    auto scheme_pos = remote.find("://");
+    if (scheme_pos != std::string::npos)
+    {
+        // Формат: scheme://[user@]host[:port]/path...
+        auto path_start = remote.find('/', scheme_pos + 3);
+        if (path_start == std::string::npos || path_start + 1 >= remote.size())
+            return false;
 
-    // пропускаем ':' или '/' после github.com
-    while (pos < remote.size() && (remote[pos] == ':' || remote[pos] == '/'))
-        ++pos;
+        // Отбрасываем ведущий '/', остаётся что-то вроде "user/repo.git" или
+        // "user/repo.git/..."
+        path = remote.substr(path_start + 1);
+    }
+    else
+    {
+        // Формат в стиле scp: [user@]host:path
+        auto colon_pos = remote.rfind(':');
+        if (colon_pos == std::string::npos || colon_pos + 1 >= remote.size())
+            return false;
 
-    if (pos >= remote.size())
+        // После ':' идёт путь "user/repo.git" или "user/repo.git/..."
+        path = remote.substr(colon_pos + 1);
+    }
+
+    if (path.empty())
         return false;
 
     // user / repo[.git] / ...
-    auto slash1 = remote.find('/', pos);
-    if (slash1 == std::string::npos)
+    auto slash1 = path.find('/');
+    if (slash1 == std::string::npos || slash1 == 0 || slash1 + 1 >= path.size())
         return false;
 
-    user = remote.substr(pos, slash1 - pos);
+    user = path.substr(0, slash1);
 
-    auto start_repo = slash1 + 1;
-    if (start_repo >= remote.size())
-        return false;
-
-    auto slash2 = remote.find('/', start_repo);
+    auto rest = path.substr(slash1 + 1);
+    auto slash2 = rest.find('/');
     std::string repo_part =
-        (slash2 == std::string::npos)
-            ? remote.substr(start_repo)
-            : remote.substr(start_repo, slash2 - start_repo);
+        (slash2 == std::string::npos) ? rest : rest.substr(0, slash2);
 
-    // обрежем .git в конце, если есть
+    // обрежем ".git" в конце, если есть
     const std::string dot_git = ".git";
     if (repo_part.size() > dot_git.size() &&
         repo_part.compare(
