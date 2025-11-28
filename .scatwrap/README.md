@@ -27,7 +27,12 @@ scat&nbsp;src&nbsp;-r&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp
 scat&nbsp;src&nbsp;-r&nbsp;--abs&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;absolute&nbsp;paths<br>
 scat&nbsp;src&nbsp;-r&nbsp;-l&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;list&nbsp;with&nbsp;sizes<br>
 scat&nbsp;src&nbsp;-r&nbsp;-l&nbsp;--sorted&nbsp;&nbsp;#&nbsp;list,&nbsp;sorted&nbsp;by&nbsp;size&nbsp;(descending)<br>
+scat&nbsp;src&nbsp;-r&nbsp;@src/tests/**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;exclude&nbsp;tests&nbsp;(argument&nbsp;mode)<br>
+scat&nbsp;src&nbsp;-r&nbsp;--exclude&nbsp;src/tests/**&nbsp;&nbsp;#&nbsp;same&nbsp;as&nbsp;@src/tests/**<br>
 ```<br>
+<br>
+&gt;&nbsp;⚠️&nbsp;Обратите&nbsp;внимание:&nbsp;shell&nbsp;разворачивает&nbsp;`*`&nbsp;перед&nbsp;передачей&nbsp;в&nbsp;программу.&nbsp;&nbsp;<br>
+&gt;&nbsp;Для&nbsp;`--exclude`&nbsp;используйте&nbsp;кавычки/экранирование&nbsp;(`--exclude&nbsp;&quot;src/*.cpp&quot;`&nbsp;или&nbsp;`--exclude&nbsp;src/\\*.cpp`),&nbsp;чтобы&nbsp;правило&nbsp;обрабатывалось&nbsp;как&nbsp;паттерн,&nbsp;а&nbsp;не&nbsp;список&nbsp;файлов.<br>
 <br>
 Output&nbsp;looks&nbsp;like:<br>
 <br>

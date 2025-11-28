@@ -60,6 +60,26 @@ void&nbsp;dump_file(const&nbsp;fs::path&nbsp;&amp;p,&nbsp;bool&nbsp;first,&nbsp;
 &nbsp;&nbsp;&nbsp;&nbsp;size_t&nbsp;line_no&nbsp;=&nbsp;0;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(std::getline(in,&nbsp;line))<br>
 &nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;blank&nbsp;=&nbsp;true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;(char&nbsp;ch&nbsp;:&nbsp;line)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(ch&nbsp;!=&nbsp;'&nbsp;'&nbsp;&amp;&amp;&nbsp;ch&nbsp;!=&nbsp;'\t'&nbsp;&amp;&amp;&nbsp;ch&nbsp;!=&nbsp;'\r')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;blank&nbsp;=&nbsp;false;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(opt.compact&nbsp;&amp;&amp;&nbsp;blank)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++line_no;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Нормализуем&nbsp;Windows-строку:&nbsp;режем&nbsp;хвостовой&nbsp;'\r',&nbsp;если&nbsp;есть.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(!line.empty()&nbsp;&amp;&amp;&nbsp;line.back()&nbsp;==&nbsp;'\r')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;line.pop_back();<br>
+<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(opt.line_numbers)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout&nbsp;&lt;&lt;&nbsp;line_no&nbsp;&lt;&lt;&nbsp;&quot;:&nbsp;&quot;&nbsp;&lt;&lt;&nbsp;line&nbsp;&lt;&lt;&nbsp;&quot;\n&quot;;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else<br>
@@ -123,8 +143,7 @@ std::string&nbsp;html_escape(std::string_view&nbsp;src)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;out;<br>
 }<br>
 <br>
-std::string&nbsp;wrap_cpp_as_html(std::string_view&nbsp;cpp_code,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string_view&nbsp;title)<br>
+std::string&nbsp;wrap_cpp_as_html(std::string_view&nbsp;cpp_code,&nbsp;std::string_view&nbsp;title)<br>
 {<br>
 &nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;html;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;html.reserve(cpp_code.size()&nbsp;*&nbsp;11&nbsp;/&nbsp;10&nbsp;+&nbsp;256);<br>
@@ -134,7 +153,7 @@ std::string&nbsp;wrap_cpp_as_html(std::string_view&nbsp;cpp_code,<br>
 &nbsp;&nbsp;&nbsp;&nbsp;html&nbsp;+=&nbsp;&quot;&lt;head&gt;\n&quot;;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;html&nbsp;+=&nbsp;&quot;&nbsp;&nbsp;&lt;meta&nbsp;charset=\&quot;UTF-8\&quot;&gt;\n&quot;;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;html&nbsp;+=&nbsp;&quot;&nbsp;&nbsp;&lt;title&gt;&quot;;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;html&nbsp;+=&nbsp;html_escape(title);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;title&nbsp;экранируем,&nbsp;пробелы&nbsp;оставляем&nbsp;обычными<br>
+&nbsp;&nbsp;&nbsp;&nbsp;html&nbsp;+=&nbsp;html_escape(title);&nbsp;//&nbsp;title&nbsp;экранируем,&nbsp;пробелы&nbsp;оставляем&nbsp;обычными<br>
 &nbsp;&nbsp;&nbsp;&nbsp;html&nbsp;+=&nbsp;&quot;&lt;/title&gt;\n&quot;;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;html&nbsp;+=&nbsp;&quot;&lt;/head&gt;\n&quot;;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;html&nbsp;+=&nbsp;&quot;&lt;body&gt;\n&quot;;<br>
@@ -176,10 +195,6 @@ std::string&nbsp;wrap_cpp_as_html(std::string_view&nbsp;cpp_code,<br>
 <br>
 &nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;html;<br>
 }<br>
-<br>
-<br>
-<br>
-<br>
 <!-- END SCAT CODE -->
 </body>
 </html>

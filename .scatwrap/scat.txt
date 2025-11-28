@@ -15,9 +15,15 @@ README.md<br>
 <br>
 [TREE]<br>
 **<br>
+!*.o<br>
+!*.d<br>
 !CMakeFiles/**<br>
 !.github/**<br>
 !.git/**<br>
+!CMakeCache.txt<br>
+!CMakeFiles*<br>
+!CTest*<br>
+!.scatwrap/<br>
 <br>
 <br>
 [MAPFORMAT]<br>

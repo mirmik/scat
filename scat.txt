@@ -7,9 +7,15 @@ README.md
 
 [TREE]
 **
+!*.o
+!*.d
 !CMakeFiles/**
 !.github/**
 !.git/**
+!CMakeCache.txt
+!CMakeFiles*
+!CTest*
+!.scatwrap/
 
 
 [MAPFORMAT]

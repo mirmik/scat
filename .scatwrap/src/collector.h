@@ -17,6 +17,10 @@ collect_from_rules(const&nbsp;std::vector&lt;Rule&gt;&nbsp;&amp;rules,&nbsp;cons
 <br>
 std::vector&lt;std::filesystem::path&gt;<br>
 collect_from_paths(const&nbsp;std::vector&lt;std::string&gt;&nbsp;&amp;paths,&nbsp;const&nbsp;Options&nbsp;&amp;opt);<br>
+<br>
+std::vector&lt;std::filesystem::path&gt;<br>
+collect_from_paths_with_excludes(const&nbsp;std::vector&lt;Rule&gt;&nbsp;&amp;rules,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const&nbsp;Options&nbsp;&amp;opt);<br>
 <!-- END SCAT CODE -->
 </body>
 </html>
