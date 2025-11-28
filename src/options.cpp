@@ -23,6 +23,7 @@ static void print_help()
                  "  --copy        Copy all stdout output to system clipboard\n"
                  "  --hook-install Install or update .git/hooks/pre-commit for "
                  "scat wrap\n"
+                 "  -V, --version Show program version and exit\n"
                  "  -h, --help    Show this help\n"
                  "\n"
                  "If no paths are given, scat reads patterns from scat.txt.\n";
@@ -58,6 +59,10 @@ Options parse_options(int argc, char **argv)
         else if (a == "--hook-install")
         {
             opt.hook_install = true;
+        }
+        else if (a == "--version" || a == "-V")
+        {
+            opt.show_version = true;
         }
         else if (a == "--sorted")
         {

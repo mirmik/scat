@@ -27,6 +27,7 @@ struct&nbsp;Options<br>
 &nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;copy_out&nbsp;=&nbsp;false;&nbsp;//&nbsp;--copy:&nbsp;also&nbsp;send&nbsp;stdout&nbsp;to&nbsp;clipboard<br>
 &nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;hook_install&nbsp;=<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;false;&nbsp;//&nbsp;--hook-install:&nbsp;install/update&nbsp;git&nbsp;pre-commit&nbsp;hook<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;show_version&nbsp;=&nbsp;false;&nbsp;//&nbsp;-V,&nbsp;--version:&nbsp;show&nbsp;version&nbsp;and&nbsp;exit<br>
 <br>
 &nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;paths;&nbsp;//&nbsp;positional&nbsp;paths<br>
 <br>

@@ -446,6 +446,11 @@ int scat_main(int argc, char **argv)
     Options opt = parse_options(argc, argv);
     g_use_absolute_paths = opt.abs_paths;
     CopyGuard copy_guard(opt.copy_out);
+    if (opt.show_version)
+    {
+        std::cout << "scat 0.1.0\n";
+        return 0;
+    }
 
     // Установка git pre-commit hook'а и выход
     if (opt.hook_install)

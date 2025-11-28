@@ -19,6 +19,7 @@ struct Options
     bool copy_out = false; // --copy: also send stdout to clipboard
     bool hook_install =
         false; // --hook-install: install/update git pre-commit hook
+    bool show_version = false; // -V, --version: show version and exit
 
     std::vector<std::string> paths; // positional paths
 

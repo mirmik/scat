@@ -7,7 +7,7 @@
 <body>
 <!-- BEGIN SCAT CODE -->
 cmake_minimum_required(VERSION&nbsp;3.12)<br>
-project(scat&nbsp;VERSION&nbsp;1.0&nbsp;LANGUAGES&nbsp;CXX)<br>
+project(scat&nbsp;VERSION&nbsp;0.1.0&nbsp;LANGUAGES&nbsp;CXX)<br>
 <br>
 set(CMAKE_CXX_STANDARD&nbsp;17)<br>
 set(CMAKE_CXX_STANDARD_REQUIRED&nbsp;ON)<br>
