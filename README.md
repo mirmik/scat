@@ -23,6 +23,9 @@ scat src -r @src/tests/**           # exclude tests (argument mode)
 scat src -r --exclude src/tests/**  # same as @src/tests/**
 ```
 
+> ⚠️ Обратите внимание: shell разворачивает `*` перед передачей в программу.  
+> Для `--exclude` используйте кавычки/экранирование (`--exclude "src/*.cpp"` или `--exclude src/\\*.cpp`), чтобы правило обрабатывалось как паттерн, а не список файлов.
+
 Output looks like:
 
 ```text
