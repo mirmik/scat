@@ -1,5 +1,8 @@
       #include "clipboard.h"
       #include <cstdio>
+      #include "clipboard.h"
+      #include <cstdio>
+      #include <cstdlib>
       #include <iostream>
       #include <string>
       #ifndef _WIN32
@@ -11,30 +14,37 @@
       // Вся логика запуска утилит — один проход по таблице kClipboardTools.
       struct ClipboardTool
       {
-          const char *name;    // Человеческое имя утилиты (для логов)
-          const char *command; // Команда, которую отдаём popen/_popen
+          const char *name;          // Человеческое имя утилиты (для логов)
+          const char *command;       // Команда, которую отдаём popen/_popen
+          bool (*is_available)();    // Опциональная проверка среды, nullptr если не нужна
       };
 
       // Платформы и порядок утилит:
       #if defined(_WIN32)
 
       static const ClipboardTool kClipboardTools[] = {
-          {"clip", "clip"},
+          {"clip", "clip", nullptr},
       };
 
       #elif defined(__APPLE__)
 
       static const ClipboardTool kClipboardTools[] = {
-          {"pbcopy", "pbcopy"},
+          {"pbcopy", "pbcopy", nullptr},
       };
 
       #else
 
       // На POSIX-платформах сразу зашиваем подавление stderr в команду.
+      static bool has_wayland_display()
+      {
+          const char *env = std::getenv("WAYLAND_DISPLAY");
+          return env && *env;
+      }
+
       static const ClipboardTool kClipboardTools[] = {
-          {"wl-copy", "wl-copy 2>/dev/null"},
-          {"xclip",   "xclip -selection clipboard 2>/dev/null"},
-          {"xsel",    "xsel --clipboard --input 2>/dev/null"},
+          {"wl-copy", "wl-copy 2>/dev/null", &has_wayland_display},
+          {"xclip",   "xclip -selection clipboard 2>/dev/null", nullptr},
+          {"xsel",    "xsel --clipboard --input 2>/dev/null", nullptr},
       };
 
       #endif
@@ -46,6 +56,16 @@
                                      bool verbose,
                                      const char *verb)
       {
+          if (tool.is_available && !tool.is_available())
+          {
+              if (verbose)
+              {
+                  std::cerr << "scat: copy: skipping '" << tool.name
+                            << "' (not available in current environment)\n";
+              }
+              return false;
+          }
+
           if (verbose)
           {
               std::cerr << "scat: copy: " << verb << " '" << tool.name << "' ("
