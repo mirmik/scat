@@ -2,6 +2,9 @@
       #include <cstdio>
       #include <iostream>
       #include <string>
+      #ifndef _WIN32
+      #    include <signal.h>
+      #endif
 
       // Копирование текста в системный буфер обмена.
       
@@ -65,6 +68,16 @@
               return false;
           }
 
+      #ifndef _WIN32
+          struct sigaction sa_new{};
+          struct sigaction sa_old{};
+          sa_new.sa_handler = SIG_IGN;
+          sigemptyset(&sa_new.sa_mask);
+          sa_new.sa_flags = 0;
+          bool sigpipe_guard_installed =
+              (sigaction(SIGPIPE, &sa_new, &sa_old) == 0);
+      #endif
+
           const std::size_t total = text.size();
           std::size_t written =
               std::fwrite(text.data(), 1, total, pipe);
@@ -74,6 +87,11 @@
               std::cerr << "scat: copy: '" << tool.name << "' wrote "
                         << written << " bytes out of " << total << "\n";
           }
+
+      #ifndef _WIN32
+          if (sigpipe_guard_installed)
+              sigaction(SIGPIPE, &sa_old, nullptr);
+      #endif
 
       #if defined(_WIN32)
           int rc = _pclose(pipe);
