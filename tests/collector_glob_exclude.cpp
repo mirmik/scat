@@ -122,6 +122,22 @@ TEST_CASE("glob: foo/*/bar/**/*.txt")
                 {"foo/K/bar/a.txt", "foo/K/bar/x/b.txt", "foo/Z/bar/y/z.txt"});
 }
 
+TEST_CASE("glob: ** matches zero or more levels before filename")
+{
+    fs::path tmp = fs::temp_directory_path() / "glob_test_f2";
+    fs::remove_all(tmp);
+
+    write_file(tmp / "root.txt", "R");
+    write_file(tmp / "deep/inner.txt", "D");
+    write_file(tmp / "deep/nested/inner.txt", "N");
+
+    auto pat = (tmp / "deep/**/inner.txt").generic_string();
+    auto out = expand_glob(pat);
+    auto rel = to_rel(out, tmp);
+
+    check_paths(rel, {"deep/inner.txt", "deep/nested/inner.txt"});
+}
+
 TEST_CASE("glob: no matches")
 {
     fs::path tmp = fs::temp_directory_path() / "glob_test_e2";
@@ -197,6 +213,68 @@ TEST_CASE("collector: exclude all cpp recursively")
     auto rel = to_rel(out, tmp);
 
     check_paths(rel, {"ok.txt"});
+}
+
+TEST_CASE("collector: exclude then re-include deeper match")
+{
+    fs::path tmp = fs::temp_directory_path() / "collector_test_4";
+    fs::remove_all(tmp);
+
+    write_file(tmp / "keep.txt", "K");
+    write_file(tmp / "tmp/skip.txt", "S");
+    write_file(tmp / "tmp/keep.txt", "R");
+
+    std::vector<Rule> rules = {
+        {(tmp / "**/*.txt").generic_string(), false},
+        {(tmp / "tmp/**").generic_string(), true},
+        {(tmp / "tmp/keep.txt").generic_string(), false},
+    };
+
+    Options opt;
+    auto out = collect_from_rules(rules, opt);
+    auto rel = to_rel(out, tmp);
+
+    check_paths(rel, {"keep.txt", "tmp/keep.txt"});
+}
+
+TEST_CASE("collector: exclude-all then include specific later")
+{
+    fs::path tmp = fs::temp_directory_path() / "collector_test_5";
+    fs::remove_all(tmp);
+
+    write_file(tmp / "a.txt", "A");
+    write_file(tmp / "b.txt", "B");
+
+    std::vector<Rule> rules = {
+        {(tmp / "**").generic_string(), true},
+        {(tmp / "a.txt").generic_string(), false},
+    };
+
+    Options opt;
+    auto out = collect_from_rules(rules, opt);
+    auto rel = to_rel(out, tmp);
+
+    check_paths(rel, {"a.txt"});
+}
+
+TEST_CASE("collector: duplicate include patterns are deduped")
+{
+    fs::path tmp = fs::temp_directory_path() / "collector_test_6";
+    fs::remove_all(tmp);
+
+    write_file(tmp / "a.txt", "A");
+    write_file(tmp / "dir/a.txt", "A2");
+
+    std::vector<Rule> rules = {
+        {(tmp / "a.txt").generic_string(), false},
+        {(tmp / "**/*.txt").generic_string(), false},
+    };
+
+    Options opt;
+    auto out = collect_from_rules(rules, opt);
+    auto rel = to_rel(out, tmp);
+
+    check_paths(rel, {"a.txt", "dir/a.txt"});
 }
 
 TEST_CASE("collector: include-exclude-include chain")
@@ -328,4 +406,81 @@ TEST_CASE("collector: complex structure with 5 rules")
                     "misc/x.cpp",
                     "misc/y.txt",
                 });
+}
+
+TEST_CASE("collector: --exclude matches @ semantics (single arg)")
+{
+    fs::path tmp = fs::temp_directory_path() / "collector_test_7";
+    fs::remove_all(tmp);
+
+    write_file(tmp / "a.cpp", "A2");
+    write_file(tmp / "keep.cpp", "K");
+    write_file(tmp / "keep.h", "H");
+
+    std::string glob_all = (tmp / "*").generic_string();
+    std::string glob_cpp = (tmp / "*.cpp").generic_string();
+    std::string keep_cpp = (tmp / "keep.cpp").generic_string();
+    std::string glob_cpp_at = "@" + glob_cpp;
+
+    // Вариант с --exclude
+    std::vector<const char *> argv_ex = {"scat",
+                                         "-l",
+                                         glob_all.c_str(),
+                                         "--exclude",
+                                         glob_cpp.c_str(),
+                                         keep_cpp.c_str()};
+
+    // Вариант с эквивалентным @
+    std::vector<const char *> argv_at = {"scat",
+                                         "-l",
+                                         glob_all.c_str(),
+                                         glob_cpp_at.c_str(),
+                                         keep_cpp.c_str()};
+
+    Options opt_ex = parse_options(static_cast<int>(argv_ex.size()),
+                                   const_cast<char **>(argv_ex.data()));
+    Options opt_at = parse_options(static_cast<int>(argv_at.size()),
+                                   const_cast<char **>(argv_at.data()));
+
+    auto out_ex = collect_from_paths_with_excludes(opt_ex.arg_rules, opt_ex);
+    auto rel_ex = to_rel(out_ex, tmp);
+
+    auto out_at = collect_from_paths_with_excludes(opt_at.arg_rules, opt_at);
+    auto rel_at = to_rel(out_at, tmp);
+
+    check_paths(rel_ex, {"keep.cpp", "keep.h"});
+    check_paths(rel_at, {"keep.cpp", "keep.h"});
+}
+
+TEST_CASE("collector: --exclude glob after shell expansion with reinclude")
+{
+    fs::path tmp = fs::temp_directory_path() / "collector_test_8";
+    fs::remove_all(tmp);
+
+    write_file(tmp / "a.h", "AH");
+    write_file(tmp / "b.h", "BH");
+    write_file(tmp / "a.cpp", "AC");
+    write_file(tmp / "b.cpp", "BC");
+
+    std::string glob_all = (tmp / "*").generic_string();
+    std::string a_cpp = (tmp / "a.cpp").generic_string();
+    std::string b_cpp = (tmp / "b.cpp").generic_string();
+
+    // Имитируем argv после раскрутки: include glob, затем все .cpp как аргументы
+    // после --exclude, и отдельное явное включение b.cpp.
+    std::vector<const char *> argv = {"scat",
+                                      "-l",
+                                      glob_all.c_str(),
+                                      "--exclude",
+                                      a_cpp.c_str(),
+                                      b_cpp.c_str(),
+                                      b_cpp.c_str()};
+
+    Options opt = parse_options(static_cast<int>(argv.size()),
+                                const_cast<char **>(argv.data()));
+
+    auto out = collect_from_paths_with_excludes(opt.arg_rules, opt);
+    auto rel = to_rel(out, tmp);
+
+    check_paths(rel, {"a.h", "b.h", "b.cpp"});
 }

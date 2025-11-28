@@ -1,6 +1,10 @@
 #include "options.h"
 #include <cstdlib>
+#include <filesystem>
 #include <iostream>
+#include <unordered_map>
+
+namespace fs = std::filesystem;
 
 static void print_help()
 {
@@ -37,6 +41,9 @@ static void print_help()
 Options parse_options(int argc, char **argv)
 {
     Options opt;
+    auto has_glob_char = [](const std::string &s) {
+        return s.find_first_of("*?[") != std::string::npos;
+    };
 
     auto add_include = [&](const std::string &pat) {
         opt.paths.push_back(pat);
@@ -166,14 +173,47 @@ Options parse_options(int argc, char **argv)
         }
         else if (a == "--exclude")
         {
-            if (i + 1 < argc)
-            {
-                add_exclude(argv[++i]);
-            }
-            else
+            if (i + 1 >= argc)
             {
                 std::cerr << "--exclude requires pattern\n";
                 std::exit(1);
+            }
+
+            std::vector<std::string> vals;
+            vals.push_back(argv[++i]);
+
+            // Если первый аргумент содержит glob-символы — просто один паттерн.
+            if (!has_glob_char(vals.front()))
+            {
+                fs::path first(vals.front());
+                fs::path dir = first.parent_path();
+                std::string ext = first.extension().string();
+
+                int j = i + 1;
+                // Подхватываем подряд идущие аргументы того же каталога/расширения
+                // — это почти наверняка раскрутка того же glob'а.
+                while (j < argc && argv[j][0] != '-')
+                {
+                    fs::path cur(argv[j]);
+                    if (cur.parent_path() != dir || cur.extension() != ext)
+                        break;
+                    vals.push_back(argv[j]);
+                    ++j;
+                }
+                i = j - 1;
+            }
+
+            // Первое вхождение строки — exclude, повторные вхождения — include
+            // (позволяет написать ... --exclude src/*.cpp src/scat.cpp).
+            std::unordered_map<std::string, int> counts;
+            for (const auto &v : vals)
+            {
+                int &c = counts[v];
+                if (c == 0)
+                    add_exclude(v);
+                else
+                    add_include(v);
+                ++c;
             }
         }
         else if (a.rfind("--exclude=", 0) == 0)
