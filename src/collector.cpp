@@ -64,6 +64,66 @@ static void apply_exclude(std::vector<fs::path> &out,
                              }),
               out.end());
 }
+// Fallback: если expander (например expand_glob) ничего не вернул,
+// пробуем применить исключение напрямую по тексту паттерна.
+static void apply_exclude_pattern(std::vector<fs::path> &out,
+                                  std::unordered_set<std::string> &present,
+                                  const std::string &pattern)
+{
+    fs::path pat(pattern);
+
+    // Без '*' — трактуем как конкретный путь.
+    if (pattern.find('*') == std::string::npos)
+    {
+        std::string target_key = make_abs_key(pat);
+        if (target_key.empty())
+            return;
+
+        out.erase(std::remove_if(out.begin(),
+                                 out.end(),
+                                 [&](const fs::path &p) {
+                                     std::string key = make_abs_key(p);
+                                     if (key == target_key)
+                                     {
+                                         present.erase(key);
+                                         return true;
+                                     }
+                                     return false;
+                                 }),
+                  out.end());
+        return;
+    }
+
+    // С '*' — фильтруем по директории + простой маске имени файла.
+    fs::path parent = pat.parent_path();
+    std::string mask = pat.filename().string();
+    if (mask.empty())
+        return;
+
+    std::string parent_key;
+    if (!parent.empty())
+        parent_key = make_abs_key(parent);
+
+    out.erase(std::remove_if(out.begin(),
+                             out.end(),
+                             [&](const fs::path &p) {
+                                 if (!parent.empty())
+                                 {
+                                     std::string p_parent_key =
+                                         make_abs_key(p.parent_path());
+                                     if (p_parent_key != parent_key)
+                                         return false;
+                                 }
+
+                                 if (!match_simple(p, mask))
+                                     return false;
+
+                                 std::string key = make_abs_key(p);
+                                 present.erase(key);
+                                 return true;
+                             }),
+              out.end());
+}
 
 static std::vector<fs::path>
 collect_with_rules(const std::vector<Rule> &rules,
@@ -78,9 +138,16 @@ collect_with_rules(const std::vector<Rule> &rules,
     {
         auto expanded = expander(r);
         if (r.exclude)
-            apply_exclude(out, present, expanded);
+        {
+            if (!expanded.empty())
+                apply_exclude(out, present, expanded);
+            else
+                apply_exclude_pattern(out, present, r.pattern);
+        }
         else
+        {
             apply_include(out, present, expanded);
+        }
     }
 
     return out;
