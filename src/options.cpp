@@ -12,6 +12,7 @@ static void print_help()
                  "  --size        Show file sizes in -l output\n"
                  "  --sorted      Sort list (-l) by size (desc)\n"
                  "  -n            Show line numbers\n"
+                 "  --compact     Drop empty lines from file contents\n"
                  "  --abs         Show absolute paths\n"
                  "  --config F    Read patterns from file F\n"
                  "  --server P    Run HTTP server on port P\n"
@@ -52,6 +53,10 @@ Options parse_options(int argc, char **argv)
         else if (a == "-n")
         {
             opt.line_numbers = true;
+        }
+        else if (a == "--compact")
+        {
+            opt.compact = true;
         }
         else if (a == "--abs")
         {

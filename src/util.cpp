@@ -52,6 +52,22 @@ void dump_file(const fs::path &p, bool first, const Options &opt)
     size_t line_no = 0;
     while (std::getline(in, line))
     {
+        bool blank = true;
+        for (char ch : line)
+        {
+            if (ch != ' ' && ch != '\t' && ch != '\r')
+            {
+                blank = false;
+                break;
+            }
+        }
+
+        if (opt.compact && blank)
+        {
+            ++line_no;
+            continue;
+        }
+
         if (opt.line_numbers)
             std::cout << line_no << ": " << line << "\n";
         else

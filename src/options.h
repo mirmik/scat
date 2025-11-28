@@ -11,6 +11,7 @@ struct Options
     bool sorted = false; // --sorted: sort list (-l) by size
 
     bool show_size = false; // --size: show file sizes in -l
+    bool compact = false;   // --compact: remove empty lines from file output
     int server_port = 0;    // --server PORT
     std::string config_file; // empty = no config mode
 
