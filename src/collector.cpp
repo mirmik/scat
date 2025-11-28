@@ -137,8 +137,24 @@ std::vector<fs::path> collect_from_paths(const std::vector<std::string> &paths,
 
     for (auto &s : paths)
     {
-        fs::path p = s;
         std::error_code ec;
+
+        // Если в аргументе есть '*', считаем его glob-паттерном
+        // и разворачиваем через expand_glob.
+        if (s.find('*') != std::string::npos)
+        {
+            auto v = expand_glob(s);
+            if (v.empty())
+            {
+                std::cerr << "Not found: " << s << "\n";
+                continue;
+            }
+
+            out.insert(out.end(), v.begin(), v.end());
+            continue;
+        }
+
+        fs::path p = s;
 
         if (!fs::exists(p, ec))
         {
