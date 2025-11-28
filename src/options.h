@@ -22,6 +22,7 @@ struct Options
     bool hook_install =
         false; // --hook-install: install/update git pre-commit hook
     bool show_version = false; // -V, --version: show version and exit
+    bool verbose = false;      // --verbose: extra diagnostics to stderr
 
     std::vector<std::string> paths; // positional paths
     std::vector<std::string>

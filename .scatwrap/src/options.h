@@ -30,6 +30,7 @@ struct&nbsp;Options<br>
 &nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;hook_install&nbsp;=<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;false;&nbsp;//&nbsp;--hook-install:&nbsp;install/update&nbsp;git&nbsp;pre-commit&nbsp;hook<br>
 &nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;show_version&nbsp;=&nbsp;false;&nbsp;//&nbsp;-V,&nbsp;--version:&nbsp;show&nbsp;version&nbsp;and&nbsp;exit<br>
+&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;verbose&nbsp;=&nbsp;false;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;--verbose:&nbsp;extra&nbsp;diagnostics&nbsp;to&nbsp;stderr<br>
 <br>
 &nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;&nbsp;paths;&nbsp;//&nbsp;positional&nbsp;paths<br>
 &nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt;<br>

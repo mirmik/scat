@@ -527,7 +527,7 @@ int scat_main(int argc, char **argv)
 {
     Options opt = parse_options(argc, argv);
     g_use_absolute_paths = opt.abs_paths;
-    CopyGuard copy_guard(opt.copy_out);
+    CopyGuard copy_guard(opt.copy_out, opt.verbose);
     if (opt.show_version)
     {
         std::cout << "scat 0.1.0\n";

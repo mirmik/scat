@@ -25,6 +25,7 @@ static void print_help()
                  "  --ghmap       List raw.githubusercontent.com URLs for "
                  "current commit\n"
                  "  --copy        Copy all stdout output to system clipboard\n"
+                 "  --verbose     Verbose logging for clipboard (--copy) to stderr\n"
                  "  -e NAME       Edit config file NAME in ./.scatconfig/NAME\n"
                  "  --hook-install Install or update .git/hooks/pre-commit for "
                  "scat wrap\n"
@@ -134,6 +135,10 @@ Options parse_options(int argc, char **argv)
         else if (a == "--copy")
         {
             opt.copy_out = true;
+        }
+        else if (a == "--verbose")
+        {
+            opt.verbose = true;
         }
         else if (a == "-e")
         {

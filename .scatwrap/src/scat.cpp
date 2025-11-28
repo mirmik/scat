@@ -535,7 +535,7 @@ int&nbsp;scat_main(int&nbsp;argc,&nbsp;char&nbsp;**argv)<br>
 {<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Options&nbsp;opt&nbsp;=&nbsp;parse_options(argc,&nbsp;argv);<br>
 &nbsp;&nbsp;&nbsp;&nbsp;g_use_absolute_paths&nbsp;=&nbsp;opt.abs_paths;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;CopyGuard&nbsp;copy_guard(opt.copy_out);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;CopyGuard&nbsp;copy_guard(opt.copy_out,&nbsp;opt.verbose);<br>
 &nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(opt.show_version)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;{<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout&nbsp;&lt;&lt;&nbsp;&quot;scat&nbsp;0.1.0\n&quot;;<br>
