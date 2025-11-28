@@ -68,6 +68,10 @@ void dump_file(const fs::path &p, bool first, const Options &opt)
             continue;
         }
 
+        // Нормализуем Windows-строку: режем хвостовой '\r', если есть.
+        if (!line.empty() && line.back() == '\r')
+            line.pop_back();
+
         if (opt.line_numbers)
             std::cout << line_no << ": " << line << "\n";
         else
@@ -131,8 +135,7 @@ std::string html_escape(std::string_view src)
     return out;
 }
 
-std::string wrap_cpp_as_html(std::string_view cpp_code,
-                             std::string_view title)
+std::string wrap_cpp_as_html(std::string_view cpp_code, std::string_view title)
 {
     std::string html;
     html.reserve(cpp_code.size() * 11 / 10 + 256);
@@ -142,7 +145,7 @@ std::string wrap_cpp_as_html(std::string_view cpp_code,
     html += "<head>\n";
     html += "  <meta charset=\"UTF-8\">\n";
     html += "  <title>";
-    html += html_escape(title);      // title экранируем, пробелы оставляем обычными
+    html += html_escape(title); // title экранируем, пробелы оставляем обычными
     html += "</title>\n";
     html += "</head>\n";
     html += "<body>\n";
@@ -184,7 +187,3 @@ std::string wrap_cpp_as_html(std::string_view cpp_code,
 
     return html;
 }
-
-
-
-
