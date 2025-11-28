@@ -371,7 +371,7 @@ static int run_config_mode(const Options &opt)
 static int run_normal_mode(const Options &opt)
 {
     std::vector<std::filesystem::path> files =
-        collect_from_paths(opt.paths, opt);
+        collect_from_paths_with_excludes(opt.arg_rules, opt);
 
     auto after_dump = [&](std::uintmax_t total)
     {
@@ -731,4 +731,3 @@ int wrap_files_to_html(const std::vector<std::filesystem::path> &files,
 
     return 0;
 }
-

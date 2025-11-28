@@ -5,189 +5,179 @@
 #include <filesystem>
 #include <functional>
 #include <iostream>
-#include <sstream>
 #include <unordered_set>
 
 namespace fs = std::filesystem;
 
-// ---------------------------------------------------------------
-// Вспомогалки для glob
-// ---------------------------------------------------------------
-
-// pattern like:  "src/*"  or  "datas/**"
-static bool has_double_star(const std::string &s)
+// Строковый ключ для сравнения путей и выбрасывания дублей.
+static std::string make_abs_key(const fs::path &p)
 {
-    return s.find("**") != std::string::npos;
-}
-
-static bool has_single_star(const std::string &s)
-{
-    return s.find('*') != std::string::npos && !has_double_star(s);
-}
-
-// Расширение одного правила
-static void expand_rule(const Rule &r, std::vector<fs::path> &out)
-{
-    const std::string &pat = r.pattern;
     std::error_code ec;
+    fs::path abs = fs::absolute(p, ec);
+    if (!ec)
+        return abs.lexically_normal().string();
 
-    // ------------------------------------------------------------------
-    // новый glob — вынесен в glob.cpp
+    return p.lexically_normal().string();
+}
+
+// Раскрывает правило из конфигурации (всегда через glob).
+static std::vector<fs::path> expand_rule(const Rule &r)
+{
+    return expand_glob(r.pattern);
+}
+
+static void apply_include(std::vector<fs::path> &out,
+                          std::unordered_set<std::string> &present,
+                          const std::vector<fs::path> &expanded)
+{
+    for (auto &p : expanded)
     {
-        auto v = expand_glob(pat);
-        out.insert(out.end(), v.begin(), v.end());
-        return;
-    }
-
-    // ==== * (one level) ====
-    if (has_single_star(pat))
-    {
-        fs::path dir = fs::path(pat).parent_path();
-        std::string mask = fs::path(pat).filename().string();
-
-        if (!fs::exists(dir, ec) || !fs::is_directory(dir, ec))
-            return;
-
-        for (auto &e : fs::directory_iterator(dir, ec))
-        {
-            if (e.is_regular_file() && match_simple(e.path(), mask))
-                out.push_back(e.path());
-        }
-        return;
-    }
-
-    // ==== Прямой путь ====
-    fs::path p = pat;
-
-    if (fs::is_regular_file(p, ec))
-    {
-        out.push_back(fs::canonical(p, ec));
-        return;
-    }
-
-    if (fs::is_directory(p, ec))
-    {
-        for (auto &e : fs::directory_iterator(p, ec))
-            if (e.is_regular_file())
-                out.push_back(e.path());
-        return;
+        std::string key = make_abs_key(p);
+        if (present.insert(key).second)
+            out.push_back(p);
     }
 }
 
+static void apply_exclude(std::vector<fs::path> &out,
+                          std::unordered_set<std::string> &present,
+                          const std::vector<fs::path> &expanded)
+{
+    if (expanded.empty())
+        return;
+
+    std::unordered_set<std::string> bad;
+    bad.reserve(expanded.size() * 2);
+
+    for (auto &p : expanded)
+        bad.insert(make_abs_key(p));
+
+    out.erase(std::remove_if(out.begin(),
+                             out.end(),
+                             [&](const fs::path &p) {
+                                 std::string key = make_abs_key(p);
+                                 if (bad.find(key) != bad.end())
+                                 {
+                                     present.erase(key);
+                                     return true;
+                                 }
+                                 return false;
+                             }),
+              out.end());
+}
+
+static std::vector<fs::path>
+collect_with_rules(const std::vector<Rule> &rules,
+                   const std::function<std::vector<fs::path>(const Rule &)>
+                       &expander)
+{
+    std::vector<fs::path> out;
+    std::unordered_set<std::string> present;
+    present.reserve(rules.size() * 4);
+
+    for (const auto &r : rules)
+    {
+        auto expanded = expander(r);
+        if (r.exclude)
+            apply_exclude(out, present, expanded);
+        else
+            apply_include(out, present, expanded);
+    }
+
+    return out;
+}
+
 // ---------------------------------------------------------------
-// collect_from_rules()
+// collect_from_rules() — config mode
 // ---------------------------------------------------------------
 
 std::vector<fs::path> collect_from_rules(const std::vector<Rule> &rules,
                                          const Options &opt)
 {
-    std::vector<fs::path> tmp;
-    std::error_code ec;
-
-    // 1. Собираем все include-рулы
-    for (const auto &r : rules)
-        if (!r.exclude)
-            expand_rule(r, tmp);
-
-    // 2. Применяем exclude-рулы через нормальный glob
-    for (const auto &r : rules)
-    {
-        if (!r.exclude)
-            continue;
-
-        auto bad = expand_glob(r.pattern);
-
-        std::unordered_set<std::string> bad_abs;
-        bad_abs.reserve(bad.size());
-
-        for (auto &b : bad)
-        {
-            std::error_code ec;
-            auto absb = fs::absolute(b, ec);
-            bad_abs.insert(absb.string());
-        }
-
-        tmp.erase(std::remove_if(tmp.begin(),
-                                 tmp.end(),
-                                 [&](const fs::path &p)
-                                 {
-                                     std::error_code ec;
-                                     auto absp = fs::absolute(p, ec);
-                                     return bad_abs.find(absp.string()) !=
-                                            bad_abs.end();
-                                 }),
-                  tmp.end());
-    }
-
-    // 3. Убираем дубликаты
-    std::sort(tmp.begin(), tmp.end());
-    tmp.erase(std::unique(tmp.begin(), tmp.end()), tmp.end());
-
-    return tmp;
+    (void)opt;
+    return collect_with_rules(rules, expand_rule);
 }
 
 // ---------------------------------------------------------------
-// collect_from_paths()
+// CLI helpers
+// ---------------------------------------------------------------
+
+static std::vector<fs::path>
+expand_cli_include(const std::string &s, const Options &opt)
+{
+    std::vector<fs::path> out;
+    std::error_code ec;
+
+    // glob pattern
+    if (s.find('*') != std::string::npos)
+    {
+        auto v = expand_glob(s);
+        if (v.empty())
+        {
+            std::cerr << "Not found: " << s << "\n";
+            return out;
+        }
+
+        out.insert(out.end(), v.begin(), v.end());
+        return out;
+    }
+
+    fs::path p = s;
+
+    if (!fs::exists(p, ec))
+    {
+        std::cerr << "Not found: " << p << "\n";
+        return out;
+    }
+
+    if (fs::is_regular_file(p, ec))
+    {
+        out.push_back(fs::canonical(p, ec));
+        return out;
+    }
+
+    if (fs::is_directory(p, ec))
+    {
+        if (opt.recursive)
+        {
+            for (auto &e : fs::recursive_directory_iterator(p, ec))
+                if (e.is_regular_file())
+                    out.push_back(e.path());
+        }
+        else
+        {
+            for (auto &e : fs::directory_iterator(p, ec))
+                if (e.is_regular_file())
+                    out.push_back(e.path());
+        }
+    }
+
+    return out;
+}
+
+// ---------------------------------------------------------------
+// collect_from_paths* — CLI mode
 // ---------------------------------------------------------------
 
 std::vector<fs::path> collect_from_paths(const std::vector<std::string> &paths,
                                          const Options &opt)
 {
-    std::vector<fs::path> out;
+    std::vector<Rule> rules;
+    rules.reserve(paths.size());
+    for (const auto &p : paths)
+        rules.push_back(Rule{p, false});
 
-    for (auto &s : paths)
-    {
-        std::error_code ec;
+    return collect_from_paths_with_excludes(rules, opt);
+}
 
-        // Если в аргументе есть '*', считаем его glob-паттерном
-        // и разворачиваем через expand_glob.
-        if (s.find('*') != std::string::npos)
-        {
-            auto v = expand_glob(s);
-            if (v.empty())
-            {
-                std::cerr << "Not found: " << s << "\n";
-                continue;
-            }
+std::vector<fs::path>
+collect_from_paths_with_excludes(const std::vector<Rule> &rules,
+                                 const Options &opt)
+{
+    auto expand_cli_rule = [&](const Rule &r) {
+        if (r.exclude)
+            return expand_glob(r.pattern);
+        return expand_cli_include(r.pattern, opt);
+    };
 
-            out.insert(out.end(), v.begin(), v.end());
-            continue;
-        }
-
-        fs::path p = s;
-
-        if (!fs::exists(p, ec))
-        {
-            std::cerr << "Not found: " << p << "\n";
-            continue;
-        }
-
-        if (fs::is_regular_file(p, ec))
-        {
-            out.push_back(fs::canonical(p, ec));
-            continue;
-        }
-
-        if (fs::is_directory(p, ec))
-        {
-            if (opt.recursive)
-            {
-                for (auto &e : fs::recursive_directory_iterator(p, ec))
-                    if (e.is_regular_file())
-                        out.push_back(e.path());
-            }
-            else
-            {
-                for (auto &e : fs::directory_iterator(p, ec))
-                    if (e.is_regular_file())
-                        out.push_back(e.path());
-            }
-        }
-    }
-
-    // Убираем дубликаты
-    std::sort(out.begin(), out.end());
-    out.erase(std::unique(out.begin(), out.end()), out.end());
-
-    return out;
+    return collect_with_rules(rules, expand_cli_rule);
 }

@@ -19,6 +19,8 @@ scat src -r              # recursive
 scat src -r --abs        # absolute paths
 scat src -r -l           # list with sizes
 scat src -r -l --sorted  # list, sorted by size (descending)
+scat src -r @src/tests/**           # exclude tests (argument mode)
+scat src -r --exclude src/tests/**  # same as @src/tests/**
 ```
 
 Output looks like:

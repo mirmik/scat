@@ -1,6 +1,6 @@
 #include "collector.h"
-#include "options.h"
 #include "doctest/doctest.h"
+#include "options.h"
 
 #include <algorithm>
 #include <filesystem>
@@ -83,4 +83,49 @@ TEST_CASE("collect_from_paths: recursive ** glob")
     auto rel = to_rel(out, tmp);
 
     check_paths(rel, {"1.txt", "x/2.txt", "x/y/3.txt"});
+}
+
+TEST_CASE("collect_from_paths_with_excludes: basic exclude")
+{
+    fs::path tmp = fs::temp_directory_path() / "paths_glob_test_3";
+    fs::remove_all(tmp);
+
+    write_file(tmp / "a.txt", "A");
+    write_file(tmp / "b.txt", "B");
+    write_file(tmp / "c.txt", "C");
+
+    Options opt;
+    std::vector<Rule> rules = {{(tmp / "*.txt").generic_string(), false},
+                               {(tmp / "b.txt").generic_string(), true}};
+
+    auto out = collect_from_paths_with_excludes(rules, opt);
+    auto rel = to_rel(out, tmp);
+
+    check_paths(rel, {"a.txt", "c.txt"});
+}
+
+TEST_CASE("collect_from_paths_with_excludes: sequential apply")
+{
+    fs::path tmp = fs::temp_directory_path() / "paths_glob_test_4";
+    fs::remove_all(tmp);
+
+    write_file(tmp / "a.txt", "A");
+    write_file(tmp / "b.txt", "B");
+    write_file(tmp / "c.txt", "C");
+    write_file(tmp / "d.yml", "D");
+
+    Options opt;
+    std::vector<Rule> rules = {
+        {(tmp / "a.txt").generic_string(), false},
+        {(tmp / "b.txt").generic_string(), false},
+        {(tmp / "c.txt").generic_string(), false},
+        {(tmp / "d.yml").generic_string(), false},
+        {(tmp / "*.txt").generic_string(), true},
+        {(tmp / "b.txt").generic_string(), false},
+    };
+
+    auto out = collect_from_paths_with_excludes(rules, opt);
+    auto rel = to_rel(out, tmp);
+
+    check_paths(rel, {"b.txt", "d.yml"});
 }

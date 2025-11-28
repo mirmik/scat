@@ -1,4 +1,5 @@
 #pragma once
+#include "rules.h"
 #include <string>
 #include <vector>
 
@@ -23,7 +24,10 @@ struct Options
     bool show_version = false; // -V, --version: show version and exit
 
     std::vector<std::string> paths; // positional paths
+    std::vector<std::string>
+        exclude_paths; // --exclude P / @PATTERN (argument mode)
     std::string edit_config_name; // -e NAME: edit ./.scatconfig/NAME
+    std::vector<Rule> arg_rules; // ordered CLI rules with excludes/includes
 
     std::string wrap_root;   // --wrap
     std::string path_prefix; // --prefix P

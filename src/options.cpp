@@ -18,6 +18,9 @@ static void print_help()
                  "  --server P    Run HTTP server on port P\n"
                  "  --wrap DIR    Wrap collected files as HTML into DIR\n"
                  "  --prefix P    Prepend P before file paths in -l output\n"
+                 "  --exclude P   Exclude paths matching glob pattern P "
+                 "(argument mode)\n"
+                 "                Shorthand: @PATTERN as positional argument\n"
                  "  --git-info    Print git commit hash and remote origin\n"
                  "  --ghmap       List raw.githubusercontent.com URLs for "
                  "current commit\n"
@@ -34,6 +37,16 @@ static void print_help()
 Options parse_options(int argc, char **argv)
 {
     Options opt;
+
+    auto add_include = [&](const std::string &pat) {
+        opt.paths.push_back(pat);
+        opt.arg_rules.push_back(Rule{pat, false});
+    };
+
+    auto add_exclude = [&](const std::string &pat) {
+        opt.exclude_paths.push_back(pat);
+        opt.arg_rules.push_back(Rule{pat, true});
+    };
 
     for (int i = 1; i < argc; ++i)
     {
@@ -151,14 +164,39 @@ Options parse_options(int argc, char **argv)
                 std::exit(1);
             }
         }
+        else if (a == "--exclude")
+        {
+            if (i + 1 < argc)
+            {
+                add_exclude(argv[++i]);
+            }
+            else
+            {
+                std::cerr << "--exclude requires pattern\n";
+                std::exit(1);
+            }
+        }
+        else if (a.rfind("--exclude=", 0) == 0)
+        {
+            add_exclude(a.substr(std::string("--exclude=").size()));
+        }
+        else if (!a.empty() && a[0] == '@')
+        {
+            if (a.size() == 1)
+            {
+                std::cerr << "@ requires pattern\n";
+                std::exit(1);
+            }
+            add_exclude(a.substr(1));
+        }
         else
         {
-            opt.paths.push_back(a);
+            add_include(a);
         }
     }
 
     // auto-config mode if no paths and no explicit config
-    if (opt.paths.empty() && opt.config_file.empty())
+    if (opt.arg_rules.empty() && opt.config_file.empty())
         opt.config_file = "scat.txt";
 
     return opt;

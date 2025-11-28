@@ -77,7 +77,7 @@ int run_server(const Options &opt)
     }
     else
     {
-        files = collect_from_paths(opt.paths, opt);
+        files = collect_from_paths_with_excludes(opt.arg_rules, opt);
     }
 
     if (files.empty())
