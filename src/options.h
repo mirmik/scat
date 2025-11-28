@@ -22,6 +22,7 @@ struct Options
     bool show_version = false; // -V, --version: show version and exit
 
     std::vector<std::string> paths; // positional paths
+    std::string edit_config_name; // -e NAME: edit ./.scatconfig/NAME
 
     std::string wrap_root;   // --wrap
     std::string path_prefix; // --prefix P

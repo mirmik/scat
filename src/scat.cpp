@@ -7,6 +7,7 @@
 #include "rules.h"
 #include "util.h"
 #include <cstdio>
+#include <cstdlib>
 #include <exception>
 #include <filesystem>
 #include <fstream>
@@ -25,6 +26,87 @@
 namespace fs = std::filesystem;
 
 bool g_use_absolute_paths = false;
+static std::string detect_editor()
+{
+    const char *env = std::getenv("SCAT_EDITOR");
+    if (!env || !*env)
+        env = std::getenv("EDITOR");
+
+    if (env && *env)
+        return std::string(env);
+
+#ifdef _WIN32
+    return "notepad";
+#else
+    return "nano";
+#endif
+}
+
+static int edit_config_file(const std::string &name)
+{
+    if (name.empty())
+    {
+        std::cerr << "-e: empty filename\n";
+        return 1;
+    }
+
+    fs::path config_dir = ".scatconfig";
+    std::error_code ec;
+    fs::create_directories(config_dir, ec);
+    if (ec)
+    {
+        std::cerr << "-e: cannot create .scatconfig directory\n";
+        return 1;
+    }
+
+    fs::path target = config_dir / name;
+
+    if (!target.has_filename())
+    {
+        std::cerr << "-e: invalid filename\n";
+        return 1;
+    }
+
+    fs::create_directories(target.parent_path(), ec);
+    if (ec)
+    {
+        std::cerr << "-e: cannot create directories for " << target << "\n";
+        return 1;
+    }
+
+    if (!fs::exists(target))
+    {
+        std::ofstream out(target);
+        if (!out)
+        {
+            std::cerr << "-e: cannot create file " << target << "\n";
+            return 1;
+        }
+    }
+
+    std::string editor = detect_editor();
+    if (editor.empty())
+    {
+        std::cerr << "-e: no editor configured (SCAT_EDITOR/EDITOR)\n";
+        return 1;
+    }
+
+    std::string cmd;
+    cmd.reserve(editor.size() + target.string().size() + 4);
+    cmd += editor;
+    cmd += " \"";
+    cmd += target.string();
+    cmd += "\"";
+
+    int rc = std::system(cmd.c_str());
+    if (rc == -1)
+    {
+        std::cerr << "-e: failed to start editor '" << editor << "'\n";
+        return 1;
+    }
+
+    return 0;
+}
 
 void print_tree(const std::vector<std::filesystem::path> &files)
 {
@@ -456,6 +538,10 @@ int scat_main(int argc, char **argv)
     if (opt.hook_install)
     {
         return install_pre_commit_hook();
+    }
+    if (!opt.edit_config_name.empty())
+    {
+        return edit_config_file(opt.edit_config_name);
     }
 
     // Git info mode: print repository metadata and exit

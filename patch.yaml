@@ -1,0 +1,144 @@
+description: "Добавлен ключ -e NAME для редактирования ./.scatconfig/NAME в консольном редакторе"
+language: c++
+operations:
+  - path: src/options.h
+    op: insert_after_text
+    marker: |-
+      std::vector<std::string> paths; // positional paths
+    payload: |-
+      std::string edit_config_name; // -e NAME: edit ./.scatconfig/NAME
+
+  - path: src/options.cpp
+    op: insert_after_text
+    marker: |-
+      "  --copy        Copy all stdout output to system clipboard\n"
+    payload: |-
+      "  -e NAME       Edit config file NAME in ./.scatconfig/NAME\n"
+
+  - path: src/options.cpp
+    op: insert_after_text
+    marker: |-
+      else if (a == "--copy")
+      {
+          opt.copy_out = true;
+      }
+    payload: |-
+      else if (a == "-e")
+      {
+          if (i + 1 < argc)
+          {
+              opt.edit_config_name = argv[++i];
+          }
+          else
+          {
+              std::cerr << "-e requires filename\n";
+              std::exit(1);
+          }
+      }
+
+  - path: src/scat.cpp
+    op: insert_after_text
+    marker: |-
+      #include <cstdio>
+    payload: |-
+      #include <cstdlib>
+
+  - path: src/scat.cpp
+    op: insert_after_text
+    marker: |-
+      bool g_use_absolute_paths = false;
+    payload: |-
+      static std::string detect_editor()
+      {
+          const char *env = std::getenv("SCAT_EDITOR");
+          if (!env || !*env)
+              env = std::getenv("EDITOR");
+
+          if (env && *env)
+              return std::string(env);
+
+      #ifdef _WIN32
+          return "notepad";
+      #else
+          return "nano";
+      #endif
+      }
+
+      static int edit_config_file(const std::string &name)
+      {
+          if (name.empty())
+          {
+              std::cerr << "-e: empty filename\n";
+              return 1;
+          }
+
+          fs::path config_dir = ".scatconfig";
+          std::error_code ec;
+          fs::create_directories(config_dir, ec);
+          if (ec)
+          {
+              std::cerr << "-e: cannot create .scatconfig directory\n";
+              return 1;
+          }
+
+          fs::path target = config_dir / name;
+
+          if (!target.has_filename())
+          {
+              std::cerr << "-e: invalid filename\n";
+              return 1;
+          }
+
+          fs::create_directories(target.parent_path(), ec);
+          if (ec)
+          {
+              std::cerr << "-e: cannot create directories for " << target << "\n";
+              return 1;
+          }
+
+          if (!fs::exists(target))
+          {
+              std::ofstream out(target);
+              if (!out)
+              {
+                  std::cerr << "-e: cannot create file " << target << "\n";
+                  return 1;
+              }
+          }
+
+          std::string editor = detect_editor();
+          if (editor.empty())
+          {
+              std::cerr << "-e: no editor configured (SCAT_EDITOR/EDITOR)\n";
+              return 1;
+          }
+
+          std::string cmd;
+          cmd.reserve(editor.size() + target.string().size() + 4);
+          cmd += editor;
+          cmd += " \"";
+          cmd += target.string();
+          cmd += "\"";
+
+          int rc = std::system(cmd.c_str());
+          if (rc == -1)
+          {
+              std::cerr << "-e: failed to start editor '" << editor << "'\n";
+              return 1;
+          }
+
+          return 0;
+      }
+
+  - path: src/scat.cpp
+    op: insert_after_text
+    marker: |-
+      if (opt.hook_install)
+      {
+          return install_pre_commit_hook();
+      }
+    payload: |-
+      if (!opt.edit_config_name.empty())
+      {
+          return edit_config_file(opt.edit_config_name);
+      }

@@ -21,6 +21,7 @@ static void print_help()
                  "  --ghmap       List raw.githubusercontent.com URLs for "
                  "current commit\n"
                  "  --copy        Copy all stdout output to system clipboard\n"
+                 "  -e NAME       Edit config file NAME in ./.scatconfig/NAME\n"
                  "  --hook-install Install or update .git/hooks/pre-commit for "
                  "scat wrap\n"
                  "  -V, --version Show program version and exit\n"
@@ -115,6 +116,18 @@ Options parse_options(int argc, char **argv)
         else if (a == "--copy")
         {
             opt.copy_out = true;
+        }
+        else if (a == "-e")
+        {
+            if (i + 1 < argc)
+            {
+                opt.edit_config_name = argv[++i];
+            }
+            else
+            {
+                std::cerr << "-e requires filename\n";
+                std::exit(1);
+            }
         }
         else if (a == "-h" || a == "--help")
         {
