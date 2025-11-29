@@ -25,6 +25,8 @@
 #include&nbsp;&lt;set&gt;<br>
 #include&nbsp;&lt;sstream&gt;<br>
 <br>
+#include&nbsp;&quot;version.h&quot;<br>
+<br>
 #ifndef&nbsp;_WIN32<br>
 #include&nbsp;&lt;sys/stat.h&gt;<br>
 #include&nbsp;&lt;sys/types.h&gt;<br>
@@ -538,7 +540,8 @@ int&nbsp;scat_main(int&nbsp;argc,&nbsp;char&nbsp;**argv)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;CopyGuard&nbsp;copy_guard(opt.copy_out,&nbsp;opt.verbose);<br>
 &nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(opt.show_version)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout&nbsp;&lt;&lt;&nbsp;&quot;scat&nbsp;0.1.0\n&quot;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout&nbsp;&lt;&lt;&nbsp;&quot;scat&nbsp;version&nbsp;&quot;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;&lt;&nbsp;scat::version_string&nbsp;&lt;&lt;&nbsp;&quot;\n&quot;;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;0;<br>
 &nbsp;&nbsp;&nbsp;&nbsp;}<br>
 <br>

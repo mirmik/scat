@@ -17,6 +17,8 @@
 #include <set>
 #include <sstream>
 
+#include "version.h"
+
 #ifndef _WIN32
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -530,7 +532,8 @@ int scat_main(int argc, char **argv)
     CopyGuard copy_guard(opt.copy_out, opt.verbose);
     if (opt.show_version)
     {
-        std::cout << "scat 0.1.0\n";
+        std::cout << "scat version "
+                  << scat::version_string << "\n";
         return 0;
     }
 
