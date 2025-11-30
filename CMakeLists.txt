@@ -3,17 +3,33 @@ project(scat VERSION 0.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-include(CheckCXXCompilerFlag)
-check_cxx_compiler_flag("-lstdc++fs" HAS_LIBSTDCXXFS)
+include(GNUInstallDirs)
 
 enable_testing()
 
+if (MSVC)
+    add_compile_options(/permissive- /W4 /utf-8)
+else()
+    add_compile_options(-Wall -Wextra -pedantic)
+endif()
+
 # -----------------------------------------------------------------------------
-# Windows install prefix
+# Platform-specific install prefixes
 # -----------------------------------------------------------------------------
+set(SCAT_ON_TERMUX FALSE)
+
+if (DEFINED ENV{TERMUX_VERSION} OR CMAKE_SYSTEM_NAME STREQUAL "Android")
+    set(SCAT_ON_TERMUX TRUE)
+endif()
+
 if (WIN32 AND CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX "$ENV{LOCALAPPDATA}/Programs/scat"
+        CACHE PATH "Install path" FORCE)
+elseif (SCAT_ON_TERMUX AND CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    # Respect Termux prefix so `cmake --install` ends up under $PREFIX
+    set(CMAKE_INSTALL_PREFIX "$ENV{PREFIX}"
         CACHE PATH "Install path" FORCE)
 endif()
 
@@ -42,16 +58,11 @@ add_executable(scat
     ${SCAT_HEADERS}     # scat.h
 )
 
-# std::filesystem fix for MinGW
-if (HAS_LIBSTDCXXFS)
-    target_link_libraries(scat stdc++fs)
-endif()
-
 # -----------------------------------------------------------------------------
 # Install executable
 # -----------------------------------------------------------------------------
 install(TARGETS scat
-    RUNTIME DESTINATION bin
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
 # -----------------------------------------------------------------------------
@@ -61,7 +72,7 @@ if (WIN32)
     install(CODE "
         set(wapps \"\$ENV{LOCALAPPDATA}/Microsoft/WindowsApps\")
         file(MAKE_DIRECTORY \"\${wapps}\")
-        set(scat_path \"\$ENV{LOCALAPPDATA}/Programs/scat/bin/scat.exe\")
+        set(scat_path \"\$ENV{LOCALAPPDATA}/Programs/scat/${CMAKE_INSTALL_BINDIR}/scat.exe\")
 if(NOT EXISTS \"\${wapps}/scat.cmd\")
     file(WRITE \"\${wapps}/scat.cmd\" \"@echo off\n\\\"\${scat_path}\\\" %*\")
 endif()
@@ -75,8 +86,8 @@ file(GLOB SCAT_TESTS CONFIGURE_DEPENDS tests/*)
 
 add_executable(scat_tests
     ${SCAT_TESTS}
-    ${SCAT_SOURCES}   
-    ${SCAT_HEADERS}   
+    ${SCAT_SOURCES}
+    ${SCAT_HEADERS}
 )
 
 target_include_directories(scat_tests PRIVATE src tests)
