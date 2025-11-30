@@ -138,7 +138,7 @@ void print_tree(const std::vector<std::filesystem::path> &files)
 
         // вытаскиваем компоненты p в список
         std::vector<std::string> parts;
-        for (auto &part : p)
+        for (const auto &part : p)
             parts.push_back(part.string());
 
         int total = (int)parts.size();

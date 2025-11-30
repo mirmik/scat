@@ -42,6 +42,7 @@
       }
 
       static const ClipboardTool kClipboardTools[] = {
+          {"termux-clipboard-set", "termux-clipboard-set 2>/dev/null", nullptr},
           {"wl-copy", "wl-copy 2>/dev/null", &has_wayland_display},
           {"xclip",   "xclip -selection clipboard 2>/dev/null", nullptr},
           {"xsel",    "xsel --clipboard --input 2>/dev/null", nullptr},
