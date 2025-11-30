@@ -6,8 +6,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(CheckCXXCompilerFlag)
+include(CheckCXXSourceCompiles)
 include(GNUInstallDirs)
-check_cxx_compiler_flag("-lstdc++fs" HAS_LIBSTDCXXFS)
 
 enable_testing()
 
@@ -60,7 +60,15 @@ add_executable(scat
     ${SCAT_HEADERS}     # scat.h
 )
 
-# std::filesystem fix for MinGW
+# std::filesystem fix for MinGW and older libstdc++ (detect actual linker support)
+set(CMAKE_REQUIRED_LIBRARIES "stdc++fs")
+check_cxx_source_compiles(
+    [[#include <filesystem>
+      int main() { std::filesystem::path p{"."}; return 0; }]]
+    HAS_LIBSTDCXXFS
+)
+unset(CMAKE_REQUIRED_LIBRARIES)
+
 if (HAS_LIBSTDCXXFS)
     target_link_libraries(scat stdc++fs)
 endif()
