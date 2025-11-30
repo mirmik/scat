@@ -5,8 +5,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-include(CheckCXXCompilerFlag)
-include(CheckCXXSourceCompiles)
 include(GNUInstallDirs)
 
 enable_testing()
@@ -60,33 +58,6 @@ add_executable(scat
     ${SCAT_HEADERS}     # scat.h
 )
 
-# std::filesystem fix for MinGW and older libstdc++ (detect actual linker support)
-# Prefer the standard library's builtin support; fall back to stdc++fs only when needed
-check_cxx_source_compiles(
-    [[#include <filesystem>
-      int main() { std::filesystem::path p{"."}; return p.empty(); }]]
-    HAS_BUILTIN_FILESYSTEM
-)
-
-if (NOT HAS_BUILTIN_FILESYSTEM)
-    set(CMAKE_REQUIRED_LIBRARIES "stdc++fs")
-    check_cxx_source_compiles(
-        [[#include <filesystem>
-          int main() { std::filesystem::path p{"."}; return p.empty(); }]]
-        HAS_LIBSTDCXXFS
-    )
-    unset(CMAKE_REQUIRED_LIBRARIES)
-endif()
-
-set(FILESYSTEM_LIB "")
-if (HAS_LIBSTDCXXFS)
-    set(FILESYSTEM_LIB stdc++fs)
-endif()
-
-if (FILESYSTEM_LIB)
-    target_link_libraries(scat PRIVATE ${FILESYSTEM_LIB})
-endif()
-
 # -----------------------------------------------------------------------------
 # Install executable
 # -----------------------------------------------------------------------------
@@ -120,10 +91,6 @@ add_executable(scat_tests
 )
 
 target_include_directories(scat_tests PRIVATE src tests)
-
-if (FILESYSTEM_LIB)
-    target_link_libraries(scat_tests PRIVATE ${FILESYSTEM_LIB})
-endif()
 
 if (WIN32)
     target_link_libraries(scat_tests ws2_32)
