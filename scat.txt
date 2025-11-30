@@ -5,6 +5,9 @@ CMakeLists.txt
 scat.txt
 README.md
 
+[VAR(a)]
+src/scat.h
+
 [TREE]
 **
 !*.o

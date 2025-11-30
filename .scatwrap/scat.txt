@@ -13,6 +13,9 @@ CMakeLists.txt<br>
 scat.txt<br>
 README.md<br>
 <br>
+[VAR(a)]<br>
+src/scat.h<br>
+<br>
 [TREE]<br>
 **<br>
 !*.o<br>

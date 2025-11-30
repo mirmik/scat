@@ -346,7 +346,22 @@ static int run_config_mode(const Options &opt)
         return 1;
     }
 
-    auto text_files = collect_from_rules(cfg.text_rules, opt);
+    std::vector<fs::path> text_files;
+        if (!opt.variant_name.empty())
+        {
+            auto it = cfg.variants.find(opt.variant_name);
+            if (it == cfg.variants.end())
+            {
+                std::cerr << "--variant: unknown variant '"
+                          << opt.variant_name << "' in config\n";
+                return 1;
+            }
+            text_files = collect_from_rules(it->second, opt);
+        }
+        else
+        {
+            text_files = collect_from_rules(cfg.text_rules, opt);
+        }
 
     auto after_dump = [&](std::uintmax_t total)
     {
@@ -591,7 +606,22 @@ int scat_main(int argc, char **argv)
             return 1;
         }
 
-        auto text_files = collect_from_rules(cfg.text_rules, opt);
+        std::vector<fs::path> text_files;
+            if (!opt.variant_name.empty())
+            {
+                auto it = cfg.variants.find(opt.variant_name);
+                if (it == cfg.variants.end())
+                {
+                    std::cerr << "--variant: unknown variant '"
+                              << opt.variant_name << "' in config\n";
+                    return 1;
+                }
+                text_files = collect_from_rules(it->second, opt);
+            }
+            else
+            {
+                text_files = collect_from_rules(cfg.text_rules, opt);
+            }
         if (text_files.empty())
         {
             std::cerr << "No files collected.\n";

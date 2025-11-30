@@ -29,6 +29,7 @@ struct Options
         exclude_paths; // --exclude P / @PATTERN (argument mode)
     std::string edit_config_name; // -e NAME: edit ./.scatconfig/NAME
     std::vector<Rule> arg_rules; // ordered CLI rules with excludes/includes
+    std::string variant_name; // --variant NAME
 
     std::string wrap_root;   // --wrap
     std::string path_prefix; // --prefix P

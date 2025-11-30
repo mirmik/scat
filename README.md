@@ -71,6 +71,31 @@ CMakeLists.txt
 scat.txt
 ```
 
+### Variants (`[VAR(name)]` sections)
+
+You can define alternative sets of text rules in the same config file:
+
+```text
+[VAR(min)]
+src/*
+!src/bigfile.txt
+tests/**
+!tests/doctest/**
+CMakeLists.txt
+scat.txt
+README.md
+```
+
+Run `scat` with `--variant` to use a specific variant instead of the top-level rules:
+
+```bash
+scat --variant min              # uses [VAR(min)] from scat.txt
+scat --config myrules.txt --variant min
+```
+
+If `--variant` is not specified, scat uses the top-level rules defined before `[TREE]`, `[MAPFORMAT]` or any `[VAR(...)]` sections.
+
+### Project tree (`[TREE]` section)
 ### Project tree (`[TREE]` section)
 
 Optional second rule set used only for a tree view at the end:

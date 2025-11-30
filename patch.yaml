@@ -1,144 +1,301 @@
-description: "Добавлен ключ -e NAME для редактирования ./.scatconfig/NAME в консольном редакторе"
-language: c++
+description: "Добавляем поддержку секций [VAR(name)] в конфиг и ключа --variant"
+language: "ru"
 operations:
-  - path: src/options.h
-    op: insert_after_text
-    marker: |-
-      std::vector<std::string> paths; // positional paths
-    payload: |-
-      std::string edit_config_name; // -e NAME: edit ./.scatconfig/NAME
+  - op: insert_after_text
+    comment: "Добавить подключение <map> в parser.h для хранения вариантов"
+    path: src/parser.h
+    marker: "#include <filesystem>"
+    payload: |
+      #include <map>
 
-  - path: src/options.cpp
-    op: insert_after_text
-    marker: |-
-      "  --copy        Copy all stdout output to system clipboard\n"
-    payload: |-
-      "  -e NAME       Edit config file NAME in ./.scatconfig/NAME\n"
-
-  - path: src/options.cpp
-    op: insert_after_text
-    marker: |-
-      else if (a == "--copy")
+  - op: replace_text
+    comment: "Расширить структуру Config в parser.h полем variants для [VAR(name)]"
+    path: src/parser.h
+    marker: |
+      struct Config
       {
-          opt.copy_out = true;
-      }
-    payload: |-
-      else if (a == "-e")
+          std::vector<Rule> text_rules;
+          std::vector<Rule> tree_rules;
+          std::string map_format; // новый блок [MAPFORMAT], может быть пустым
+      };
+    payload: |
+      struct Config
       {
-          if (i + 1 < argc)
-          {
-              opt.edit_config_name = argv[++i];
-          }
-          else
-          {
-              std::cerr << "-e requires filename\n";
-              std::exit(1);
-          }
-      }
+          std::vector<Rule> text_rules;
+          std::vector<Rule> tree_rules;
+          std::string map_format; // новый блок [MAPFORMAT], может быть пустым
+          std::map<std::string, std::vector<Rule>>
+              variants; // секции [VAR(name)]
+      };
 
-  - path: src/scat.cpp
-    op: insert_after_text
+  - op: replace_c_style_block
+    comment: "Научить parse_config разбирать секции [VAR(name)] в конфиге"
+    path: src/parser.cpp
     marker: |-
-      #include <cstdio>
-    payload: |-
-      #include <cstdlib>
-
-  - path: src/scat.cpp
-    op: insert_after_text
-    marker: |-
-      bool g_use_absolute_paths = false;
-    payload: |-
-      static std::string detect_editor()
+      Config parse_config(const fs::path &path)
       {
-          const char *env = std::getenv("SCAT_EDITOR");
-          if (!env || !*env)
-              env = std::getenv("EDITOR");
-
-          if (env && *env)
-              return std::string(env);
-
-      #ifdef _WIN32
-          return "notepad";
-      #else
-          return "nano";
-      #endif
-      }
-
-      static int edit_config_file(const std::string &name)
+    payload: |
+      Config parse_config(const fs::path &path)
       {
-          if (name.empty())
+          Config cfg;
+          enum Section
           {
-              std::cerr << "-e: empty filename\n";
-              return 1;
-          }
+              TEXT_RULES,
+              TREE_RULES,
+              MAPFORMAT_TEXT,
+              VARIANT_TEXT
+          };
+          Section current = TEXT_RULES;
+          std::string current_variant;
 
-          fs::path config_dir = ".scatconfig";
-          std::error_code ec;
-          fs::create_directories(config_dir, ec);
-          if (ec)
+          std::ifstream in(path);
+          if (!in.is_open())
+              throw std::runtime_error("Failed to open config file: " +
+                                       path.string());
+
+          std::string raw_line;
+          while (std::getline(in, raw_line))
           {
-              std::cerr << "-e: cannot create .scatconfig directory\n";
-              return 1;
-          }
+              std::string line = raw_line;
+              trim(line);
 
-          fs::path target = config_dir / name;
-
-          if (!target.has_filename())
-          {
-              std::cerr << "-e: invalid filename\n";
-              return 1;
-          }
-
-          fs::create_directories(target.parent_path(), ec);
-          if (ec)
-          {
-              std::cerr << "-e: cannot create directories for " << target << "\n";
-              return 1;
-          }
-
-          if (!fs::exists(target))
-          {
-              std::ofstream out(target);
-              if (!out)
+              if (current == MAPFORMAT_TEXT)
               {
-                  std::cerr << "-e: cannot create file " << target << "\n";
-                  return 1;
+                  // Всё, что после [MAPFORMAT], идёт как есть
+                  // (с сохранением пустых строк и #) до конца файла.
+                  cfg.map_format += raw_line;
+                  cfg.map_format += "\n";
+                  continue;
+              }
+
+              if (line.empty() || line[0] == '#')
+                  continue;
+
+              // [TREE] — глобальные правила дерева
+              if (line == "[TREE]")
+              {
+                  current = TREE_RULES;
+                  current_variant.clear();
+                  continue;
+              }
+
+              // [MAPFORMAT] — текстовый шаблон карты, до конца файла
+              if (line == "[MAPFORMAT]")
+              {
+                  current = MAPFORMAT_TEXT;
+                  current_variant.clear();
+                  continue;
+              }
+
+              // [VAR(name)] — отдельный набор правил текстового вывода
+              if (line.size() > 6 && line.rfind("[VAR(", 0) == 0 &&
+                  line.back() == ']')
+              {
+                  std::size_t open = line.find('(');
+                  std::size_t close = line.rfind(')');
+                  if (open == std::string::npos ||
+                      close == std::string::npos || close <= open + 1)
+                  {
+                      throw std::runtime_error(
+                          "Invalid [VAR(...)] section in config");
+                  }
+
+                  std::string name = line.substr(open + 1, close - open - 1);
+                  trim(name);
+                  if (name.empty())
+                  {
+                      throw std::runtime_error(
+                          "Empty variant name in [VAR()]");
+                  }
+
+                  current = VARIANT_TEXT;
+                  current_variant = name;
+                  // гарантируем наличие ключа даже для пустой секции
+                  cfg.variants[current_variant];
+                  continue;
+              }
+
+              Rule r = Rule::from_string(line);
+
+              switch (current)
+              {
+              case TEXT_RULES:
+                  cfg.text_rules.push_back(r);
+                  break;
+              case TREE_RULES:
+                  cfg.tree_rules.push_back(r);
+                  break;
+              case VARIANT_TEXT:
+                  cfg.variants[current_variant].push_back(r);
+                  break;
+              case MAPFORMAT_TEXT:
+                  // сюда не попадём: MAPFORMAT обрабатывается выше
+                  break;
               }
           }
 
-          std::string editor = detect_editor();
-          if (editor.empty())
+          return cfg;
+      }
+
+  - op: insert_after_text
+    comment: "Добавить поле variant_name в Options для хранения выбранного варианта"
+    path: src/options.h
+    marker: "    std::vector<Rule> arg_rules; // ordered CLI rules with excludes/includes"
+    payload: |
+          std::string variant_name; // --variant NAME
+
+  - op: insert_after_text
+    comment: "Добавить описание ключа --variant в вывод --help"
+    path: src/options.cpp
+    marker: |
+      "  --config F    Read patterns from file F\n"
+    payload: |
+      "  --variant NAME Use [VAR(NAME)] section from config file\n"
+
+  - op: insert_before_text
+    comment: "Разобрать новый параметр командной строки --variant в parse_options"
+    path: src/options.cpp
+    marker: "        else if (a == \"--git-info\")"
+    payload: |
+          else if (a == "--variant")
           {
-              std::cerr << "-e: no editor configured (SCAT_EDITOR/EDITOR)\n";
+              if (i + 1 < argc)
+              {
+                  opt.variant_name = argv[++i];
+              }
+              else
+              {
+                  std::cerr << "--variant requires name\n";
+                  std::exit(1);
+              }
+          }
+
+  - op: replace_text
+    comment: "Учесть выбранный вариант в config-режиме (run_config_mode)"
+    path: src/scat.cpp
+    marker: "    auto text_files = collect_from_rules(cfg.text_rules, opt);"
+    payload: |
+      std::vector<fs::path> text_files;
+          if (!opt.variant_name.empty())
+          {
+              auto it = cfg.variants.find(opt.variant_name);
+              if (it == cfg.variants.end())
+              {
+                  std::cerr << "--variant: unknown variant '"
+                            << opt.variant_name << "' in config\n";
+                  return 1;
+              }
+              text_files = collect_from_rules(it->second, opt);
+          }
+          else
+          {
+              text_files = collect_from_rules(cfg.text_rules, opt);
+          }
+
+  - op: replace_text
+    comment: "Учесть выбранный вариант в режиме --ghmap при работе через конфиг"
+    path: src/scat.cpp
+    marker: "        auto text_files = collect_from_rules(cfg.text_rules, opt);"
+    payload: |
+          std::vector<fs::path> text_files;
+              if (!opt.variant_name.empty())
+              {
+                  auto it = cfg.variants.find(opt.variant_name);
+                  if (it == cfg.variants.end())
+                  {
+                      std::cerr << "--variant: unknown variant '"
+                                << opt.variant_name << "' in config\n";
+                      return 1;
+                  }
+                  text_files = collect_from_rules(it->second, opt);
+              }
+              else
+              {
+                  text_files = collect_from_rules(cfg.text_rules, opt);
+              }
+
+  - op: insert_after_text
+    comment: "Добавить <exception> в server.cpp для обработки ошибок parse_config"
+    path: src/server.cpp
+    marker: "#include <cstdint>"
+    payload: |
+      #include <exception>
+
+  - op: replace_text
+    comment: "Научить HTTP-сервер уважать --variant и корректно обрабатывать ошибки конфига"
+    path: src/server.cpp
+    marker: |
+      if (!opt.config_file.empty())
+      {
+          Config cfg = parse_config(opt.config_file);
+          files = collect_from_rules(cfg.text_rules, opt);
+      }
+      else
+      {
+          files = collect_from_paths_with_excludes(opt.arg_rules, opt);
+      }
+    payload: |
+      if (!opt.config_file.empty())
+      {
+          Config cfg;
+          try
+          {
+              cfg = parse_config(opt.config_file);
+          }
+          catch (const std::exception &e)
+          {
+              std::cerr << e.what() << "\n";
               return 1;
           }
 
-          std::string cmd;
-          cmd.reserve(editor.size() + target.string().size() + 4);
-          cmd += editor;
-          cmd += " \"";
-          cmd += target.string();
-          cmd += "\"";
-
-          int rc = std::system(cmd.c_str());
-          if (rc == -1)
+          if (!opt.variant_name.empty())
           {
-              std::cerr << "-e: failed to start editor '" << editor << "'\n";
-              return 1;
+              auto it = cfg.variants.find(opt.variant_name);
+              if (it == cfg.variants.end())
+              {
+                  std::cerr << "--variant: unknown variant '"
+                            << opt.variant_name << "' in config\n";
+                  return 1;
+              }
+              files = collect_from_rules(it->second, opt);
           }
-
-          return 0;
+          else
+          {
+              files = collect_from_rules(cfg.text_rules, opt);
+          }
       }
-
-  - path: src/scat.cpp
-    op: insert_after_text
-    marker: |-
-      if (opt.hook_install)
+      else
       {
-          return install_pre_commit_hook();
+          files = collect_from_paths_with_excludes(opt.arg_rules, opt);
       }
-    payload: |-
-      if (!opt.edit_config_name.empty())
-      {
-          return edit_config_file(opt.edit_config_name);
-      }
+
+  - op: insert_before_text
+    comment: "Задокументировать секции [VAR(name)] и ключ --variant в README"
+    path: README.md
+    marker: "### Project tree (`[TREE]` section)"
+    payload: |
+      ### Variants (`[VAR(name)]` sections)
+
+      You can define alternative sets of text rules in the same config file:
+
+      ```text
+      [VAR(min)]
+      src/*
+      !src/bigfile.txt
+      tests/**
+      !tests/doctest/**
+      CMakeLists.txt
+      scat.txt
+      README.md
+      ```
+
+      Run `scat` with `--variant` to use a specific variant instead of the top-level rules:
+
+      ```bash
+      scat --variant min              # uses [VAR(min)] from scat.txt
+      scat --config myrules.txt --variant min
+      ```
+
+      If `--variant` is not specified, scat uses the top-level rules defined before `[TREE]`, `[MAPFORMAT]` or any `[VAR(...)]` sections.
+
+      ### Project tree (`[TREE]` section)

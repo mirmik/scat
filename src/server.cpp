@@ -4,6 +4,7 @@
 #include "util.h"
 
 #include <cstdint>
+#include <exception>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -72,8 +73,32 @@ int run_server(const Options &opt)
 
     if (!opt.config_file.empty())
     {
-        Config cfg = parse_config(opt.config_file);
-        files = collect_from_rules(cfg.text_rules, opt);
+        Config cfg;
+        try
+        {
+            cfg = parse_config(opt.config_file);
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << e.what() << "\n";
+            return 1;
+        }
+
+        if (!opt.variant_name.empty())
+        {
+            auto it = cfg.variants.find(opt.variant_name);
+            if (it == cfg.variants.end())
+            {
+                std::cerr << "--variant: unknown variant '"
+                          << opt.variant_name << "' in config\n";
+                return 1;
+            }
+            files = collect_from_rules(it->second, opt);
+        }
+        else
+        {
+            files = collect_from_rules(cfg.text_rules, opt);
+        }
     }
     else
     {

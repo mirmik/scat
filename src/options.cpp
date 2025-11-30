@@ -15,6 +15,7 @@ static void print_help()
                  "  --compact     Drop empty lines from file contents\n"
                  "  --abs         Show absolute paths\n"
                  "  --config F    Read patterns from file F\n"
+                 "  --variant NAME Use [VAR(NAME)] section from config file\n"
                  "  --server P    Run HTTP server on port P\n"
                  "  --wrap DIR    Wrap collected files as HTML into DIR\n"
                  "  --prefix P    Prepend P before file paths in -l output\n"
@@ -121,6 +122,18 @@ Options parse_options(int argc, char **argv)
             else
             {
                 std::cerr << "--config requires file\n";
+                std::exit(1);
+            }
+        }
+        else if (a == "--variant")
+        {
+            if (i + 1 < argc)
+            {
+                opt.variant_name = argv[++i];
+            }
+            else
+            {
+                std::cerr << "--variant requires name\n";
                 std::exit(1);
             }
         }

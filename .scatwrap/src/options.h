@@ -37,6 +37,7 @@ struct&nbsp;Options<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exclude_paths;&nbsp;//&nbsp;--exclude&nbsp;P&nbsp;/&nbsp;@PATTERN&nbsp;(argument&nbsp;mode)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;edit_config_name;&nbsp;//&nbsp;-e&nbsp;NAME:&nbsp;edit&nbsp;./.scatconfig/NAME<br>
 &nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;Rule&gt;&nbsp;arg_rules;&nbsp;//&nbsp;ordered&nbsp;CLI&nbsp;rules&nbsp;with&nbsp;excludes/includes<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;variant_name;&nbsp;//&nbsp;--variant&nbsp;NAME<br>
 <br>
 &nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;wrap_root;&nbsp;&nbsp;&nbsp;//&nbsp;--wrap<br>
 &nbsp;&nbsp;&nbsp;&nbsp;std::string&nbsp;path_prefix;&nbsp;//&nbsp;--prefix&nbsp;P<br>
