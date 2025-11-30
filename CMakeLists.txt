@@ -61,16 +61,30 @@ add_executable(scat
 )
 
 # std::filesystem fix for MinGW and older libstdc++ (detect actual linker support)
-set(CMAKE_REQUIRED_LIBRARIES "stdc++fs")
+# Prefer the standard library's builtin support; fall back to stdc++fs only when needed
 check_cxx_source_compiles(
     [[#include <filesystem>
-      int main() { std::filesystem::path p{"."}; return 0; }]]
-    HAS_LIBSTDCXXFS
+      int main() { std::filesystem::path p{"."}; return p.empty(); }]]
+    HAS_BUILTIN_FILESYSTEM
 )
-unset(CMAKE_REQUIRED_LIBRARIES)
 
+if (NOT HAS_BUILTIN_FILESYSTEM)
+    set(CMAKE_REQUIRED_LIBRARIES "stdc++fs")
+    check_cxx_source_compiles(
+        [[#include <filesystem>
+          int main() { std::filesystem::path p{"."}; return p.empty(); }]]
+        HAS_LIBSTDCXXFS
+    )
+    unset(CMAKE_REQUIRED_LIBRARIES)
+endif()
+
+set(FILESYSTEM_LIB "")
 if (HAS_LIBSTDCXXFS)
-    target_link_libraries(scat stdc++fs)
+    set(FILESYSTEM_LIB stdc++fs)
+endif()
+
+if (FILESYSTEM_LIB)
+    target_link_libraries(scat PRIVATE ${FILESYSTEM_LIB})
 endif()
 
 # -----------------------------------------------------------------------------
@@ -101,11 +115,15 @@ file(GLOB SCAT_TESTS CONFIGURE_DEPENDS tests/*)
 
 add_executable(scat_tests
     ${SCAT_TESTS}
-    ${SCAT_SOURCES}   
-    ${SCAT_HEADERS}   
+    ${SCAT_SOURCES}
+    ${SCAT_HEADERS}
 )
 
 target_include_directories(scat_tests PRIVATE src tests)
+
+if (FILESYSTEM_LIB)
+    target_link_libraries(scat_tests PRIVATE ${FILESYSTEM_LIB})
+endif()
 
 if (WIN32)
     target_link_libraries(scat_tests ws2_32)
