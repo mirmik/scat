@@ -1,8 +1,9 @@
 #include "collector.h"
-#include "doctest/doctest.h"
 #include "glob.h"
+#include "guard/guard.h"
 #include "options.h"
 #include "rules.h"
+
 
 #include <algorithm>
 #include <filesystem>
@@ -431,11 +432,8 @@ TEST_CASE("collector: --exclude matches @ semantics (single arg)")
                                          keep_cpp.c_str()};
 
     // Вариант с эквивалентным @
-    std::vector<const char *> argv_at = {"scat",
-                                         "-l",
-                                         glob_all.c_str(),
-                                         glob_cpp_at.c_str(),
-                                         keep_cpp.c_str()};
+    std::vector<const char *> argv_at = {
+        "scat", "-l", glob_all.c_str(), glob_cpp_at.c_str(), keep_cpp.c_str()};
 
     Options opt_ex = parse_options(static_cast<int>(argv_ex.size()),
                                    const_cast<char **>(argv_ex.data()));
@@ -466,8 +464,8 @@ TEST_CASE("collector: --exclude glob after shell expansion with reinclude")
     std::string a_cpp = (tmp / "a.cpp").generic_string();
     std::string b_cpp = (tmp / "b.cpp").generic_string();
 
-    // Имитируем argv после раскрутки: include glob, затем все .cpp как аргументы
-    // после --exclude, и отдельное явное включение b.cpp.
+    // Имитируем argv после раскрутки: include glob, затем все .cpp как
+    // аргументы после --exclude, и отдельное явное включение b.cpp.
     std::vector<const char *> argv = {"scat",
                                       "-l",
                                       glob_all.c_str(),

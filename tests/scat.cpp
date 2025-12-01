@@ -1,5 +1,5 @@
 #include "scat.h"
-#include "doctest/doctest.h"
+#include "guard/guard.h"
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -26,8 +26,9 @@ TEST_CASE("scat walks example/ correctly")
     std::stringstream buffer;
     auto old = std::cout.rdbuf(buffer.rdbuf());
 
-    const char *argv[] = {"scat", tmp.string().c_str(), "-r"};
-    scat_main(3, (char **)argv);
+    std::string tmp_str = tmp.string();
+    const char *argv[] = {"scat", tmp_str.c_str(), "-r"};
+    scat_main(3, const_cast<char **>(argv));
 
     std::cout.rdbuf(old);
 

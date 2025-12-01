@@ -60,3 +60,5 @@ Testing
 scat_tests
 
 tree.patch
+
+scat_tests.dir/

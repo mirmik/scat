@@ -1,4 +1,4 @@
-#include "doctest/doctest.h"
+#include "guard/guard.h"
 #include "options.h"
 
 #include <filesystem>
@@ -8,8 +8,7 @@
 namespace fs = std::filesystem;
 
 // объявляем внешнюю функцию из scat.cpp
-int wrap_files_to_html(const std::vector<fs::path> &files,
-                       const Options &opt);
+int wrap_files_to_html(const std::vector<fs::path> &files, const Options &opt);
 
 static void write_file(const fs::path &p, const std::string &text)
 {
